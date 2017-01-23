@@ -4,15 +4,33 @@
 #include "MainDialog.h"
 #include <QCoreApplication>
 #include <QHBoxLayout>
+#include <QMessageBox>
+#include <QOpenGLContext>
+#include <QOpenGLFunctions>
+#include <QPushButton>
 
 
-Viewer::Viewer(QWidget* ipParent /*=0*/) : QGLWidget(ipParent)
+Viewer::Viewer(QWidget* ipParent /*=0*/) : QOpenGLWidget(ipParent)
 {
 	setFocusPolicy(Qt::StrongFocus);
 }
 
 Viewer::~Viewer()
 {}
+
+//-----------------------------------------------------------------------------
+void Viewer::initializeGL()
+{
+    QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
+    f->glClearColor(0.2, 0.2, 0.2, 0.0);
+}
+
+//-----------------------------------------------------------------------------
+void Viewer::paintGL()
+{
+    QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
+    f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
 
 //-----------------------------------------------------------------------------
 //--- MainDialog
@@ -30,6 +48,10 @@ mpViewer(0)
 	{
 		QVBoxLayout *pControlLyt = new QVBoxLayout();
 		{
+            QPushButton* pBut = new QPushButton("test", pCentralWidget);
+            connect(pBut, SIGNAL(clicked()), this, SLOT(testClicked()));
+
+            pControlLyt->addWidget(pBut);
 		}		
 
 		mpViewer = new Viewer(pCentralWidget);
@@ -39,6 +61,14 @@ mpViewer(0)
 	}
     
 	updateUi();
+}
+
+//-----------------------------------------------------------------------------
+void MainDialog::testClicked()
+{
+    QMessageBox msgBox;
+    msgBox.setText("Testing slot mechanism...");
+    msgBox.exec();
 }
 
 //-----------------------------------------------------------------------------
