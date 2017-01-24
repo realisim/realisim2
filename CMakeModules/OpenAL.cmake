@@ -12,7 +12,11 @@ LINK_DIRECTORIES( ${OPENAL_DIR}/libs/Win64/ )
 MACRO(OPENAL_INSTALL iInstallPath)
 
     #install openAl32.dll
-    INSTALL(FILES ${OPENAL_DIR}/libs/Win64/OpenAL32.dll CONFIGURATIONS debug DESTINATION ${iInstallPath}/Debug )
-    INSTALL(FILES ${OPENAL_DIR}/libs/Win64/OpenAL32.dll  CONFIGURATIONS Release  DESTINATION ${iInstallPath}/Release )
+    SET( dlls 
+        ${OPENAL_DIR}/libs/Win64/OpenAL32.dll
+        ${OPENAL_DIR}/libs/Win64/wrap_oal.dll )
+
+    INSTALL(FILES ${dlls} CONFIGURATIONS debug DESTINATION ${iInstallPath}/Debug )
+    INSTALL(FILES ${dlls}  CONFIGURATIONS Release  DESTINATION ${iInstallPath}/Release )
 
 ENDMACRO(OPENAL_INSTALL)
