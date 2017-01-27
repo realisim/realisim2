@@ -4,14 +4,16 @@ PROJECT(TestGL)
 #output apps in bin/"BuildConfiguration"/${PROJECT_NAME}
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${PROJECT_NAME})
 
-SET( SOURCE_FILES ${SOURCE_FILES} CMakeLists.txt )
-ADD_COMPONENT( "./" "application")
+INCLUDE( "../../CMakeModules/Qt5.cmake" )
 
-QT_AUTOMOC()
+set( SOURCE_FILES ${SOURCE_FILES} CMakeLists.txt )
+add_component( "./" "application")
+
+qt_automoc()
 
 # create executable
-ADD_EXECUTABLE( ${PROJECT_NAME} ${SOURCE_FILES} ${INCLUDE_FILES} )
-TARGET_LINK_LIBRARIES( ${PROJECT_NAME} Qt5::Widgets Qt5::OpenGL )
+add_executable( ${PROJECT_NAME} ${SOURCE_FILES} ${INCLUDE_FILES} )
+target_link_libraries( ${PROJECT_NAME} Qt5::Widgets Qt5::OpenGL )
 
 # install directive
-QT5_INSTALL( ${CMAKE_SOURCE_DIR}/bin/${PROJECT_NAME} )
+qt5_install( ${CMAKE_SOURCE_DIR}/bin/${PROJECT_NAME} )

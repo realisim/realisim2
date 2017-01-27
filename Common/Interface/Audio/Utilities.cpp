@@ -1,6 +1,8 @@
 /* utilities.cpp */
 
 #include "Audio/utilities.h"
+#include <cmath>
+
 namespace Realisim
 {
 namespace Audio

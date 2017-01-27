@@ -1,22 +1,33 @@
 
-SET( OPENAL_DIR  ${CMAKE_SOURCE_DIR}/thirdParties/OpenAL/v1.1 )
-#MESSAGE( "OPENAL_DIR " ${OPENAL_DIR} )
+set( OPENAL_DIR  ${CMAKE_SOURCE_DIR}/thirdParties/OpenAL/v1.1 )
+#message( "OPENAL_DIR " ${OPENAL_DIR} )
 
-# add the include path...
-INCLUDE_DIRECTORIES( ${OPENAL_DIR}/include/ )
+if(WIN32)
+    # add the include path...
+    include_directories( ${OPENAL_DIR}/include/ )
 
-#Specify directories in which the linker will look for libraries.
-LINK_DIRECTORIES( ${OPENAL_DIR}/libs/Win64/ )
+    #Specify directories in which the linker will look for libraries.
+    link_directories( ${OPENAL_DIR}/libs/Win64/ )
+elseif(APPLE)
+    find_package(OpenAL)
+    if(OPENAL_FOUND)
+        include_directories( ${OPENAL_INCLUDE_DIR} )
+        # ${OPENAL_LIBRARY} is now defined and points to the OpenALFramework
+        # to be linked with the executable
+    endif()
+endif()
 
 # Copy all required Qt files to iInstallPath
-MACRO(OPENAL_INSTALL iInstallPath)
+macro(OPENAL_INSTALL iInstallPath)
 
-    #install openAl32.dll
-    SET( dlls 
-        ${OPENAL_DIR}/libs/Win64/OpenAL32.dll
-        ${OPENAL_DIR}/libs/Win64/wrap_oal.dll )
+    if(WIN32)
+        #install openAl32.dll
+        SET( dlls 
+            ${OPENAL_DIR}/libs/Win64/OpenAL32.dll
+            ${OPENAL_DIR}/libs/Win64/wrap_oal.dll )
 
-    INSTALL(FILES ${dlls} CONFIGURATIONS debug DESTINATION ${iInstallPath}/Debug )
-    INSTALL(FILES ${dlls}  CONFIGURATIONS Release  DESTINATION ${iInstallPath}/Release )
+        INSTALL(FILES ${dlls} CONFIGURATIONS debug DESTINATION ${iInstallPath}/Debug )
+        INSTALL(FILES ${dlls}  CONFIGURATIONS Release  DESTINATION ${iInstallPath}/Release )
+    endif()
 
-ENDMACRO(OPENAL_INSTALL)
+endmacro(OPENAL_INSTALL)
