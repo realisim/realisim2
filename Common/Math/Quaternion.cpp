@@ -93,7 +93,7 @@ Quaternion& Quaternion::normalize()
 {
     const double magnitude = getLength();
     //si length est 0, on ne fait pas la division!
-    if ( isEqual(magnitude, 0.0, 1e-7) )
+    if ( !isEqual(magnitude, 0.0, 1e-7) )
     {
         mW = mW / magnitude;
         mX = mX / magnitude;

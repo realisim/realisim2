@@ -152,14 +152,14 @@ Quaternion Matrix4::getRotationAsQuaternion() const
         y = ( m[1][2] + m[2][1] ) / s;
         z = 0.25 * s;
     }
-    Quaternion r( w, x, y, z );
+    Quaternion r( x, y, z, w );
     r.normalize();
     return r;
 }
 //------------------------------------------------------------------------------
 Vector4 Matrix4::getRow(int iRow) const
 {
-    return Vector4( m[iRow][0], m[iRow][1], m[iRow][2], m[iRow][3] );
+    return Vector4( m[0][iRow], m[1][iRow], m[2][iRow], m[3][iRow] );
 }
 
 //------------------------------------------------------------------------------
@@ -420,6 +420,8 @@ std::string Matrix4::toString(int iPrecision /*=3*/) const
     return oss.str();
 }
 //------------------------------------------------------------------------------
+// Returns the transposed matrix
+//
 Matrix4 Matrix4::transpose() const
 {
     Matrix4 r; 
