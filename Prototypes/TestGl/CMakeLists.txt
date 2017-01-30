@@ -8,6 +8,7 @@ INCLUDE( "../../CMakeModules/Qt5.cmake" )
 
 set( SOURCE_FILES ${SOURCE_FILES} CMakeLists.txt )
 add_component( "./" "application")
+add_component( "../../Common/Math" "Math")
 
 qt_automoc()
 

@@ -1,4 +1,5 @@
 
+#include <cmath>
 #include <iomanip>
 #include "Math/IsEqual.h"
 #include "Math/Vector.h"
@@ -39,12 +40,37 @@ Vector4::Vector4(double v)
 }
 
 //---------------------------------------------------------------------------
-bool Vector4::isEqual(const Vector4& iV) const
+double Vector4::norm() const
 {
-    return Math::isEqual(x(), iV.x()) &&
-        Math::isEqual(y(), iV.y()) &&
-        Math::isEqual(z(), iV.z()) &&
-        Math::isEqual(w(), iV.w());
+    return std::sqrt(mData[0]*mData[0] + mData[1]*mData[1] + mData[2]*mData[2] + mData[3]*mData[3]);
+}
+
+//---------------------------------------------------------------------------
+Vector4& Vector4::normalize()
+{
+    double n = norm();
+    
+    //avoid dividing by zéro...
+    if( !isEqual(n, 0.0) )
+    { (*this) /= this->norm(); }
+    
+    return (*this);
+
+}
+
+//---------------------------------------------------------------------------
+const double* Vector4::getDataPointer() const
+{
+    return &mData[0];
+}
+
+//---------------------------------------------------------------------------
+bool Vector4::isEqual(const Vector4& iV, double iEpsilon ) const
+{
+    return Math::isEqual(x(), iV.x(), iEpsilon) &&
+        Math::isEqual(y(), iV.y(), iEpsilon) &&
+        Math::isEqual(z(), iV.z(), iEpsilon) &&
+        Math::isEqual(w(), iV.w(), iEpsilon);
 }
 
 //-----------------------------------------------------------------------------
@@ -77,13 +103,73 @@ Vector4 Vector4::operator-(const Vector4& iV)
 }
 
 //-----------------------------------------------------------------------------
+Vector4 Vector4::operator- () const
+{
+    return Vector4( -x(), -y(), -z(), -w() );
+}
+
+//-----------------------------------------------------------------------------
 Vector4& Vector4::operator-=(const Vector4& iV)
 {
-    mData[0] = mData[0] - iV.mData[0];
-    mData[1] = mData[1] - iV.mData[1];
-    mData[2] = mData[2] - iV.mData[2];
-    mData[3] = mData[3] - iV.mData[3];
+    *this = *this - iV;
     return *this;
+}
+
+//-----------------------------------------------------------------------------
+Vector4 Vector4::operator* (double iV) const
+{
+    Vector4 r;
+
+    r.mData[0] = x() * iV;
+    r.mData[1] = y() * iV;
+    r.mData[2] = z() * iV;
+    r.mData[3] = w() * iV;
+
+    return r;
+}
+
+//-----------------------------------------------------------------------------
+Vector4& Vector4::operator*= (double iV)
+{
+    *this = *this * iV;
+    return *this;
+}
+
+//-----------------------------------------------------------------------------
+Vector4 Vector4::operator/ (double iV) const
+{
+    return *this * (1.0/iV);
+}
+
+//-----------------------------------------------------------------------------
+Vector4& Vector4::operator/= (double iV)
+{
+    *this = *this / iV;
+    return *this;
+}
+
+//-----------------------------------------------------------------------------
+bool Vector4::operator== ( const Vector4& iV) const
+{
+    return x() == iV.x() &&
+        y() == iV.y() &&
+        z() == iV.z() &&
+        w() == iV.w();
+}
+
+//-----------------------------------------------------------------------------
+bool Vector4::operator!= ( const Vector4& iV ) const
+{
+    return !(*this == iV);
+}
+
+//-----------------------------------------------------------------------------
+double Vector4::operator* (const Vector4 &vect) const // dot product
+{
+    return ( x() * vect.x() + 
+        y() * vect.y() + 
+        z() * vect.z() +
+        w() * vect.w() );
 }
 
 //-----------------------------------------------------------------------------
@@ -139,3 +225,11 @@ double Vector4::w() const
 //-----------------------------------------------------------------------------
 Vector3 Vector4::xyz() const
 { return Vector3(mData[0], mData[1], mData[2]); }
+
+//---------------------------------------------------------------------------
+// operator for scalar x Vector2
+//
+Vector4 Realisim::Math::operator*(double iV, const Vector4& iVect)
+{
+    return iVect * iV;
+}

@@ -24,10 +24,10 @@ const double* Vector2::getDataPointer() const
 { return &mData[0]; }
 
 //---------------------------------------------------------------------------
-bool Vector2::isEqual(const Vector2& iV) const
+bool Vector2::isEqual(const Vector2& iV, double iEpsilon) const
 {
-    return Math::isEqual(x(), iV.x()) &&
-        Math::isEqual(y(), iV.y());
+    return Math::isEqual(x(), iV.x(), iEpsilon) &&
+        Math::isEqual(y(), iV.y(), iEpsilon);
 }
 
 //---------------------------------------------------------------------------
@@ -39,7 +39,11 @@ double Vector2::norm() const
 //---------------------------------------------------------------------------
 Vector2& Vector2::normalize()
 {
-    (*this) /= this->norm();
+    double n = norm();
+    
+    //avoid dividing by zéro...
+    if( !isEqual(n, 0.0) )
+    { (*this) /= this->norm(); }
     return (*this);
 }
 
@@ -98,10 +102,9 @@ Vector2 Vector2::operator- () const
 }
 
 //----------------------------------------------------------------------------
-Vector2& Vector2::operator-= (const Vector2 &vect)
+Vector2& Vector2::operator-= (const Vector2 &iVect)
 {
-    mData[0] -= vect.x();
-    mData[1] -= vect.y();
+    *this = *this - iVect;
     return *this;
 }
 
@@ -190,3 +193,11 @@ double Vector2::x() const
 //---------------------------------------------------------------------------
 double Vector2::y() const
 { return mData[1]; }
+
+//---------------------------------------------------------------------------
+// operator for scalar x Vector2
+//
+Vector2 Realisim::Math::operator*(double iV, const Vector2& iVect)
+{
+    return iVect * iV;
+}

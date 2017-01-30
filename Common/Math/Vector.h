@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <limits>
 #include <string>
 
 namespace Realisim
@@ -19,7 +20,7 @@ namespace Math
         ~Vector2() = default;
 
         const double* getDataPointer() const;
-        bool isEqual(const Vector2&) const;
+        bool isEqual(const Vector2&, double iEpsilon = std::numeric_limits<double>::epsilon() ) const;
         double norm() const;
         Vector2& normalize();
         
@@ -56,13 +57,13 @@ namespace Math
         Vector3();
         Vector3(double iV);
         Vector3(double iX, double iY, double iZ);
-        Vector3(Vector2 iVect2, double iZ);
+        explicit Vector3(const Vector2& iVect2, double iZ);
         Vector3(const Vector3 &iVect) = default;
         Vector3& operator=(const Vector3 &vect) = default;
         ~Vector3() = default;
 
         const double* getDataPointer() const;
-        bool isEqual(const Vector3&) const;
+        bool isEqual(const Vector3&, double iEpsilon = std::numeric_limits<double>::epsilon() ) const;
         double norm() const;
         Vector3& normalize();
         
@@ -104,23 +105,31 @@ namespace Math
     public:
         Vector4();
         Vector4(double x, double y, double z, double w);
-        Vector4(const Vector2& v2, double z, double w);
-        Vector4(const Vector3& v3, double w);
+        explicit Vector4(const Vector2& v2, double z, double w);
+        explicit Vector4(const Vector3& v3, double w);
         Vector4(double v);
         Vector4(const Vector4&) = default;
         Vector4& operator=(const Vector4&) = default;
         ~Vector4() = default;
         
-//double norm() const;
-//Vector4& normalize();
-const double* getDataPointer() const;
-        bool isEqual(const Vector4&) const;
+        double norm() const;
+        Vector4& normalize();
+        const double* getDataPointer() const;
+        bool isEqual(const Vector4&, double iEpsizion = std::numeric_limits<double>::epsilon() ) const;
         Vector4 operator+ (const Vector4&);
         Vector4& operator+= (const Vector4&);
         Vector4 operator- (const Vector4&);
+        Vector4 operator- () const;
         Vector4& operator-= (const Vector4&);
-bool operator== (const Vector4&);
-bool operator!= (const Vector4&);
+        Vector4 operator* (double) const;
+        Vector4& operator*= (double);
+        Vector4 operator/ (double) const;
+        Vector4& operator/= (double);
+        bool operator== ( const Vector4& ) const;
+        bool operator!= ( const Vector4& ) const;
+//Vector4 operator^ (const Vector4 &vect) const; // scalar product
+        double operator* (const Vector4 &vect) const; // dot product
+        
         void set(double x, double y, double z, double w);
         void setX(double x);
         void setY(double y);
@@ -135,6 +144,12 @@ bool operator!= (const Vector4&);
     private:
         double mData[4];
     };
-    
+ 
+    // Operator to multiply a scalar by a vector.
+    // To represent: 2.0*v;
+    //
+    Vector2 operator*(double iV, const Vector2& iVect);
+    Vector3 operator*(double iV, const Vector3& iVect);
+    Vector4 operator*(double iV, const Vector4& iVect);
 }
 }

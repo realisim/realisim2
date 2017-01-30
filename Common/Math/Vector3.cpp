@@ -1,7 +1,6 @@
 
 #include <cmath>
 #include <iomanip>
-#include <limits>
 #include "Math/IsEqual.h"
 #include "Math/Vector.h"
 #include <sstream>
@@ -20,16 +19,20 @@ Vector3::Vector3(double iV)
 Vector3::Vector3(double iX, double iY, double iZ)
 { set(iX, iY, iZ); }
 
+//-----------------------------------------------------------------------------
+Vector3::Vector3(const Vector2& iVect2, double iZ)
+{ set(iVect2.x(), iVect2.y(), iZ); }
+
 //----------------------------------------------------------------------------
 const double* Vector3::getDataPointer() const
 { return &mData[0]; }
 
 //---------------------------------------------------------------------------
-bool Vector3::isEqual(const Vector3& iV) const
+bool Vector3::isEqual(const Vector3& iV, double iEpsilon ) const
 {
-    return Math::isEqual(x(), iV.x()) &&
-        Math::isEqual(y(), iV.y()) &&
-        Math::isEqual(z(), iV.z());
+    return Math::isEqual(x(), iV.x(), iEpsilon) &&
+        Math::isEqual(y(), iV.y(), iEpsilon) &&
+        Math::isEqual(z(), iV.z(), iEpsilon);
 }
 
 //---------------------------------------------------------------------------
@@ -41,7 +44,12 @@ double Vector3::norm() const
 //---------------------------------------------------------------------------
 Vector3& Vector3::normalize()
 {
-    (*this) /= this->norm();
+    double n = norm();
+    
+    //avoid dividing by zéro...
+    if( !isEqual(n, 0.0) )
+    { (*this) /= this->norm(); }
+
     return (*this);
 }
 
@@ -105,11 +113,9 @@ Vector3 Vector3::operator- () const
 }
 
 //----------------------------------------------------------------------------
-Vector3& Vector3::operator-= (const Vector3 &vect)
+Vector3& Vector3::operator-= (const Vector3 &iVect)
 {
-    mData[0] -= vect.x();
-    mData[1] -= vect.y();
-    mData[2] -= vect.z();
+    *this = *this - iVect;
     return *this;
 }
 
@@ -232,3 +238,11 @@ Vector2 Vector3::xz() const
 //---------------------------------------------------------------------------
 Vector2 Vector3::yz() const
 { return Vector2(mData[1], mData[2]); }
+
+//---------------------------------------------------------------------------
+// operator for scalar x Vector2
+//
+Vector3 Realisim::Math::operator*(double iV, const Vector3& iVect)
+{
+    return iVect * iV;
+}

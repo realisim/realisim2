@@ -8,6 +8,8 @@ if(WIN32)
 
     #Specify directories in which the linker will look for libraries.
     link_directories( ${OPENAL_DIR}/libs/Win64/ )
+
+    SET( OPENAL_LIBRARY OpenAL32 )
 elseif(APPLE)
     find_package(OpenAL)
     if(OPENAL_FOUND)

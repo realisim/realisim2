@@ -24,12 +24,7 @@ add_executable( ${PROJECT_NAME} ${SOURCE_FILES} ${INCLUDE_FILES} )
 #------------------------
 # libraries to link to
 #------------------------
-target_link_libraries( ${PROJECT_NAME} Qt5::Widgets )
-if(WIN32)
-     target_link_libraries($ {PROJECT_NAME} OpenAL32 )
-elseif(APPLE)
-    target_link_libraries( ${PROJECT_NAME} ${OPENAL_LIBRARY} )
-endif()
+target_link_libraries( ${PROJECT_NAME} Qt5::Widgets ${OPENAL_LIBRARY} )
 
 #------------------------
 # install directive
