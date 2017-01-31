@@ -14,8 +14,9 @@ namespace Math
     {
     public:
         Quaternion();
-        Quaternion(double iX, double iY, double iZ, double iW);
         Quaternion(const Quaternion &iQ) = default;
+        Quaternion(double iX, double iY, double iZ, double iW);
+        Quaternion(double iAngle, const Vector3& iAxis);
         Quaternion& operator=(const Quaternion &iQ) = default;
         ~Quaternion();
         

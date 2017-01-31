@@ -16,6 +16,10 @@ Quaternion::Quaternion(double iX, double iY, double iZ, double iW) :
 mX(iX), mY(iY), mZ(iZ), mW(iW)
 {}
 
+//-----------------------------------------------------------------------------
+Quaternion::Quaternion(double iAngle, const Vector3& iAxis)
+{ setRotation(iAngle, iAxis); }
+
 //----------------------------------------------------------------------------
 Quaternion::~Quaternion()
 {}
