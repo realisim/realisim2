@@ -95,14 +95,17 @@ TEST(Matrix4, Constructor)
     
     //Matrix4( Quaternion ); //rotation
     {
-        Quaternion q(1,2,3,4);
+        // verified on wolfram with:
+        // rotation 1+0i+5j+2k
+        Quaternion q(0,5,2,1);
         q.normalize();
         Matrix4 m(q);
-        Quaternion q2 = m.getRotationAsQuaternion();
-        EXPECT_TRUE( isEqual(q.x(), q2.x(), 1e-7 ) );
-        EXPECT_TRUE( isEqual(q.y(), q2.y(), 1e-7 ) );
-        EXPECT_TRUE( isEqual(q.z(), q2.z(), 1e-7 ) );
-        EXPECT_TRUE( isEqual(q.w(), q2.w(), 1e-7 ) );
+        double result[16] = {
+            -14/15.0, -2/15.0, 1/3.0, 0,
+            2/15.0, 11/15.0, 2/3.0, 0,
+            -1/3.0, 2/3.0, -2/3.0, 0,
+            0, 0, 0, 1};
+        EXPECT_IS_EQUAL_MATRIX4(m, result, 1e-7)
     }
     
     //Matrix4( double, Vector3 ); //rotation (angle et axe)

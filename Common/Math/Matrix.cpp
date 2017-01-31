@@ -65,6 +65,8 @@ Matrix4::Matrix4( Vector3 iV )
     m[3][0] = iV.x(); m[3][1] = iV.y(); m[3][2] = iV.z();
 }
 //------------------------------------------------------------------------------
+// iQ must be normalized!
+//
 Matrix4::Matrix4( Quaternion iQ )
 {
     double x = iQ.x(), y = iQ.y(), z = iQ.z(), w = iQ.w();
