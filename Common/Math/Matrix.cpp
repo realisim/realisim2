@@ -92,7 +92,6 @@ Matrix4::Matrix4( Quaternion iQ )
 Matrix4::Matrix4( double iAngle, Vector3 iAxis )
 {
     Quaternion q;
-    iAxis.normalize();
     q.setRotation( iAngle, iAxis );
     *this = Matrix4( q );
 }

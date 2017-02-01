@@ -16,14 +16,14 @@ namespace Math
         Quaternion();
         Quaternion(const Quaternion &iQ) = default;
         Quaternion(double iX, double iY, double iZ, double iW);
-        Quaternion(double iAngle, const Vector3& iAxis);
+        Quaternion(double iAngle, Vector3 iAxis);
         Quaternion& operator=(const Quaternion &iQ) = default;
         ~Quaternion();
         
         Quaternion getConjugate() const;
-        double getLength() const;
         Quaternion& invert();
         Quaternion inverse();
+        double norm() const;
         Quaternion& normalize();
         Quaternion operator+ (const Quaternion &iQ) const;
         Quaternion& operator+= (const Quaternion &iQ);
@@ -32,10 +32,8 @@ namespace Math
         Quaternion operator- () const;
         Quaternion operator* (double iValue) const;
         Quaternion& operator*= (double iValue);
-        Quaternion operator* (const Quaternion &iQ) const;
-        Quaternion& operator*= (const Quaternion &iQ);
         void set(double iX, double iY, double iZ, double iW);
-        void setRotation(double iAngle, const Vector3& iAxis);
+        void setRotation(double iAngle, Vector3 iAxis);
         void setW(double iW);
         void setX(double iX);
         void setY(double iY);
@@ -45,8 +43,6 @@ namespace Math
         double x() const;
         double y() const;
         double z() const;
-        
-        //Point3<T> multRotation( const Quaternion<T> &quat ) const;
         
         std::string toString() const;
         

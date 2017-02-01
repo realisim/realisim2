@@ -17,7 +17,7 @@ mX(iX), mY(iY), mZ(iZ), mW(iW)
 {}
 
 //-----------------------------------------------------------------------------
-Quaternion::Quaternion(double iAngle, const Vector3& iAxis)
+Quaternion::Quaternion(double iAngle, Vector3 iAxis)
 { setRotation(iAngle, iAxis); }
 
 //----------------------------------------------------------------------------
@@ -93,9 +93,15 @@ std::string Quaternion::toString() const
 }
 
 //----------------------------------------------------------------------------
+double Quaternion::norm() const
+{
+    return std::sqrt(mW*mW + mX*mX + mY*mY + mZ*mZ);
+}
+
+//----------------------------------------------------------------------------
 Quaternion& Quaternion::normalize()
 {
-    const double magnitude = getLength();
+    const double magnitude = norm();
     //si length est 0, on ne fait pas la division!
     if ( !isEqual(magnitude, 0.0, 1e-7) )
     {
@@ -179,29 +185,6 @@ Quaternion& Quaternion::operator*= (double iValue)
 }
 
 //----------------------------------------------------------------------------
-Quaternion Quaternion::operator* (const Quaternion &quat) const
-{
-    Quaternion result(*this);
-    return result *= quat;
-}
-
-//----------------------------------------------------------------------------
-Quaternion&  Quaternion::operator*= (const Quaternion &quat)
-{
-    mW = mW*quat.mW - mX*quat.mX - mY*quat.mY - mZ*quat.mZ;
-    mX = mW*quat.mX + mX*quat.mW + mY*quat.mZ - mZ*quat.mY;
-    mY = mW*quat.mY - mX*quat.mZ + mY*quat.mW + mZ*quat.mX;
-    mZ = mW*quat.mZ + mX*quat.mY - mY*quat.mX + mZ*quat.mW;
-    return *this;
-}
-
-//----------------------------------------------------------------------------
-double Quaternion::getLength() const
-{
-    return std::sqrt(mW*mW + mX*mX + mY*mY + mZ*mZ);
-}
-
-//----------------------------------------------------------------------------
 Quaternion Quaternion::getConjugate() const
 {
     return Quaternion(-mX, -mY, -mZ, mW);
@@ -227,16 +210,15 @@ Quaternion& Quaternion::invert()
 //!---------------------------------------------------------------------------
 //! \brief  Fonction permettant d'initialiser un quaternion pour une rotation.
 //!
-//! ATTENTION POUR FONCTIONNER ADEQUATEMENT L'AXE PASSE EN PARAMETRE SOIT
-//! IMPERATIVEMENT ETRE NORMALISE!!!
-//!
 //! \param angle angle que l'on doit tourner autour de l'axe EN RADIAN!!!
 //! \param axisX
 //! \param axisY le vecteur a tourner autour...
 //! \param axisZ
 //!---------------------------------------------------------------------------
-void Quaternion::setRotation(double iAngle, const Vector3& iAxis)
+void Quaternion::setRotation(double iAngle, Vector3 iAxis)
 {
+    iAxis.normalize();
+    
     double sinTmp = std::sin(iAngle/2.0);
     
     mX = iAxis.x() * sinTmp;
