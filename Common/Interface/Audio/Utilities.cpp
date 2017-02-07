@@ -23,16 +23,15 @@ namespace Audio
      */
     std::string generateSoundBuffer(int f,
                                     int s,
-                                    double d,
-                                    AudioInterface::format af )
+                                    double d )
     {
-        const uint32_t sizeInBytes = d*s;
+        const uint32_t sizeInBytes = (uint32_t)(d*s);
         char* data = new char[sizeInBytes];
-        const double twoPi = 2*3.1415926;
+        const float twoPi = 2*3.1415926f;
         for( int i = 0; i < d * s; ++i )
         {
-            const double sineSample = ((i/(double)s) * f * twoPi);
-            data[i] = (int)(sinf( fmodf( sineSample, twoPi ) ) * 127) + 127;
+            const float sineSample = ((i/(float)s) * f * twoPi);
+            data[i] = (char)(sinf( fmodf( sineSample, twoPi ) ) * 127) + 127;
         }
      
         std::string r(data, sizeInBytes);

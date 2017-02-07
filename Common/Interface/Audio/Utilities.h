@@ -7,8 +7,7 @@ namespace Realisim
 namespace Audio 
 {
 
-    std::string generateSoundBuffer( int iFreq, int iSampling, double iDuration,
-                                   AudioInterface::format = AudioInterface::fMono8 );
+    std::string generateSoundBuffer( int iFreq, int iSampling, double iDuration );
 
 }
 }

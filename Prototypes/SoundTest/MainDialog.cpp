@@ -235,8 +235,8 @@ void MainDialog::generateNotes()
         int id = mAudio.addBuffer();
         if( !mAudio.hasError() )
         {
-            std::string data = generateSoundBuffer( noteFreq[i], 44100, 1.0 );
-            mAudio.setBufferData( id, data, AudioInterface::fMono8, 44100 );
+            std::string soundData = generateSoundBuffer( noteFreq[i], 44100, 1.0 );
+            mAudio.setBufferData( id, soundData, AudioInterface::fMono8, 44100 );
             mNotesToBuffer[ (notes)i ] = id;
         }
     }
