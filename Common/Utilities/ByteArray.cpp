@@ -136,14 +136,20 @@ size_t ByteArray::capLength(size_t iLength) const
 {
     int l = iLength;
     if( l < 0 || l > size() )
-    { l = size() - 1; }
+    { l = size(); }
     return l;
 }
 //-------------------------------------------------------
+// Removes all data from mData and will release allocated
+// memory. Thus empty() will be true. Size will be 0 and
+// capacity will be 0.
+//
 void ByteArray::clear()
 {
     detachGuts();
-    mpGuts->mData.clear();
+    // We do not use std::string::clear() as it does not
+    // deallocate memory. It only removes data.
+    mpGuts->mData = string();
 }
 
 //-------------------------------------------------------
@@ -210,11 +216,11 @@ ByteArray& ByteArray::fill(char iChar, int iLength/*= -1*/)
     return *this;
 }
 
-//-------------------------------------------------------
-ByteArray ByteArray::fromRawData(const char *iData, int iSize)
-{
-    return ByteArray();
-}
+////-------------------------------------------------------
+//ByteArray ByteArray::fromRawData(const char *iData, int iSize)
+//{
+//    return ByteArray();
+//}
 
 //-------------------------------------------------------
 //ByteArra& insert(int iPos, const char*)
@@ -389,16 +395,20 @@ void ByteArray::resize(int iSize)
 {
     detachGuts();
     removeTrailing0();
-    // +1 to account for trailing 0
-    mpGuts->mData.resize(iSize + 1);
+    mpGuts->mData.resize(iSize);
     addTrailing0();
 }
 
 //-------------------------------------------------------
 size_t ByteArray::size() const
 {
-    // -1 to account for trailing 0
-    return mpGuts->mData.size() - 1;
+    size_t r = mpGuts->mData.size();
+    if( !isEmpty() )
+    {
+        // -1 to account for trailing 0
+        --r;
+    }
+    return r;
 }
 
 //-------------------------------------------------------

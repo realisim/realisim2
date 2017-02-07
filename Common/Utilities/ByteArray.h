@@ -6,7 +6,10 @@ namespace Realisim
 namespace Utilities
 {
     /*
+     This class uses a copy-on-write mechanism. Please refer to http://doc.qt.io/qt-5/implicit-sharing.html
+     for a detailed explanation.
 
+     
     */
     class ByteArray
     {
@@ -23,20 +26,18 @@ namespace Utilities
         ByteArray& append(const char*, int iSize);
         ByteArray& append(const std::string&);
         ByteArray& append(const ByteArray&);
-const std::string& asString() const; //pas trop certain de l'utilité...
+        const std::string& asString() const;
         char at(size_t) const;
         size_t capacity() const;
         void clear();
         const char* constData() const;
         char* data();
         ByteArray& fill(char, int = -1);
-        static ByteArray fromRawData(const char*, int iSize);
+//static ByteArray fromRawData(const char*, int iSize);
 //ByteArra& insert(int iPos, const char*);
 //ByteArra& insert(int iPos, const char*, int iSize);  
 //ByteArra& insert(int iPos, const ByteArray&);
         bool isEmpty() const;
-        //bool isNull() const;
-
         ByteArray mid(size_t iPos, int iLength = -1) const;
         bool operator==(const ByteArray&) const;
         bool operator!=(const ByteArray&) const;
@@ -73,7 +74,9 @@ const std::string& asString() const; //pas trop certain de l'utilité...
         void removeTrailing0();
         void addTrailing0();
 
-        // for copy on write implementation
+        // the 4 following methods are for copy-on-write
+        // functionnalities.
+        //
         void deleteGuts();
         void detachGuts();
         void makeGuts();

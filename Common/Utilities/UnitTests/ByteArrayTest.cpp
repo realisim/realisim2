@@ -7,6 +7,9 @@ using namespace Utilities;
 
 const std::string referenceString = "the quick brown fox jumps over the lazy dog.";
 const std::string loremIpsum = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+const std::string referenceData = {'\x0', '\x1', '\x0', '\x1',
+    '\x0', '\x1', '\x0', '\x1',
+    '\x0', '\x1', '\x0', '\x1'};
 
 TEST(ByteArray, Constructor)
 {
@@ -210,17 +213,107 @@ TEST(ByteArray, operator)
 
 TEST(ByteArray, Functions)
 {
+    //const std::string& asString() const
+    {
+        ByteArray ba(referenceData);
+        EXPECT_TRUE(ba.size() == 12);
+        const std::string& s = ba.asString();
+        for(int i = 0; i < referenceData.size(); ++i)
+        {
+            EXPECT_EQ( s[i], referenceData[i] );
+        }
+    }
+    
+    //char at(size_t) const
+    {
+        ByteArray ba(referenceData);
+        EXPECT_TRUE(ba.size() == 12);
+        for(int i = 0; i < ba.size(); ++i)
+        {
+            EXPECT_EQ( ba.at(i), referenceData[i] );
+        }
+    }
+    
+    //size_t capacity() const
+    {
+
+    }
+    
+    //void clear()
+    {
+        ByteArray ba(referenceData);
+        ba.clear();
+        //int s = ba.size();
+        
+        EXPECT_TRUE(ba.size() == 0);
+        EXPECT_TRUE(ba.isEmpty());
+    }
+    
+    //ByteArray& fill(char, int = -1)
+    {
+        ByteArray ba;
+        ba.resize(12);
+        ba.fill('\x62');
+        EXPECT_STREQ(ba.constData(), "\x62\x62\x62\x62\x62\x62\x62\x62\x62\x62\x62\x62\x0");
+        
+        ba.fill('\x63', 6);
+        EXPECT_STREQ(ba.constData(), "\x63\x63\x63\x63\x63\x63\x62\x62\x62\x62\x62\x62\x0");
+    }
+    
+    //bool isEmpty() const
+    {
+        ByteArray ba;
+        EXPECT_TRUE(ba.isEmpty());
+        ba += "hello";
+        EXPECT_FALSE(ba.isEmpty());
+    }
+    
+    //ByteArray mid(size_t iPos, int iLength = -1) const
+    {
+        ByteArray ba(referenceString);
+        ByteArray ba2 = ba.mid(4, 5);
+        EXPECT_EQ(ba2.size(), 5);
+        EXPECT_STREQ(ba2.constData(), "quick");
+    }
+    
+    //int refCount() const
+    {
+        //already tested above...
+    }
+    
+    //void reserve(int)
+    {
+
+    }
+    
+    //void resize(int)
+    {
+        ByteArray ba;
+        ba.resize(12);
+        EXPECT_EQ(ba.size(), 12);
+    }
+    
+    //size_t size() const
+    {
+
+    }
     
 }
 
-// This
-//
 TEST(ByteArray, TrailingZero)
 {
     ByteArray ba(referenceString);
+    // create a char* twice as long as ba.
     char *pString = new char[ba.size()*2];
+    //fill it with garbage...
     memset(pString, 62, ba.size() * 2);
+    
+    // +1 on the memcpy to capture the trailing \0
     memcpy(pString, ba.constData(), ba.size()+1);
+    
+    // constructing a string from pString which has a \0 right at the end.
+    // should make a new string exactly the size of reference string.
+    EXPECT_TRUE( std::string(pString).size() == referenceString.size() );
     EXPECT_STREQ(pString, referenceString.c_str());
 }
 
@@ -235,7 +328,7 @@ TEST(ByteArray, ReadTest)
     EXPECT_STREQ(loremIpsum.c_str(), charRead);
 }
 
-TEST(ByteArray, WriteTest)
+TEST(ByteArray, WriteTest_usingOperatorBracket)
 {
     ByteArray ba(referenceString);
     ByteArray ba2(ba);
@@ -252,4 +345,17 @@ TEST(ByteArray, WriteTest)
     EXPECT_STREQ(ba.constData(), "THE quick brown fox jumps over the lazy dog.");
     EXPECT_TRUE(ba2.refCount() == 1);
     EXPECT_STREQ(ba2.constData(), referenceString.c_str());
+}
+
+TEST(ByteArray, WriteTest_usingDataPointer)
+{
+    // make a byte array big enough to contain the data
+    ByteArray ba;
+    ba.resize(referenceString.size());
+    
+    // read the data directly into the byte array
+    std::istringstream iss(referenceString);
+    iss.read(ba.data(), ba.size());
+    
+    EXPECT_STREQ(ba.constData(), referenceString.c_str());
 }
