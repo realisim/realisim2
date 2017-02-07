@@ -22,7 +22,7 @@ Viewer::~Viewer()
 void Viewer::initializeGL()
 {
     QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
-    f->glClearColor(0.2, 0.2, 0.2, 0.0);
+    f->glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
 }
 
 //-----------------------------------------------------------------------------
