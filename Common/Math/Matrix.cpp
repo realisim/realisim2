@@ -32,22 +32,22 @@ namespace
         B = Matrix4( mB[0], false );
     }
     
-    void printAugmentedMatrix( const double* iM )
-    {
-        std::ostringstream oss;
-        oss << std::setprecision(4);
-        int nbRows = 4, nbCols = 8;
-        for( int i = 0; i < nbRows; ++i )
-        {
-            for( int j = 0; j < nbCols; ++j )
-            {
-                if( j == 4 ) { oss << "| "; }
-                oss << (*(iM + i*nbCols + j)) << " ";
-            }
-            oss << "\n";
-        }
-        printf("%s\n", oss.str().c_str());
-    }
+//    void printAugmentedMatrix( const double* iM )
+//    {
+//        std::ostringstream oss;
+//        oss << std::setprecision(4);
+//        int nbRows = 4, nbCols = 8;
+//        for( int i = 0; i < nbRows; ++i )
+//        {
+//            for( int j = 0; j < nbCols; ++j )
+//            {
+//                if( j == 4 ) { oss << "| "; }
+//                oss << (*(iM + i*nbCols + j)) << " ";
+//            }
+//            oss << "\n";
+//        }
+//        printf("%s\n", oss.str().c_str());
+//    }
 }
 
 //------------------------------------------------------------------------------

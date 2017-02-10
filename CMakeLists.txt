@@ -52,6 +52,10 @@ if(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX /sdl")
 endif(MSVC)
 
+if(APPLE)
+    #enable most warning and treat them as error
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -Wno-long-long -pedantic")
+endif(APPLE)
 
 #------------------------------------------------------------------------------
 # add subdirectories
