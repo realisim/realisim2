@@ -271,11 +271,11 @@ Vector3 AudioInterface::getListenerUp() const
 
 //------------------------------------------------------------------------------
 int AudioInterface::getNumberOfBuffers() const
-{ return mBuffers.size(); }
+{ return (int)mBuffers.size(); }
 
 //------------------------------------------------------------------------------
 int AudioInterface::getNumberOfSources() const
-{ return mSources.size(); }
+{ return (int)mSources.size(); }
 
 //------------------------------------------------------------------------------
 double AudioInterface::getSourceConeInnerAngle(int iId) const
@@ -471,7 +471,7 @@ void AudioInterface::pauseSources( vector<int> iS )
         ALuint* s = new ALuint[ iS.size() ];
         for( size_t i = 0; i < iS.size(); ++i )
         { s[i] = (ALuint)iS[i]; }
-        alSourcePausev( iS.size(), s );
+        alSourcePausev( (ALsizei)iS.size(), s );
         delete[] s;
     }
 }
@@ -486,7 +486,7 @@ void AudioInterface::playSources( vector<int> iS )
         ALuint* s = new ALuint[ iS.size() ];
         for( size_t i = 0; i < iS.size(); ++i )
         { s[i] = (ALuint)iS[i]; }
-        alSourcePlayv( iS.size(), s );
+        alSourcePlayv( (ALsizei)iS.size(), s );
         delete[] s;
     }
 }
@@ -538,7 +538,7 @@ void AudioInterface::rewindSources( vector<int> iS )
         ALuint* s = new ALuint[ iS.size() ];
         for( size_t i = 0; i < iS.size(); ++i )
         { s[i] = (ALuint)iS[i]; }
-        alSourceRewindv( iS.size(), s );
+        alSourceRewindv( (ALsizei)iS.size(), s );
         delete[] s;
     }
 }
@@ -599,53 +599,53 @@ void AudioInterface::setAsVerbose( bool iV )
 
 //------------------------------------------------------------------------------
 void AudioInterface::setSourceConeInnerAngle( int iId, double iV )
-{ alSourcef( iId, AL_CONE_INNER_ANGLE, iV ); }
+{ alSourcef( iId, AL_CONE_INNER_ANGLE, (ALfloat)iV ); }
 
 //------------------------------------------------------------------------------
 void AudioInterface::setSourceConeOuterAngle( int iId, double iV )
-{ alSourcef( iId, AL_CONE_OUTER_ANGLE, iV ); }
+{ alSourcef( iId, AL_CONE_OUTER_ANGLE, (ALfloat)iV ); }
 
 //------------------------------------------------------------------------------
 void AudioInterface::setSourceConeOuterGain( int iId, double iV )
-{ alSourcef( iId, AL_CONE_OUTER_GAIN, iV ); }
+{ alSourcef( iId, AL_CONE_OUTER_GAIN, (ALfloat)iV ); }
 
 //------------------------------------------------------------------------------
 void AudioInterface::setSourceDirection( int iId, Math::Vector3 iV )
 {
     ALfloat d[3];
-    d[0] = iV.x(); d[1] = iV.y(); d[2] = iV.z();
+    d[0] = (ALfloat)iV.x(); d[1] = (ALfloat)iV.y(); d[2] = (ALfloat)iV.z();
     alSourcefv( iId, AL_DIRECTION, d );
 }
 
 //------------------------------------------------------------------------------
 void AudioInterface::setSourceGain( int iId, double iV )
-{ alSourcef( iId, AL_GAIN, iV ); }
+{ alSourcef( iId, AL_GAIN, (ALfloat)iV ); }
 
 //------------------------------------------------------------------------------
 void AudioInterface::setSourceGainBounds( int iId, double iMin, double iMax )
-{ alSourcef( iId, AL_MIN_GAIN, iMin ); alSourcef( iId, AL_MAX_GAIN, iMax ); }
+{ alSourcef( iId, AL_MIN_GAIN, (ALfloat)iMin ); alSourcef( iId, AL_MAX_GAIN, (ALfloat)iMax ); }
 
 //------------------------------------------------------------------------------
 void AudioInterface::setSourceOffsetInBytes( int iId, double iV )
-{ alSourcef( iId, AL_BYTE_OFFSET, iV ); }
+{ alSourcef( iId, AL_BYTE_OFFSET, (ALfloat)iV ); }
 
 //------------------------------------------------------------------------------
 void AudioInterface::setSourceOffsetInSamples( int iId, double iV )
-{ alSourcef( iId, AL_SAMPLE_OFFSET, iV ); }
+{ alSourcef( iId, AL_SAMPLE_OFFSET, (ALfloat)iV ); }
 
 //------------------------------------------------------------------------------
 void AudioInterface::setSourceOffsetInSeconds( int iId, double iV )
-{ alSourcef( iId, AL_SEC_OFFSET, iV ); }
+{ alSourcef( iId, AL_SEC_OFFSET, (ALfloat)iV ); }
 
 //------------------------------------------------------------------------------
 void AudioInterface::setSourcePitchShift( int iId, double iV )
-{ alSourcef( iId, AL_PITCH, iV ); }
+{ alSourcef( iId, AL_PITCH, (ALfloat)iV ); }
 
 //------------------------------------------------------------------------------
 void AudioInterface::setSourcePosition( int iId, Math::Vector3 iV )
 {
     ALfloat p[3];
-    p[0] = iV.x(); p[1] = iV.y(); p[2] = iV.z();
+    p[0] = (ALfloat)iV.x(); p[1] = (ALfloat)iV.y(); p[2] = (ALfloat)iV.z();
     alSourcefv( iId, AL_POSITION, p );
 }
 
@@ -653,7 +653,7 @@ void AudioInterface::setSourcePosition( int iId, Math::Vector3 iV )
 void AudioInterface::setSourceVelocity( int iId, Math::Vector3 iV )
 {
     ALfloat v[3];
-    v[0] = iV.x(); v[1] = iV.y(); v[2] = iV.z();
+    v[0] = (ALfloat)iV.x(); v[1] = (ALfloat)iV.y(); v[2] = (ALfloat)iV.z();
     alSourcefv( iId, AL_VELOCITY, v );
 }
 
@@ -673,28 +673,28 @@ void AudioInterface::stopSources( vector<int> iS )
         ALuint* s = new ALuint[ iS.size() ];
         for( size_t i = 0; i < iS.size(); ++i )
         { s[i] = (ALuint)iS[i]; }
-        alSourceStopv( iS.size(), s );
+        alSourceStopv( (ALsizei)iS.size(), s );
         delete[] s;
     }
 }
 
 //------------------------------------------------------------------------------
 void AudioInterface::setListenerGain( double iG )
-{ alListenerf( AL_GAIN, iG ); }
+{ alListenerf( AL_GAIN, (ALfloat)iG ); }
 
 //------------------------------------------------------------------------------
 void AudioInterface::setListenerPosition( Vector3 iP )
-{ alListener3f( AL_POSITION, iP.x(), iP.y(), iP.z() ); }
+{ alListener3f( AL_POSITION, (ALfloat)iP.x(), (ALfloat)iP.y(), (ALfloat)iP.z() ); }
 
 //------------------------------------------------------------------------------
 void AudioInterface::setListenerVelocity( Vector3 iV )
-{ alListener3f( AL_VELOCITY, iV.x(), iV.y(), iV.z() );}
+{ alListener3f( AL_VELOCITY, (ALfloat)iV.x(), (ALfloat)iV.y(), (ALfloat)iV.z() );}
 
 //------------------------------------------------------------------------------
 void AudioInterface::setListenerOrientation( Vector3 iL, Vector3 iU )
 { 
-    float o[6];
-    o[0] = iL.x(); o[1] = iL.y(); o[2] = iL.z();
-    o[3] = iU.x(); o[4] = iU.y(); o[5] = iU.z();
+    ALfloat o[6];
+    o[0] = (ALfloat)iL.x(); o[1] = (ALfloat)iL.y(); o[2] = (ALfloat)iL.z();
+    o[3] = (ALfloat)iU.x(); o[4] = (ALfloat)iU.y(); o[5] = (ALfloat)iU.z();
     alListenerfv( AL_ORIENTATION, o );
 }
