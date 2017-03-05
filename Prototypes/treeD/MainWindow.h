@@ -1,14 +1,10 @@
 /*
  */
 
-#ifndef MainDialog_hh
-#define MainDialog_hh
+#pragma once
 
-#include <QKeyEvent>
-#include <QColor>
 #include <QMainWindow>
 #include <QOpenGLWidget>
-#include <vector>
 
 
 class Viewer : public QOpenGLWidget
@@ -22,18 +18,18 @@ public:
 private:
 	virtual void initializeGL() override;
 	virtual void paintGL() override;
+    virtual void resizeGL(int, int) override;
 };
 
-
-class MainDialog : public QMainWindow
+//----------------------------------------------------
+class MainWindow : public QMainWindow
 {
 	Q_OBJECT
 public:
-	MainDialog();
-	~MainDialog() {};
+	MainWindow();
+	~MainWindow() = default;
 
 protected slots:
-    void testClicked();
 
 protected:
 	void updateUi();
@@ -45,4 +41,3 @@ protected:
     
 };
 
-#endif

@@ -1,34 +1,22 @@
 
-#include <iostream>
-#include "MainDialog.h"
+#include "MainWindow.h"
 #include <QApplication>
-#include <QIcon>
-
-
-int startMainApp()
-{
-    if ( qApp )
-    {
-        return qApp->exec();
-    }
-    else
-    {
-        printf("ERROR: unable to start RealEdit\n");
-        return 0;
-    }
-}
+#include <QSurfaceFormat>
 
 
 int main(int argc, char** argv)
 {
     QApplication app(argc, argv);
-    MainDialog m;
+    
+    QSurfaceFormat format;
+    format.setDepthBufferSize(24);
+    format.setStencilBufferSize(8);
+//    format.setVersion(3, 2);
+//    format.setProfile(QSurfaceFormat::CoreProfile);
+    QSurfaceFormat::setDefaultFormat(format);
+    
+    MainWindow m;
     m.show();
-	
-    if ( startMainApp() == 0 )
-    {
-        //we are closing!
-    }
-	
-    return 0;
+    
+    return app.exec();
 }

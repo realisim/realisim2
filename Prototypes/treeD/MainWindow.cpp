@@ -1,7 +1,7 @@
 /**/
 
 
-#include "MainDialog.h"
+#include "MainWindow.h"
 #include <QCoreApplication>
 #include <QHBoxLayout>
 #include <QMessageBox>
@@ -23,6 +23,8 @@ void Viewer::initializeGL()
 {
     QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
     f->glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
+    
+    f->glEnable(GL_FRAMEBUFFER_SRGB);
 }
 
 //-----------------------------------------------------------------------------
@@ -30,12 +32,19 @@ void Viewer::paintGL()
 {
     QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
     f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
 }
 
 //-----------------------------------------------------------------------------
-//--- MainDialog
+void Viewer::resizeGL(int iW, int iH)
+{
+    
+}
+
 //-----------------------------------------------------------------------------
-MainDialog::MainDialog() : QMainWindow(),
+//--- MainWindow
+//-----------------------------------------------------------------------------
+MainWindow::MainWindow() : QMainWindow(),
 mpViewer(0)
 {
 	resize(800, 600);
@@ -48,10 +57,6 @@ mpViewer(0)
 	{
 		QVBoxLayout *pControlLyt = new QVBoxLayout();
 		{
-            QPushButton* pBut = new QPushButton("test", pCentralWidget);
-            connect(pBut, SIGNAL(clicked()), this, SLOT(testClicked()));
-
-            pControlLyt->addWidget(pBut);
 		}		
 
 		mpViewer = new Viewer(pCentralWidget);
@@ -64,15 +69,7 @@ mpViewer(0)
 }
 
 //-----------------------------------------------------------------------------
-void MainDialog::testClicked()
-{
-    QMessageBox msgBox;
-    msgBox.setText("Testing slot mechanism...");
-    msgBox.exec();
-}
-
-//-----------------------------------------------------------------------------
-void MainDialog::updateUi()
+void MainWindow::updateUi()
 {
 	update();
 	mpViewer->update();
