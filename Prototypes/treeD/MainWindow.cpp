@@ -42,11 +42,14 @@ void Viewer::paintGL()
     QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
     f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    Realisim::TreeD::Camera c;
-    Realisim::TreeD::Projection p;
-    Realisim::TreeD::Viewport v;
+    using namespace Realisim::TreeD;
+    Camera c;
+    Projection p;
+    Viewport v;
     v.set(400, 400);
-    p.setOrthoProjection(100, 1, 1000.0);
+    //p.setOrthoProjection(100, 1, 1000.0);
+    p.setPerspectiveProjection(60, 16/9.0, 1, 1000.0);
+    //p.setProjection(-50, 50, -50, 50, 1, 1000, Projection::tPerspective);
     c.setViewport(v);
     c.setProjection(p, true);
     
@@ -55,7 +58,6 @@ void Viewer::paintGL()
     glLoadMatrixd(c.getProjectionMatrix().getDataPointer() );
     glMatrixMode(GL_MODELVIEW);
     glLoadMatrixd(c.getViewMatrix().getDataPointer());
-
     
     glDisable(GL_LIGHTING);
     glTranslated(0, 0, 0);

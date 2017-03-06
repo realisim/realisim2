@@ -22,7 +22,7 @@ Camera::Camera() :
 	mProjectionMatrix(),
 	mViewMatrix()
 {
-	set(Vector3(0, 0, 100),
+	set(Vector3(0, 0, -100),
 		Vector3(0, 0, 0),
 		Vector3(0, 1, 0));
     Projection p;

@@ -81,7 +81,7 @@ void Projection::setPerspectiveProjection(double iFov, double iRatio,
                                           double iNear, double iFar )
 {
     //tan(iFov) = halfHeight / iNear;
-    const double kDegreeToRadian = M_PI/18.0;
+    const double kDegreeToRadian = M_PI/180.0;
     double halfHeight = iNear * tan(iFov * 0.5 * kDegreeToRadian);
     //iRatio = halfWidth / halfHeight;
     double halfWidth = iRatio * halfHeight;

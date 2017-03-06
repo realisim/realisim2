@@ -10,7 +10,6 @@ namespace Realisim
 {
 namespace TreeD
 {
-    
     class Camera
     {
     public:
