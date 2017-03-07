@@ -93,6 +93,7 @@ namespace Math
         Matrix4( const Matrix4& ) = default;
         Matrix4& operator= (const Matrix4&) = default;
         Matrix4( const double*, bool iRowMajor = true );
+        Matrix4( Vector4, Vector4, Vector4, Vector4);
         Matrix4( Vector3 ); //translation
         Matrix4( Quaternion iQuatNormalized); //rotation -> dans Math/Interop -> Matrix4 toMatrix(const Quaternion)...
         //Matrix4( Vector3d, Quaterniond, Vector3d = Vector3d(1.0) ); //translation - rotation - scaling

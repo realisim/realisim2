@@ -1,7 +1,8 @@
 
 
 #include "3d/Camera.h"
-#include <iostream>
+#include <iomanip>
+#include <sstream>
 
 using namespace Realisim;
 using namespace Math;
@@ -11,18 +12,18 @@ using namespace TreeD;
 //--- Camera
 //-----------------------------------------------------------------------------
 Camera::Camera() :
-	mPos(),
-	mLat(),
-	mLook(),
+	mPosition(),
+	mLateralVector(),
+	mLookAt(),
 	mLookVector(),
-	mUp(),
+	mUpVector(),
 	mProjection(),
     mIsProjectionProportionalToViewport(false),
 	mViewport(),
 	mProjectionMatrix(),
 	mViewMatrix()
 {
-	set(Vector3(0, 0, -100),
+	set(Vector3(0, 0, 100),
 		Vector3(0, 0, 0),
 		Vector3(0, 1, 0));
     Projection p;
@@ -37,25 +38,27 @@ Camera::~Camera()
 //-----------------------------------------------------------------------------
 Vector3 Camera::cameraToWorld(const Vector3& iP) const
 {
-	return (getViewMatrix().inverse() * Vector4(iP, 1)).xyz();
+	return (viewMatrix().inverse() * Vector4(iP, 1)).xyz();
 }
+
 //-----------------------------------------------------------------------------
 Vector3 Camera::cameraDeltaToWorld(const Vector3& iV) const
 {
-	return (getViewMatrix().inverse() * Vector4(iV, 0)).xyz();
+	return (viewMatrix().inverse() * Vector4(iV, 0)).xyz();
 }
+
 //-----------------------------------------------------------------------------
 void Camera::computeProjection()
 {
-	const Projection& p = getProjection();
+	const Projection& p = projection();
 	if (isProjectionProportionalToViewport())
 	{
 		/*Quand on veut une projection proportionnelle, on commence par trouver
 		la hauteur (h) proportionnel a la largeur (w) courante. Ensuite, on
 		trouve le centre (cy) de la projection et y ajoute la moitié de h
 		de part et d'autre.*/
-		double w = getViewport().width() / p.width();
-		double h = getViewport().height() / w / 2.0;
+		double w = viewport().width() / p.width();
+		double h = viewport().height() / w / 2.0;
 		double cy = p.bottom() + p.height() / 2.0;
 		mProjection.setTop( cy + h );
 		mProjection.setBottom( cy - h );
@@ -106,40 +109,29 @@ void Camera::computeProjection()
 //-----------------------------------------------------------------------------
 void Camera::computeViewMatrix()
 {
-	Matrix4 viewMatrix(mLat, mUp, -mLookVector);
-	Matrix4 t(-getPos());
+	Matrix4 viewMatrix(mLateralVector, mUpVector, mLookVector);
+    
+    // Classically, we would put the translation in the matrix
+    // and then invert the matrix...
+    // Here we negate the translation, transpose the matrix (which is equivalent
+    // to an inversion in this particualar case). Then we multiply by the
+    // negated (inverse) translation.
+    //
+	Matrix4 t(-position());
 	mViewMatrix = viewMatrix.transpose() * t;
-}
-
-//-----------------------------------------------------------------------------
-const Vector3& Camera::getLookVector() const
-{
-	return mLookVector;
-}
-
-//-----------------------------------------------------------------------------
-const Matrix4& Camera::getViewMatrix() const
-{
-	return mViewMatrix;
-}
-
-//-----------------------------------------------------------------------------
-const Matrix4& Camera::getProjectionMatrix() const
-{
-	return mProjectionMatrix;
 }
 
 //-----------------------------------------------------------------------------
 /*retourne la largeur visible en unité GL*/
 double Camera::getVisibleHeight() const
 {
-	return mProjection.height() * 1.0 / getZoom();
+	return mProjection.height() * 1.0 / zoomFactor();
 }
 
 //-----------------------------------------------------------------------------
 double Camera::getVisibleWidth() const
 {
-	return mProjection.width() * 1.0 / getZoom();
+	return mProjection.width() * 1.0 / zoomFactor();
 }
 
 //-----------------------------------------------------------------------------
@@ -147,30 +139,46 @@ bool Camera::isProjectionProportionalToViewport() const
 { return mIsProjectionProportionalToViewport; }
 
 //-----------------------------------------------------------------------------
-void Camera::print() const
+const Vector3& Camera::lateralVector() const
+{ return mLateralVector; }
+
+//-----------------------------------------------------------------------------
+const Vector3& Camera::lookAt() const
+{ return mLookAt; }
+
+//-----------------------------------------------------------------------------
+const Vector3& Camera::lookVector() const
+{ return mLookVector; }
+
+//-----------------------------------------------------------------------------
+const Vector3& Camera::position() const
+{ return mPosition; }
+
+//-----------------------------------------------------------------------------
+const Projection& Camera::projection() const
+{return mProjection;}
+
+//-----------------------------------------------------------------------------
+const Matrix4& Camera::projectionMatrix() const
 {
-	using namespace std;
-	cout << "\n\nPos: " << mPos.x() << " " << mPos.y() << " " << mPos.z();
-	cout << "\nLook: " << mLook.x() << " " << mLook.y() << " " << mLook.z();
-	cout << "\nLat: " << mLat.x() << " " << mLat.y() << " " << mLat.z();
-	cout << "\nUp: " << mUp.x() << " " << mUp.y() << " " << mUp.z();
+    return mProjectionMatrix;
 }
 
 //-----------------------------------------------------------------------------
 void Camera::rotate(double iRad, Vector3 iAxe,
 	Vector3 iAxisPos /*= Vector3()*/)
 {
-	Vector3 eye = getPos(), center = getLook();
-	Vector3 up = getUp();
+	Vector3 eye = position(), lookat = lookAt();
+	Vector3 up = upVector();
 
 	Matrix4 r(iRad, iAxe);
 	Matrix4 t(iAxisPos);
 	r = t * r * t.inverse();
 
 	eye = (r * Vector4(eye, 1)).xyz();
-	center = (r * Vector4(center, 1)).xyz();
+	lookat = (r * Vector4(lookat, 1)).xyz();
 	up = (r * Vector4(up, 0)).xyz();
-	set(eye, center, up);
+	set(eye, lookat, up);
 }
 
 //-----------------------------------------------------------------------------
@@ -235,23 +243,23 @@ Vector3 Camera::screenDeltaToWorld(Vector2 iV, const Vector3& iP/*=Vector3(0.0)*
   vecteur Latéral sera calculé à partir du vecteur up et ensuite le up
   sera recalculé afin d'assurer une base normale.*/
 void Camera::set(const Vector3& iEye,
-	const Vector3& iCenter,
-	const Vector3& iUp)
+	const Vector3& iLookAt,
+	const Vector3& iUpVector)
 {
-	mPos = iEye;
-	mLook = iCenter;
-	mUp = iUp;
+	mPosition = iEye;
+	mLookAt = iLookAt;
+	mUpVector = iUpVector;
 
 	//on commence par calculer le vecteur laterale parce que le vecteur up
 	//final est dependant du vecteur lateral
-	mLookVector = getLook() - getPos();
+	mLookVector = position() - lookAt();
 	mLookVector.normalize();
 
-	mLat = mLookVector ^ mUp;
-	mLat.normalize();
+	mLateralVector = mUpVector ^ mLookVector;
+	mLateralVector.normalize();
 
-	mUp = mLat ^ mLookVector;
-	mUp.normalize();
+	mUpVector = mLookVector ^ mLateralVector;
+	mUpVector.normalize();
 
 	computeViewMatrix();
 }
@@ -264,31 +272,6 @@ void Camera::setProjection(const Projection& iP, bool iProportional)
     computeProjection();
 }
 
-////-----------------------------------------------------------------------------
-//void Camera::setViewportSize(int iWidth, int iHeight)
-//{
-//	//early out
-//	if (mViewport.getWidth() == iWidth && mViewport.getHeight() == iHeight)
-//	{ return; }
-//
-//	if (iWidth >= iHeight)
-//		mViewport.mOrientation = Viewport::oHorizontal;
-//	else
-//		mViewport.mOrientation = Viewport::oVertical;
-//
-//	//le coté le plus long montre la valeur mVisibleGLUnit unité GL
-//	/*la valeur minimale pour les cote est de 1, on evite que la taille soit 0*/
-//	mViewport.mShortSide = qMax(qMin(iWidth, iHeight), 1);
-//	mViewport.mLongSide = qMax(qMax(iWidth, iHeight), 1);
-//
-//	computeProjection();
-//}
-////-----------------------------------------------------------------------------
-//void Camera::setViewportSize(Vector2i iS)
-//{
-//	setViewportSize(iS.x(), iS.y());
-//}
-
 //-----------------------------------------------------------------------------
 void Camera::setViewport( const Viewport& iV)
 {
@@ -297,31 +280,65 @@ void Camera::setViewport( const Viewport& iV)
 }
 
 //-----------------------------------------------------------------------------
-void Camera::setZoom(double iZoom)
+void Camera::setZoomFactor(double iZoom)
 {
 	//mProjection.mZoomFactor = iZoom;
 	computeProjection();
 }
+
+//-----------------------------------------------------------------------------
+std::string Camera::toString() const
+{
+    using namespace std;
+    ostringstream oss;
+    
+    
+    oss << fixed << setprecision(3);
+    oss << "\n\nPos: " << mPosition.x() << " " << mPosition.y() << " " << mPosition.z();
+    oss << "\nLook: " << mLookAt.x() << " " << mLookAt.y() << " " << mLookAt.z();
+    oss << "\nLat: " << mLateralVector.x() << " " << mLateralVector.y() << " " << mLateralVector.z();
+    oss << "\nUp: " << mUpVector.x() << " " << mUpVector.y() << " " << mUpVector.z();
+    return oss.str();
+}
+
 //-----------------------------------------------------------------------------
 void Camera::translate(const Vector3& iV)
 {
-	Vector3 d = iV - getPos(); translate(d);
+	Vector3 d = iV - position(); translate(d);
 }
+
 //-----------------------------------------------------------------------------
 void Camera::translateTo(const Vector3& iV)
 {
-	set(mPos + iV, mLook + iV, getUp());
+	set(mPosition + iV, mLookAt + iV, upVector());
 }
+
+//-----------------------------------------------------------------------------
+const Vector3& Camera::upVector() const
+{ return mUpVector; }
+
+//-----------------------------------------------------------------------------
+const Matrix4& Camera::viewMatrix() const
+{
+    return mViewMatrix;
+}
+
+//-----------------------------------------------------------------------------
+const Viewport& Camera::viewport() const
+{return mViewport;}
+
 //-----------------------------------------------------------------------------
 Vector3 Camera::worldToCamera(const Vector3& iP) const
 {
-	return (getViewMatrix() * Vector4(iP, 1)).xyz();
+	return (viewMatrix() * Vector4(iP, 1)).xyz();
 }
+
 //-----------------------------------------------------------------------------
 Vector3 Camera::worldDeltaToCamera(const Vector3& iV) const
 {
-	return (getViewMatrix() * Vector4(iV, 0)).xyz();
+	return (viewMatrix() * Vector4(iV, 0)).xyz();
 }
+
 //-----------------------------------------------------------------------------
 Vector2 Camera::worldToSreen(const Vector3& iP) const // comme glToPixel
 {
@@ -348,6 +365,7 @@ Vector2 Camera::worldToSreen(const Vector3& iP) const // comme glToPixel
 //	return Vector2(x, y);
     return Vector2();
 }
+
 //-----------------------------------------------------------------------------
 Vector2 Camera::worldDeltaToSreen(const Vector3& iV) const
 {

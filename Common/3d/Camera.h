@@ -21,51 +21,44 @@ namespace TreeD
         
         Math::Vector3 cameraToWorld( const Math::Vector3& ) const;
         Math::Vector3 cameraDeltaToWorld( const Math::Vector3& ) const;
-        const Math::Vector3& getLat() const { return mLat; }
-        const Math::Vector3& getLook() const { return mLook; }
-        const Math::Vector3& getPos() const { return mPos; }
-        const Projection& getProjection() const {return mProjection;}
-        const Math::Matrix4& getProjectionMatrix() const;
-        const Math::Vector3& getUp() const { return mUp; }
-        const Math::Matrix4& getViewMatrix() const;
-double getVisibleHeight() const;
-double getVisibleWidth() const;
-        const Viewport& getViewport() const {return mViewport;}
-        const double getZoom() const { return mProjection.zoom(); }
         bool isProjectionProportionalToViewport() const;
-        //void popMatrices() const;
-        //void pushAndApplyMatrices() const;
+        const Math::Vector3& lateralVector() const;
+        const Math::Vector3& lookAt() const;
+        const Math::Vector3& position() const;
+        const Projection& projection() const;
+        const Math::Matrix4& projectionMatrix() const;
         void rotate( double, Math::Vector3, Math::Vector3 = Math::Vector3() );
         Math::Vector3 screenToWorld( Math::Vector2, const Math::Vector3& = Math::Vector3(0.0)) const;
         Math::Vector3 screenDeltaToWorld( Math::Vector2, const Math::Vector3& = Math::Vector3(0.0)) const;
         void set( const Math::Vector3&, const Math::Vector3&, const Math::Vector3& );
-        //void setOrthoProjection(double, double, double);
-        //void setOrthoProjection(double, double, double, double);
-        //void setPerspectiveProjection(double iFov, double iRatio, double iNear, double iFar, bool iProportional=true);
         void setProjection( const Projection&, bool iProportional );
-        //void setProjection(double, double, double, double, double, double, Projection::type, bool = true);
         void setViewport( const Viewport& );
-        void setZoom(double);
+        void setZoomFactor(double);
         void translate( const Math::Vector3& );
         void translateTo( const Math::Vector3& );
+        const Math::Vector3& upVector() const;
+        const Math::Matrix4& viewMatrix() const;
+double getVisibleHeight() const;
+double getVisibleWidth() const;
+        const Viewport& viewport() const;
         Math::Vector3 worldToCamera( const Math::Vector3& ) const;
         Math::Vector3 worldDeltaToCamera( const Math::Vector3& ) const;
         Math::Vector2 worldToSreen( const Math::Vector3& ) const;
         Math::Vector2 worldDeltaToSreen( const Math::Vector3& ) const;
+        const double zoomFactor() const { return mProjection.zoom(); }
         
-        //  QString toString() const;
-        void print() const; //std::string toString() const;
+        std::string toString() const;
         
     protected:  
         void computeProjection(); 
         void computeViewMatrix();
-        const Math::Vector3& getLookVector() const;
+        const Math::Vector3& lookVector() const;
         
-        Math::Vector3 mPos; //mEye
-        Math::Vector3 mLat; //mLateralVector
-        Math::Vector3 mLook;  //mLookAt
-        Math::Vector3 mLookVector; //mLookVector
-        Math::Vector3 mUp; //mUpVector
+        Math::Vector3 mPosition;
+        Math::Vector3 mLateralVector;
+        Math::Vector3 mLookAt;
+        Math::Vector3 mLookVector;
+        Math::Vector3 mUpVector;
         Projection mProjection;
         bool mIsProjectionProportionalToViewport;
         Viewport mViewport;

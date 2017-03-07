@@ -64,6 +64,19 @@ Matrix4::Matrix4( Vector3 iV )
     identity();
     m[3][0] = iV.x(); m[3][1] = iV.y(); m[3][2] = iV.z();
 }
+
+//------------------------------------------------------------------------------
+Matrix4::Matrix4( Vector4 iRow0, Vector4 iRow1, Vector4 iRow2, Vector4 iRow3)
+{
+    double mat[4][4] = {
+        { iRow0.x(), iRow0.y(), iRow0.z(), iRow0.w() },
+        { iRow1.x(), iRow1.y(), iRow1.z(), iRow1.w() },
+        { iRow2.x(), iRow2.y(), iRow2.z(), iRow2.w() },
+        { iRow3.x(), iRow3.y(), iRow3.z(), iRow3.w() }
+    };
+    import( mat[0], true );
+}
+
 //------------------------------------------------------------------------------
 // iQ must be normalized!
 //
