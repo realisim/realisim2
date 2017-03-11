@@ -26,7 +26,10 @@ QOpenGLWidget(ipParent),
 mCamera(),
 mCameraMode(cmRotateAround),
 mMouseX(-1),
-mMouseY(-1)
+mMouseY(-1),
+mMouseDeltaX(0),
+mMouseDeltaY(0),
+mMouseButtonPressed(false)
 {
 	setFocusPolicy(Qt::StrongFocus);
     setMouseTracking(true);
@@ -110,35 +113,56 @@ void Viewer::drawCube()
 }
 
 //-----------------------------------------------------------------------------
-void Viewer::initializeGL()
+void Viewer::handleUserInput()
 {
-    QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
-    f->glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
+    Camera c = camera();
     
-    f->glEnable(GL_FRAMEBUFFER_SRGB);
+    //--- mouse
+    const double kDegreeToRadian = M_PI/180.0;
+    const double f = 0.2;
+    if(mMouseButtonPressed)
+    {
+        switch (mCameraMode)
+        {
+            case cmRotateAround:
+            {
+                Vector3 rotateAboutPos(0.0);
+                Vector3 rotateAboutAxisX = c.cameraDeltaToWorld(Vector3(1.0, 0.0, 0.0));
+                
+                c.rotate( -mMouseDeltaY * kDegreeToRadian * f, rotateAboutAxisX,
+                         rotateAboutPos);
+                c.rotate( -mMouseDeltaX * kDegreeToRadian * f, Vector3(0.0, 1.0, 0.0),
+                         rotateAboutPos);
+            }break;
+                
+            case cmFree:
+            {
+                Vector3 rotateAboutPos = c.position();
+                Vector3 rotateAboutAxisX = c.cameraDeltaToWorld(Vector3(1.0, 0.0, 0.0));
+                
+                c.rotate( -mMouseDeltaY * kDegreeToRadian * f, rotateAboutAxisX,
+                         rotateAboutPos);
+                c.rotate( -mMouseDeltaX * kDegreeToRadian * f , Vector3(0.0, 1.0, 0.0),
+                         rotateAboutPos);
+            }break;
+                
+            default: break;
+        }
+    }
+    mMouseDeltaX = 0;
+    mMouseDeltaY = 0;
     
-    glShadeModel(GL_SMOOTH);
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-}
-
-//-----------------------------------------------------------------------------
-void Viewer::keyPressEvent(QKeyEvent* ipE)
-{
+    //--- keyboard
     const double inc = 3.0;
     
     int dx = 0;
     int dy = 0;
-    switch (ipE->key()) {
-        case Qt::Key_A: dx = -inc; break;
-        case Qt::Key_D: dx = inc; break;
-        case Qt::Key_S: dy = -inc; break;
-        case Qt::Key_W: dy = inc; break;
-            
-        default: break;
-    }
     
-    Camera c = camera();
+    if( mKeyboard[Qt::Key_A] ) { dx = -inc; }
+    if( mKeyboard[Qt::Key_D] ) { dx = inc; }
+    if( mKeyboard[Qt::Key_S] ) { dy = -inc; }
+    if( mKeyboard[Qt::Key_W] ) { dy = inc; }
+    
     switch (mCameraMode)
     {
         case cmRotateAround:
@@ -163,55 +187,43 @@ void Viewer::keyPressEvent(QKeyEvent* ipE)
 }
 
 //-----------------------------------------------------------------------------
+void Viewer::initializeGL()
+{
+    QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
+    f->glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
+    
+    f->glEnable(GL_FRAMEBUFFER_SRGB);
+    
+    glShadeModel(GL_SMOOTH);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+}
+
+//-----------------------------------------------------------------------------
+void Viewer::keyPressEvent(QKeyEvent* ipE)
+{
+    mKeyboard[ipE->key()] = true;
+}
+
+//-----------------------------------------------------------------------------
+void Viewer::keyReleaseEvent(QKeyEvent* ipE)
+{
+    mKeyboard[ipE->key()] = false;
+}
+
+//-----------------------------------------------------------------------------
 void Viewer::mouseMoveEvent(QMouseEvent* ipE)
 {
-    const double kDegreeToRadian = M_PI/180.0;
-    
-    
-    int dx = 0, dy = 0;
+    mMouseButtonPressed = ipE->buttons() & Qt::LeftButton;
     
     if(mMouseX != -1)
     {
-        dx = ipE->x() - mMouseX;
-        dy = ipE->y() - mMouseY;
+        mMouseDeltaX = ipE->x() - mMouseX;
+        mMouseDeltaY = ipE->y() - mMouseY;
     }
+    
     mMouseX = ipE->x();
     mMouseY = ipE->y();
-    
-    if(ipE->buttons() & Qt::LeftButton)
-    {
-        Camera c = camera();
-        
-        switch (mCameraMode)
-        {
-            case cmRotateAround:
-            {
-                Vector3 rotateAboutPos(0.0);
-                Vector3 rotateAboutAxisX = c.cameraDeltaToWorld(Vector3(1.0, 0.0, 0.0));
-                
-                c.rotate( -dy * kDegreeToRadian, rotateAboutAxisX,
-                         rotateAboutPos);
-                c.rotate( -dx * kDegreeToRadian, Vector3(0.0, 1.0, 0.0),
-                         rotateAboutPos);
-            }break;
-        
-            case cmFree:
-            {
-                Vector3 rotateAboutPos = c.position();
-                Vector3 rotateAboutAxisX = c.cameraDeltaToWorld(Vector3(1.0, 0.0, 0.0));
-                
-                c.rotate( -dy * kDegreeToRadian, rotateAboutAxisX,
-                         rotateAboutPos);
-                c.rotate( -dx * kDegreeToRadian, Vector3(0.0, 1.0, 0.0),
-                         rotateAboutPos);
-            }break;
-                
-            default: break;
-        }
-        
-        setCamera(c);
-        
-    }
 }
 
 //-----------------------------------------------------------------------------
@@ -257,7 +269,8 @@ void Viewer::setCamera(Camera& iC)
 //--- MainWindow
 //-----------------------------------------------------------------------------
 MainWindow::MainWindow() : QMainWindow(),
-mpViewer(0)
+mpViewer(0),
+mTimerId(0)
 {
 	resize(800, 600);
 
@@ -296,6 +309,7 @@ mpViewer(0)
 		pLyt->addWidget(mpViewer, 4);
 	}
     
+    mTimerId = startTimer(0);
 	updateUi();
 }
 
@@ -317,6 +331,16 @@ void MainWindow::cameraFreeClicked()
 {
     mpViewer->mCameraMode = Viewer::cmFree;
     updateUi();
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::timerEvent(QTimerEvent *ipE)
+{
+    if(ipE->timerId() == mTimerId)
+    {
+        mpViewer->handleUserInput();
+        mpViewer->update();
+    }
 }
 
 //-----------------------------------------------------------------------------

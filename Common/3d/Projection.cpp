@@ -80,10 +80,9 @@ void Projection::setOrthoProjection(double iVisibleGlUnitX, double iVisibleGlUni
 void Projection::setPerspectiveProjection(double iFov, double iRatio,
                                           double iNear, double iFar )
 {
-    //tan(iFov) = halfHeight / iNear;
     const double kDegreeToRadian = M_PI/180.0;
     double halfHeight = iNear * tan(iFov * 0.5 * kDegreeToRadian);
-    //iRatio = halfWidth / halfHeight;
+
     double halfWidth = iRatio * halfHeight;
     setProjection(-halfWidth, halfWidth, -halfHeight, halfHeight,
                   iNear, iFar, Projection::tPerspective );

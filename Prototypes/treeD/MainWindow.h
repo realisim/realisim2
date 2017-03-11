@@ -4,10 +4,12 @@
 #pragma once
 
 #include "3d/Camera.h"
+#include <map>
 #include <QMainWindow>
 #include <QMouseEvent>
-#include <QRadioButton>
 #include <QOpenGLWidget>
+#include <QRadioButton>
+#include <QTimerEvent>
 
 
 class Viewer : public QOpenGLWidget
@@ -25,8 +27,10 @@ protected:
     enum CameraMode{cmRotateAround, cmFree};
     
     void drawCube();
+    void handleUserInput();
 	virtual void initializeGL() override;
     virtual void keyPressEvent(QKeyEvent*) override;
+    virtual void keyReleaseEvent(QKeyEvent*) override;
     virtual void mouseMoveEvent(QMouseEvent*) override;
 	virtual void paintGL() override;
     virtual void resizeGL(int, int) override;
@@ -35,8 +39,12 @@ protected:
     CameraMode mCameraMode;
     
     //--- mouse info
+    std::map<int, bool> mKeyboard;
     int mMouseX;
     int mMouseY;
+    int mMouseDeltaX;
+    int mMouseDeltaY;
+    bool mMouseButtonPressed;
 };
 
 //----------------------------------------------------
@@ -53,6 +61,7 @@ protected slots:
 
 protected:
     
+    virtual void timerEvent(QTimerEvent*) override;
 	void updateUi();
 
 	//--- ui
@@ -61,6 +70,6 @@ protected:
     QRadioButton *mpCameraFree;
 
 	//--- data
-    
+    int mTimerId;
 };
 
