@@ -27,10 +27,10 @@ namespace TreeD
         const Math::Vector3& position() const;
         const Projection& projection() const;
         const Math::Matrix4& projectionMatrix() const;
-        void rotate( double, Math::Vector3, Math::Vector3 = Math::Vector3() );
+        void rotate( double iRad, Math::Vector3 iAxis, Math::Vector3 iAxisPos = Math::Vector3() );
         Math::Vector3 screenToWorld( Math::Vector2, const Math::Vector3& = Math::Vector3(0.0)) const;
         Math::Vector3 screenDeltaToWorld( Math::Vector2, const Math::Vector3& = Math::Vector3(0.0)) const;
-        void set( const Math::Vector3&, const Math::Vector3&, const Math::Vector3& );
+        void set( const Math::Vector3& iEye, const Math::Vector3& iLookAt, const Math::Vector3& iUp );
         void setProjection( const Projection&, bool iProportional );
         void setViewport( const Viewport& );
         void setZoomFactor(double);

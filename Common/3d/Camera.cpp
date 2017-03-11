@@ -165,13 +165,17 @@ const Matrix4& Camera::projectionMatrix() const
 }
 
 //-----------------------------------------------------------------------------
-void Camera::rotate(double iRad, Vector3 iAxe,
+// Rotates the camera by iRad around axis iAxis positionned
+// at iAxisPos.
+// Axis and position are in world coordinates.
+//
+void Camera::rotate(double iRad, Vector3 iAxis,
 	Vector3 iAxisPos /*= Vector3()*/)
 {
 	Vector3 eye = position(), lookat = lookAt();
 	Vector3 up = upVector();
 
-	Matrix4 r(iRad, iAxe);
+	Matrix4 r(iRad, iAxis);
 	Matrix4 t(iAxisPos);
 	r = t * r * t.inverse();
 
@@ -304,13 +308,14 @@ std::string Camera::toString() const
 //-----------------------------------------------------------------------------
 void Camera::translate(const Vector3& iV)
 {
-	Vector3 d = iV - position(); translate(d);
+    set(mPosition + iV, mLookAt + iV, upVector());
 }
 
 //-----------------------------------------------------------------------------
 void Camera::translateTo(const Vector3& iV)
 {
-	set(mPosition + iV, mLookAt + iV, upVector());
+	Vector3 d = iV - position();
+    translate(d);
 }
 
 //-----------------------------------------------------------------------------

@@ -9,6 +9,7 @@
 #include <cmath>
 #include "MainWindow.h"
 #include <QCoreApplication>
+#include <QGroupBox>
 #include <QHBoxLayout>
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
@@ -18,22 +19,27 @@ using namespace Realisim;
 using namespace Math;
 using namespace TreeD;
 
+const Vector3 gDefaultCameraPos(0.0, 0.0, -300);
+
 Viewer::Viewer(QWidget* ipParent /*=0*/) :
 QOpenGLWidget(ipParent),
-mCamera()
+mCamera(),
+mCameraMode(cmRotateAround),
+mMouseX(-1),
+mMouseY(-1)
 {
 	setFocusPolicy(Qt::StrongFocus);
-    //setMouseTracking(true);
+    setMouseTracking(true);
     
     Projection p;
     Viewport v;
     v.set(400, 400);
     //p.setOrthoProjection(100, 1, 1000.0);
-    p.setPerspectiveProjection(65, 16/9.0, 1, 1000.0);
+    p.setPerspectiveProjection(32, 16/9.0, 1, 1000.0);
     //p.setProjection(-50, 50, -50, 50, 1, 1000, Projection::tPerspective);
     mCamera.setViewport(v);
     mCamera.setProjection(p, true);
-    mCamera.set(Vector3(0.0, 0.0, 100),
+    mCamera.set(gDefaultCameraPos,
                 Vector3(0.0, 0.0, 0.0),
                 Vector3(0.0, 1.0, 0.0) );
 }
@@ -117,12 +123,95 @@ void Viewer::initializeGL()
 }
 
 //-----------------------------------------------------------------------------
+void Viewer::keyPressEvent(QKeyEvent* ipE)
+{
+    const double inc = 3.0;
+    
+    int dx = 0;
+    int dy = 0;
+    switch (ipE->key()) {
+        case Qt::Key_A: dx = -inc; break;
+        case Qt::Key_D: dx = inc; break;
+        case Qt::Key_S: dy = -inc; break;
+        case Qt::Key_W: dy = inc; break;
+            
+        default: break;
+    }
+    
+    Camera c = camera();
+    switch (mCameraMode)
+    {
+        case cmRotateAround:
+        {
+            Vector3 z = c.cameraDeltaToWorld(Vector3(0, 0, 1));
+            
+            c.translate(-z * dy);
+        } break;
+            
+        case cmFree:
+        {
+            Vector3 z = c.cameraDeltaToWorld(Vector3(0, 0, 1));
+            Vector3 x = c.cameraDeltaToWorld(Vector3(1, 0, 0));
+            
+            c.translate(-z * dy + x * dx);
+        } break;
+            
+        default:
+            break;
+    }
+    setCamera(c);
+}
+
+//-----------------------------------------------------------------------------
 void Viewer::mouseMoveEvent(QMouseEvent* ipE)
 {
-    Camera c = camera();
     const double kDegreeToRadian = M_PI/180.0;
-    c.rotate( 2 * kDegreeToRadian, Vector3(1.0, 1.0, 1.0));
-    setCamera(c);
+    
+    
+    int dx = 0, dy = 0;
+    
+    if(mMouseX != -1)
+    {
+        dx = ipE->x() - mMouseX;
+        dy = ipE->y() - mMouseY;
+    }
+    mMouseX = ipE->x();
+    mMouseY = ipE->y();
+    
+    if(ipE->buttons() & Qt::LeftButton)
+    {
+        Camera c = camera();
+        
+        switch (mCameraMode)
+        {
+            case cmRotateAround:
+            {
+                Vector3 rotateAboutPos(0.0);
+                Vector3 rotateAboutAxisX = c.cameraDeltaToWorld(Vector3(1.0, 0.0, 0.0));
+                
+                c.rotate( -dy * kDegreeToRadian, rotateAboutAxisX,
+                         rotateAboutPos);
+                c.rotate( -dx * kDegreeToRadian, Vector3(0.0, 1.0, 0.0),
+                         rotateAboutPos);
+            }break;
+        
+            case cmFree:
+            {
+                Vector3 rotateAboutPos = c.position();
+                Vector3 rotateAboutAxisX = c.cameraDeltaToWorld(Vector3(1.0, 0.0, 0.0));
+                
+                c.rotate( -dy * kDegreeToRadian, rotateAboutAxisX,
+                         rotateAboutPos);
+                c.rotate( -dx * kDegreeToRadian, Vector3(0.0, 1.0, 0.0),
+                         rotateAboutPos);
+            }break;
+                
+            default: break;
+        }
+        
+        setCamera(c);
+        
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -143,8 +232,6 @@ void Viewer::paintGL()
             
             glPopMatrix();
         }
-    
-    
 }
 
 //-----------------------------------------------------------------------------
@@ -182,7 +269,26 @@ mpViewer(0)
 	{
 		QVBoxLayout *pControlLyt = new QVBoxLayout();
 		{
-		}		
+            QGroupBox* pCameraModeGrp = new QGroupBox("Camera Mode", pCentralWidget);
+            {
+                QHBoxLayout *camModeLyt = new QHBoxLayout(pCameraModeGrp);
+                {
+                    mpCameraRotateAbout = new QRadioButton("Rotate about", pCameraModeGrp);
+                    connect(mpCameraRotateAbout, SIGNAL(clicked()),
+                            this, SLOT(cameraRotateAboutClicked()));
+                    
+                    mpCameraFree = new QRadioButton("Free", pCameraModeGrp);
+                    connect(mpCameraFree, SIGNAL(clicked()),
+                            this, SLOT(cameraFreeClicked()));
+                }
+                camModeLyt->addWidget(mpCameraRotateAbout);
+                camModeLyt->addWidget(mpCameraFree);
+            }
+            
+            pControlLyt->addStretch(1);
+            pControlLyt->addWidget(pCameraModeGrp);
+		}
+        
 
 		mpViewer = new Viewer(pCentralWidget);
 
@@ -194,8 +300,40 @@ mpViewer(0)
 }
 
 //-----------------------------------------------------------------------------
+void MainWindow::cameraRotateAboutClicked()
+{
+    Camera c = mpViewer->camera();
+    c.set( gDefaultCameraPos,
+          Vector3(0, 0, 0),
+          Vector3(0, 1, 0) );
+    mpViewer->setCamera(c);
+    
+    mpViewer->mCameraMode = Viewer::cmRotateAround;
+    updateUi();
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::cameraFreeClicked()
+{
+    mpViewer->mCameraMode = Viewer::cmFree;
+    updateUi();
+}
+
+//-----------------------------------------------------------------------------
 void MainWindow::updateUi()
 {
+    switch (mpViewer->mCameraMode)
+    {
+        case Viewer::cmRotateAround:
+            mpCameraRotateAbout->setChecked(true); break;
+        
+        case Viewer::cmFree:
+            mpCameraFree->setChecked(true); break;
+            
+        default:
+            break;
+    }
+    
 	update();
 	mpViewer->update();
 }
