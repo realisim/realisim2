@@ -14,12 +14,13 @@
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
 #include <QPushButton>
+#include <QString>
 
 using namespace Realisim;
 using namespace Math;
 using namespace TreeD;
 
-const Vector3 gDefaultCameraPos(0.0, 0.0, -300);
+Camera gDefaultCamera;
 
 Viewer::Viewer(QWidget* ipParent /*=0*/) :
 QOpenGLWidget(ipParent),
@@ -40,11 +41,13 @@ mMouseButtonPressed(false)
     //p.setOrthoProjection(100, 1, 1000.0);
     p.setPerspectiveProjection(32, 16/9.0, 1, 1000.0);
     //p.setProjection(-50, 50, -50, 50, 1, 1000, Projection::tPerspective);
-    mCamera.setViewport(v);
-    mCamera.setProjection(p, true);
-    mCamera.set(gDefaultCameraPos,
+    
+    gDefaultCamera.setViewport(v);
+    gDefaultCamera.setProjection(p, true);
+    gDefaultCamera.set(Vector3(0.0, 0.0, 300),
                 Vector3(0.0, 0.0, 0.0),
                 Vector3(0.0, 1.0, 0.0) );
+    mCamera = gDefaultCamera;
 }
 
 Viewer::~Viewer()
@@ -227,11 +230,26 @@ void Viewer::mouseMoveEvent(QMouseEvent* ipE)
 }
 
 //-----------------------------------------------------------------------------
+void Viewer::mousePressEvent(QMouseEvent* ipE)
+{
+    Vector2 pixel(ipE->x(), ipE->y());
+    
+//    Vector3 screenToWorld = camera().screenToWorld(pixel, Vector3(0.0));
+//    Vector2 worldToScreen = camera().worldToScreen(Vector3(-30, 0, 0) );
+//    
+//    printf("screenToWorld: %s\n", screenToWorld.toString().c_str());
+//    printf("worldToScreen: %s\n", worldToScreen.toString().c_str());
+}
+
+//-----------------------------------------------------------------------------
 void Viewer::paintGL()
 {
     QOpenGLFunctions *f = QOpenGLContext::currentContext()->functions();
     f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
+    glMatrixMode(GL_PROJECTION);
+    glLoadMatrixd(mCamera.projectionMatrix().getDataPointer() );
+    glMatrixMode(GL_MODELVIEW);
     glLoadMatrixd(mCamera.viewMatrix().getDataPointer());
     
     for(int i = -2; i <= 2; ++i)
@@ -252,10 +270,6 @@ void Viewer::resizeGL(int iW, int iH)
     Viewport v;
     v.set(iW, iH);
     mCamera.setViewport(v);
-    
-    glMatrixMode(GL_PROJECTION);
-    glLoadMatrixd(mCamera.projectionMatrix().getDataPointer() );
-    glMatrixMode(GL_MODELVIEW);
 }
 
 //-----------------------------------------------------------------------------
@@ -282,6 +296,22 @@ mTimerId(0)
 	{
 		QVBoxLayout *pControlLyt = new QVBoxLayout();
 		{
+            QGroupBox* pCameraProjGrp = new QGroupBox("Camera Projection", pCentralWidget);
+            {
+                QHBoxLayout *camProjLyt = new QHBoxLayout(pCameraProjGrp);
+                {
+                    mpOrthoProj = new QRadioButton("Ortho", pCameraProjGrp);
+                    connect(mpOrthoProj, SIGNAL(clicked()),
+                            this, SLOT(cameraProjOrthoClicked()));
+                    
+                    mpPerspectiveProj = new QRadioButton("Perspective", pCameraProjGrp);
+                    connect(mpPerspectiveProj, SIGNAL(clicked()),
+                            this, SLOT(cameraProjPerspectiveClicked()));
+                }
+                camProjLyt->addWidget(mpOrthoProj);
+                camProjLyt->addWidget(mpPerspectiveProj);
+            }
+            
             QGroupBox* pCameraModeGrp = new QGroupBox("Camera Mode", pCentralWidget);
             {
                 QHBoxLayout *camModeLyt = new QHBoxLayout(pCameraModeGrp);
@@ -298,8 +328,28 @@ mTimerId(0)
                 camModeLyt->addWidget(mpCameraFree);
             }
             
-            pControlLyt->addStretch(1);
+            QHBoxLayout *pZoomLayout = new QHBoxLayout();
+            {
+                QLabel *pl = new QLabel("zoom: ", pCentralWidget);
+                mpZoomFactor = new QSlider(pCentralWidget);
+                mpZoomFactor->setOrientation(Qt::Horizontal);
+                mpZoomFactor->setMinimum(1);
+                mpZoomFactor->setMaximum(100);
+                mpZoomFactor->setValue(10);
+                connect(mpZoomFactor, SIGNAL(valueChanged(int)),
+                        this, SLOT(zoomFactorChanged(int)));
+                
+                mpZoomFactorLabel = new QLabel("1.0", pCentralWidget);
+                
+                pZoomLayout->addWidget(pl);
+                pZoomLayout->addWidget(mpZoomFactor);
+                pZoomLayout->addWidget(mpZoomFactorLabel);
+            }
+            
+            pControlLyt->addWidget(pCameraProjGrp);
             pControlLyt->addWidget(pCameraModeGrp);
+            pControlLyt->addLayout(pZoomLayout);
+            pControlLyt->addStretch(1);
 		}
         
 
@@ -314,13 +364,35 @@ mTimerId(0)
 }
 
 //-----------------------------------------------------------------------------
-void MainWindow::cameraRotateAboutClicked()
+void MainWindow::cameraProjOrthoClicked()
 {
     Camera c = mpViewer->camera();
-    c.set( gDefaultCameraPos,
-          Vector3(0, 0, 0),
-          Vector3(0, 1, 0) );
+    Projection p = c.projection();
+    p.setProjection(-100, 100,
+                    -100, 100,
+                    p.near(), p.far(),
+                    Projection::tOrthogonal);
+    c.setProjection(p, true);
     mpViewer->setCamera(c);
+    
+    updateUi();
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::cameraProjPerspectiveClicked()
+{
+    Camera c = mpViewer->camera();
+    Projection p = gDefaultCamera.projection();
+    c.setProjection(p, true);
+    mpViewer->setCamera(c);
+
+    updateUi();
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::cameraRotateAboutClicked()
+{
+    mpViewer->setCamera(gDefaultCamera);
     
     mpViewer->mCameraMode = Viewer::cmRotateAround;
     updateUi();
@@ -346,6 +418,19 @@ void MainWindow::timerEvent(QTimerEvent *ipE)
 //-----------------------------------------------------------------------------
 void MainWindow::updateUi()
 {
+    switch (mpViewer->camera().projection().type()) {
+        case Projection::tOrthogonal:
+            mpOrthoProj->setChecked(true);
+            break;
+        
+        case Projection::tPerspective:
+            mpPerspectiveProj->setChecked(true);
+            break;
+            
+        default:
+            break;
+    }
+    
     switch (mpViewer->mCameraMode)
     {
         case Viewer::cmRotateAround:
@@ -358,6 +443,21 @@ void MainWindow::updateUi()
             break;
     }
     
+    //--- zoom
+    const double z = mpViewer->camera().zoomFactor();
+    mpZoomFactor->setValue( z * 10 );
+    mpZoomFactorLabel->setText( QString::number(mpViewer->camera().zoomFactor(), 'f', 1) );
 	update();
 	mpViewer->update();
+}
+
+//-----------------------------------------------------------------------------
+void MainWindow::zoomFactorChanged(int iV)
+{
+    const double maxZoom = 10.0;
+    const double t = iV / 100.0;
+    Camera c = mpViewer->camera();
+    c.setZoomFactor(t*maxZoom);
+    mpViewer->setCamera(c);
+    updateUi();
 }

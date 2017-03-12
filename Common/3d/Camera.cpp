@@ -18,6 +18,7 @@ Camera::Camera() :
 	mLookVector(),
 	mUpVector(),
 	mProjection(),
+    mZoomFactor(1.0),
     mIsProjectionProportionalToViewport(false),
 	mViewport(),
 	mProjectionMatrix(),
@@ -64,12 +65,12 @@ void Camera::computeProjection()
 		mProjection.setBottom( cy - h );
 	}
 
-	/*Afin d'appliquer correctement le zoom, qui est donné par getVisibleWidth
-	et getVisibleHeight, on doit trouver le centre de la projection
+	/*Afin d'appliquer correctement le zoom, qui est donné par projectionWidthWithoutZoom
+    on doit trouver le centre de la projection
 	originale (sans zoom). Ensuite on détermine la taille du rectangle
 	de la projection avec le zoom a partir de ce centre.*/
-	double halfVisibleWidth = getVisibleWidth() / 2.0;
-	double halfVisibleHeigh = getVisibleHeight() / 2.0;
+	double halfVisibleWidth = projectionWidthWithoutZoom() / 2.0;
+	double halfVisibleHeigh = projectionHeightWithoutZoom() / 2.0;
     double cx = 0.0, cy = 0.0, l, r, b, t;
 	cx = p.left() + p.width() / 2.0;
 	cy = p.bottom() + p.height() / 2.0;
@@ -122,19 +123,6 @@ void Camera::computeViewMatrix()
 }
 
 //-----------------------------------------------------------------------------
-/*retourne la largeur visible en unité GL*/
-double Camera::getVisibleHeight() const
-{
-	return mProjection.height() * 1.0 / zoomFactor();
-}
-
-//-----------------------------------------------------------------------------
-double Camera::getVisibleWidth() const
-{
-	return mProjection.width() * 1.0 / zoomFactor();
-}
-
-//-----------------------------------------------------------------------------
 bool Camera::isProjectionProportionalToViewport() const
 { return mIsProjectionProportionalToViewport; }
 
@@ -159,9 +147,32 @@ const Projection& Camera::projection() const
 {return mProjection;}
 
 //-----------------------------------------------------------------------------
+/*retourne la largeur visible en unité GL de la projection. En
+ gros, on enleve le zoom qui a été appliqué sur la projection */
+double Camera::projectionHeightWithoutZoom() const
+{
+    return mProjection.height() * 1.0 / zoomFactor();
+}
+
+//-----------------------------------------------------------------------------
 const Matrix4& Camera::projectionMatrix() const
 {
     return mProjectionMatrix;
+}
+
+//-----------------------------------------------------------------------------
+// Projects the 3d world coordinate to ndc
+//
+Vector3 Camera::projectToNdc(const Math::Vector3& iWorld) const
+{
+    Vector4 ndc = projectionMatrix() * viewMatrix() * Vector4(iWorld, 1);
+    return ndc.xyz() / ndc.w();
+}
+
+//-----------------------------------------------------------------------------
+double Camera::projectionWidthWithoutZoom() const
+{
+    return mProjection.width() * 1.0 / zoomFactor();
 }
 
 //-----------------------------------------------------------------------------
@@ -186,59 +197,38 @@ void Camera::rotate(double iRad, Vector3 iAxis,
 }
 
 //-----------------------------------------------------------------------------
-/*Convertie une position pixel a l'écran en coordonnée GL.
-  Les paramètres sont en pixels. Puisque le systeme de fenetrage est Qt,
-  contrairement a openGL, l'origine (0, 0) est dans le coin supérieur gauche.
-  Ainsi la coordonné y est inversée. Le point converti sera en  coordonné
-  globale. iPoint doit être en coordonné locale de la camera. Ce point
-  représente la position d'un plan, parallele à la camera. Le Vector3 retourné
-  par cette fonction est donc l'intersection de la projection du point iX, iY
-  avec ce plan. La projection de caméra est tenue en compte.
-  Note: cette methode applique les projections de projection et de modelview
-	afin de faire les calculs.*/
-Vector3 Camera::screenToWorld(Vector2 iP, const Vector3& iR /*=Vector3(0.0)*/) const
+// Convert a screen coordinate in pixel to a 3d world coordinate.
+// In order to have a decent z value, a reference point must be passed in. The
+// reference point represents a point on a perpendicular plane to the camera. The
+// The returned 3d value will be the intersection of that plane and a line passing
+// by the pixel coordinate.
+//
+// Note:    since Qt has (0,0) at top-left of the window and openGL has (0,0) at
+//          bottom-left, we invert the y axis. This should probably be parametrized...
+Vector3 Camera::screenToWorld(const Vector2& iPixel, const Vector3& iRerefence) const
 {
-//	double x = iP.x();
-//	//l'axe de Qt est inversé par rapport a openGL
-//	double y = getViewport().getHeight() - iP.y();
-//
-//	pushAndApplyMatrices();
-//
-//	double modelView[16];
-//	glGetDoublev(GL_MODELVIEW_MATRIX, modelView);
-//	double projection[16];
-//	glGetDoublev(GL_PROJECTION_MATRIX, projection);
-//	int viewport[4];
-//	glGetIntegerv(GL_VIEWPORT, viewport);
-//
-//	double winx, winy, winz, p0x, p0y, p0z;
-//
-//	/*A partir du Vector3 qui represente le point sur le plan de travail
-//	  perpendiculaire a la camera, on le projete a l'écran. Ce qui nous
-//	  intéresse c'est la coordonnée en z normalisé qui nous donne la profondeur
-//	  de ce Vector3 dans le zBuffer qui sera utilisé pour trouver le point
-//	  en coordonnée GL*/
-//	gluProject(iR.x(), iR.y(), iR.z(),
-//		modelView, projection, viewport,
-//		&winx, &winy, &winz);
-//
-//	/*On projete le point d'écran iX, iY, winz qui nous donnera un point (p0)
-//	  qui correspond au point d'écran (iX, iY) a la profondeur du plan de
-//	  travail. */
-//	gluUnProject(x, y, winz,
-//		modelView, projection, viewport,
-//		&p0x, &p0y, &p0z);
-//
-//	popMatrices();
-//	return Vector3(p0x, p0y, p0z);
-    return Vector3();
+	const double pixelX = iPixel.x();
+	//Invect y axis since Qt and openGL are inverted on y...
+	const double pixelY = viewport().height() - iPixel.y();
+    
+    Vector3 referenceNdc = projectToNdc(iRerefence);
+    
+    const Viewport& v = viewport();
+    Vector3 pixelNdc(pixelX / v.width() * 2.0 - 1,
+                     pixelY / v.height() * 2.0 - 1,
+                     referenceNdc.z() );
+    
+    // unproject the pixel ndc to get world coordinate
+    return unprojectFromNdc(pixelNdc);
 }
 
 //-----------------------------------------------------------------------------
-Vector3 Camera::screenDeltaToWorld(Vector2 iV, const Vector3& iP/*=Vector3(0.0)*/) const
+// see screenToWorld
+//
+Vector3 Camera::screenDeltaToWorld(Vector2 iPixelDelta, const Vector3& iReference) const
 {
-	Vector3 p0 = screenToWorld(Vector2(0.0), iP);
-	Vector3 p1 = screenToWorld(iV, iP);
+	Vector3 p0 = screenToWorld(Vector2(0.0), iReference);
+	Vector3 p1 = screenToWorld(iPixelDelta, iReference);
 	return p1 - p0;
 }
 
@@ -286,7 +276,7 @@ void Camera::setViewport( const Viewport& iV)
 //-----------------------------------------------------------------------------
 void Camera::setZoomFactor(double iZoom)
 {
-	//mProjection.mZoomFactor = iZoom;
+    mZoomFactor = iZoom;
 	computeProjection();
 }
 
@@ -319,6 +309,15 @@ void Camera::translateTo(const Vector3& iV)
 }
 
 //-----------------------------------------------------------------------------
+// Unprojects a ndc coordinates back to 3d world coordinate.
+//
+Vector3 Camera::unprojectFromNdc(const Vector3& iNdc) const
+{
+    Vector4 r = (projectionMatrix() * viewMatrix()).inverse() * Vector4(iNdc, 1);
+    return r.xyz() / r.w();
+}
+
+//-----------------------------------------------------------------------------
 const Vector3& Camera::upVector() const
 { return mUpVector; }
 
@@ -345,36 +344,36 @@ Vector3 Camera::worldDeltaToCamera(const Vector3& iV) const
 }
 
 //-----------------------------------------------------------------------------
-Vector2 Camera::worldToSreen(const Vector3& iP) const // comme glToPixel
+// Convert a 3d world position to screen coordinates.
+//
+// Note: Qt y axis is inverted from openGL, so we invert y axis here to work
+// with Qt.
+//
+Vector2 Camera::worldToScreen(const Vector3& iP) const
 {
-//	pushAndApplyMatrices();
-//
-//	double modelView[16];
-//	glGetDoublev(GL_MODELVIEW_MATRIX, modelView);
-//	double projection[16];
-//	glGetDoublev(GL_PROJECTION_MATRIX, projection);
-//	int viewport[4];
-//	glGetIntegerv(GL_VIEWPORT, viewport);
-//
-//	double x, y, z;
-//	bool sucess = gluProject(iP.x(), iP.y(), iP.z(),
-//		modelView,
-//		projection,
-//		viewport,
-//		&x, &y, &z);
-//	if (!sucess) { x = 0; y = 0; z = 0; }
-//
-//	popMatrices();
-//
-//	//dépendant de l'orientation de la camera?
-//	return Vector2(x, y);
-    return Vector2();
+    Vector3 ndc = projectToNdc(iP);
+    
+    // from range [-1, 1] to [0, 1]
+    ndc = (ndc + Vector3(1)) / 2.0;
+    
+    // range [0, 1] multiplied by viewport to get screen coordinates
+    const Viewport& v = viewport();
+    
+    // invert y axis for Qt.
+    return Vector2(ndc.x() * v.width(),
+                   viewport().height() - ndc.y() * v.height() );
 }
 
 //-----------------------------------------------------------------------------
 Vector2 Camera::worldDeltaToSreen(const Vector3& iV) const
 {
-	Vector2 v0 = worldToSreen(Vector3(0.0));
-	Vector2 v1 = worldToSreen(iV);
+	Vector2 v0 = worldToScreen(Vector3(0.0));
+	Vector2 v1 = worldToScreen(iV);
 	return v1 - v0;
+}
+
+//-----------------------------------------------------------------------------
+double Camera::zoomFactor() const
+{
+    return mZoomFactor;
 }

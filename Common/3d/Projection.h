@@ -37,7 +37,6 @@ namespace TreeD
         double top() const;
         Type type() const;
         double width() const;
-        double zoom() const;
         
     protected:
         double mLeft;
@@ -46,7 +45,6 @@ namespace TreeD
         double mTop;
         double mNear;
         double mFar;
-        double mZoomFactor; // a mettre dans camera...
         Type mType;
     };
 }

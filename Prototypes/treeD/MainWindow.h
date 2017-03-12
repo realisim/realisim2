@@ -5,10 +5,12 @@
 
 #include "3d/Camera.h"
 #include <map>
+#include <QLabel>
 #include <QMainWindow>
 #include <QMouseEvent>
 #include <QOpenGLWidget>
 #include <QRadioButton>
+#include <QSlider>
 #include <QTimerEvent>
 
 
@@ -31,6 +33,7 @@ protected:
 	virtual void initializeGL() override;
     virtual void keyPressEvent(QKeyEvent*) override;
     virtual void keyReleaseEvent(QKeyEvent*) override;
+    virtual void mousePressEvent(QMouseEvent*) override;
     virtual void mouseMoveEvent(QMouseEvent*) override;
 	virtual void paintGL() override;
     virtual void resizeGL(int, int) override;
@@ -56,8 +59,11 @@ public:
 	~MainWindow() = default;
 
 protected slots:
+    void cameraProjOrthoClicked();
+    void cameraProjPerspectiveClicked();
     void cameraRotateAboutClicked();
     void cameraFreeClicked();
+    void zoomFactorChanged(int);
 
 protected:
     
@@ -68,6 +74,10 @@ protected:
 	Viewer* mpViewer;
     QRadioButton *mpCameraRotateAbout;
     QRadioButton *mpCameraFree;
+    QRadioButton *mpOrthoProj;
+    QRadioButton *mpPerspectiveProj;
+    QSlider *mpZoomFactor;
+    QLabel *mpZoomFactorLabel;
 
 	//--- data
     int mTimerId;

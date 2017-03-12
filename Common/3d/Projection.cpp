@@ -14,7 +14,6 @@ mBottom(-1),
 mTop(1),
 mNear(1),
 mFar(10),
-mZoomFactor(1.0),
 mType(tOrthogonal)
 {}
 
@@ -100,7 +99,6 @@ void Projection::setProjection(double iLeft, double iRight,
     mTop = iTop;
     mNear = iNear;
     mFar = iFar;
-    mZoomFactor = 1.0;
     mType = iType;
 }
 
@@ -128,6 +126,3 @@ Projection::Type Projection::type() const
 double Projection::width() const
 { return fabs(mRight - mLeft); }
 
-//-----------------------------------------------------------------------------
-double Projection::zoom() const
-{ return mZoomFactor; }
