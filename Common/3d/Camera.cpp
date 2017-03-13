@@ -78,8 +78,8 @@ void Camera::computeProjection()
 	r = cx + halfVisibleWidth;
 	b = cy - halfVisibleHeigh;
 	t = cy + halfVisibleHeigh;
-    const double f = p.far();
-    const double n = p.near();
+    const double f = p.farPlane();
+    const double n = p.nearPlane();
 
 	switch (p.type())
 	{

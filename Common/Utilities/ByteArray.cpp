@@ -134,7 +134,7 @@ size_t ByteArray::capacity() const
 //-------------------------------------------------------
 size_t ByteArray::capLength(size_t iLength) const
 {
-    int l = iLength;
+    size_t l = iLength;
     if( l < 0 || l > size() )
     { l = size(); }
     return l;
@@ -207,7 +207,7 @@ void ByteArray::detachGuts()
 //-------------------------------------------------------
 ByteArray& ByteArray::fill(char iChar, int iLength/*= -1*/)
 {
-    int l = capLength(iLength);
+    size_t l = capLength(iLength);
     
     auto begin = mpGuts->mData.begin();
     auto end = begin + l;

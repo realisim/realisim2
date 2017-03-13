@@ -13,7 +13,6 @@ add_component( "../../Common/Math" "Math")
 add_component( "../../Common/3d" "3d")
 add_component( "../../Common/Utilities" "Utilities")
 
-
 qt_automoc()
 
 # create executable
@@ -22,3 +21,4 @@ target_link_libraries( ${PROJECT_NAME} Qt5::Widgets Qt5::OpenGL ${OPENGL_LIBRARI
 
 # install directive
 qt5_install( ${CMAKE_SOURCE_DIR}/bin/${PROJECT_NAME} )
+opengl_install( ${CMAKE_SOURCE_DIR}/bin/${PROJECT_NAME} )

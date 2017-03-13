@@ -19,15 +19,15 @@ namespace TreeD
         ~Projection() = default;
       
         double bottom() const;
-        double far() const;
+        double farPlane() const;
         double left() const;
         double height() const;
-        double near() const;
+        double nearPlane() const;
         double right() const;
         void setBottom(double);
-        void setFar(double);
+        void setFarPlane(double);
         void setLeft(double);
-        void setNear(double);
+        void setNearPlane(double);
         void setPerspectiveProjection(double iFov, double iRatio, double iNear, double iFar);
         void setProjection(double iLeft, double iRight, double iBottom, double iTop, double iNear, double iFar, Projection::Type);
         void setRight(double);
