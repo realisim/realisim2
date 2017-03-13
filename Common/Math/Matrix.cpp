@@ -70,31 +70,13 @@ Matrix4::Matrix4( Vector3 iV )
 //
 Matrix4::Matrix4( Quaternion iQ )
 {
-    double x = iQ.x(), y = iQ.y(), z = iQ.z(), w = iQ.w();
-    double mat[4][4] = {
-        { 1-(2*y*y)-(2*z*z),
-            (2*x*y)-(2*w*z),
-            (2*x*z)+(2*w*y),
-            0 },
-        { (2*x*y)+(2*w*z),
-            1-(2*x*x)-(2*z*z),
-            (2*y*z)-(2*w*x),
-            0 },
-        { (2*x*z)-(2*w*y),
-            (2*y*z)+(2*w*x),
-            1-(2*x*x)-(2*y*y),
-            0 },
-        { 0, 0, 0, 1 }
-    };
-    import( mat[0] );
+    setRotation(iQ);
 }
 //------------------------------------------------------------------------------
 /*angle en radian et axe de rotation */
 Matrix4::Matrix4( double iAngle, Vector3 iAxis )
 {
-    Quaternion q;
-    q.setRotation( iAngle, iAxis );
-    *this = Matrix4( q );
+    setRotation(iAngle, iAxis);
 }
 //------------------------------------------------------------------------------
 /*Matrice de passage
@@ -103,14 +85,9 @@ Matrix4::Matrix4( double iAngle, Vector3 iAxis )
  */
 Matrix4::Matrix4( Vector3 iX, Vector3 iY, Vector3 iZ )
 {
-    double mat[4][4] = {
-        { iX.x(), iY.x(), iZ.x(), 0 },
-        { iX.y(), iY.y(), iZ.y(), 0 },
-        { iX.z(), iY.z(), iZ.z(), 0 },
-        { 0, 0, 0, 1 }
-    };
-    import( mat[0] );
+    setChangeOfBasis(iX, iY, iZ);
 }
+
 //------------------------------------------------------------------------------
 Matrix4::~Matrix4()
 {}
@@ -364,6 +341,63 @@ Quaternion Matrix4::rotationAsQuaternion() const
 Vector4 Matrix4::row(int iRow) const
 {
     return Vector4( m[0][iRow], m[1][iRow], m[2][iRow], m[3][iRow] );
+}
+
+//------------------------------------------------------------------------------
+// Sets the current matrix as a change of basis matrix with iX, iY, iZ as
+// base
+//
+void Matrix4::setChangeOfBasis(const Vector3& iX, const Vector3& iY, const Vector3& iZ)
+{
+    double mat[4][4] = {
+    { iX.x(), iY.x(), iZ.x(), 0 },
+    { iX.y(), iY.y(), iZ.y(), 0 },
+    { iX.z(), iY.z(), iZ.z(), 0 },
+    { 0, 0, 0, 1 } };
+    import( mat[0] );
+}
+
+//------------------------------------------------------------------------------
+void Matrix4::set(const double* ipM, bool iRowMajor/* = true*/)
+{ import(ipM, iRowMajor); }
+
+//------------------------------------------------------------------------------
+void Matrix4::setRotation(const Quaternion& iQ)
+{
+    double x = iQ.x(), y = iQ.y(), z = iQ.z(), w = iQ.w();
+    double mat[4][4] = {
+        { 1-(2*y*y)-(2*z*z),
+            (2*x*y)-(2*w*z),
+            (2*x*z)+(2*w*y),
+            0 },
+        { (2*x*y)+(2*w*z),
+            1-(2*x*x)-(2*z*z),
+            (2*y*z)-(2*w*x),
+            0 },
+        { (2*x*z)-(2*w*y),
+            (2*y*z)+(2*w*x),
+            1-(2*x*x)-(2*y*y),
+            0 },
+        { 0, 0, 0, 1 }
+    };
+    import( mat[0] );
+}
+
+//------------------------------------------------------------------------------
+void Matrix4::setRotation(double iRadAngle, const Vector3& iAxis)
+{
+    Quaternion q;
+    q.setRotation( iRadAngle, iAxis );
+    *this = Matrix4( q );
+}
+
+//------------------------------------------------------------------------------
+void Matrix4::setRow(int iRow, const Vector4& iV)
+{
+    m[0][iRow] = iV.x();
+    m[1][iRow] = iV.y();
+    m[2][iRow] = iV.z();
+    m[3][iRow] = iV.w();
 }
 
 //------------------------------------------------------------------------------

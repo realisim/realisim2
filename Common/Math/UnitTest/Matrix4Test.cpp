@@ -233,29 +233,10 @@ TEST(Matrix4, Functions)
         9,10,11,12,
         13,14,15,16};
     
-    //const double* getDataPointer() const;
+    //const double* dataPointer() const;
     {
         Matrix4 m(initializer);
         EXPECT_EQ( 1, *(m.dataPointer()) );
-    }
-
-    //Quaternion getRotationAsQuaternion() const;
-    {
-        //tested in constructor
-    }
-
-    //Vector4 getRow(int) const;
-    {
-        Matrix4 m(initializer);
-        Vector4 r = m.row(2);
-        EXPECT_TRUE( r == Vector4(9, 10, 11, 12) );
-    }
-
-    //Vector3 getTranslationAsVector() const;
-    {
-        Matrix4 m(initializer);
-        Vector3 r = m.translationAsVector();
-        EXPECT_TRUE( r == Vector3(4, 8, 12) );
     }
 
     //Matrix4 inverse() const;
@@ -266,7 +247,7 @@ TEST(Matrix4, Functions)
         Matrix4 m(initializer);
         Matrix4 m2 = m.inverse();
         EXPECT_TRUE(m2 == Matrix4());
-        
+
         // verified on wolfram alpha with:
         // inverse {{1,2,3,4},{5,1,7,8},{9,10,1,12},{13,14,15,1}}
         //
@@ -312,14 +293,56 @@ TEST(Matrix4, Functions)
         EXPECT_TRUE(m.isEqual(m2));
     }
 
-    //void setRotation( const Quaterniond& );
+    //Quaternion rotationAsQuaternion() const;
     {
-
+        //tested in constructor
     }
 
-    //void setScale( const Vector3d& );
+    //Vector4 row(int) const;
     {
+        Matrix4 m(initializer);
+        Vector4 r0 = m.row(0);
+        Vector4 r1 = m.row(1);
+        Vector4 r2 = m.row(2);
+        Vector4 r3 = m.row(3);
+        EXPECT_TRUE( r0 == Vector4(1, 2, 3, 4) );
+        EXPECT_TRUE( r1 == Vector4(5, 6, 7, 8) );
+        EXPECT_TRUE( r2 == Vector4(9, 10, 11, 12) );
+        EXPECT_TRUE( r3 == Vector4(13, 14, 15, 16) );
+    }
 
+    //void set(const double*, bool iRowMajor = true);
+    {
+        //already tested by constructor
+    }
+
+    //void setChangeOfBasis(const Vector3& iX, const Vector3& iY, const Vector3& iZ);
+    {
+        //already tested by constructor
+    }
+
+    //void setRotation(const Quaternion& iX);
+    {
+        //already tested by constructor
+    }
+
+    //void setRotation(double iRadAngle, const Vector3& iAxis);
+    {
+        //already tested by constructor
+    }
+
+    //void setRow(int iRow, const Vector4&);
+    {
+        Matrix4 m;
+        m.setRow(0, Vector4(100, 101, 102, 103) );
+        m.setRow(1, Vector4(104, 105, 106, 107) );
+        m.setRow(2, Vector4(108, 109, 110, 111) );
+        m.setRow(3, Vector4(112, 113, 114, 115) );
+
+        EXPECT_TRUE( m.row(0) == Vector4(100, 101, 102, 103) );
+        EXPECT_TRUE( m.row(1) == Vector4(104, 105, 106, 107) );
+        EXPECT_TRUE( m.row(2) == Vector4(108, 109, 110, 111) );
+        EXPECT_TRUE( m.row(3) == Vector4(112, 113, 114, 115) );
     }
 
     //void setTranslation( const Vector3& );
@@ -328,6 +351,13 @@ TEST(Matrix4, Functions)
         Matrix4 m;
         m.setTranslation(t);
         EXPECT_TRUE( t == m.translationAsVector() );
+    }
+
+    //Vector3 translationAsVector() const;
+    {
+        Matrix4 m(initializer);
+        Vector3 r = m.translationAsVector();
+        EXPECT_TRUE( r == Vector3(4, 8, 12) );
     }
 
     //Matrix4 transpose() const;

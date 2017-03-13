@@ -351,7 +351,7 @@ TEST(ByteArray, WriteTest_usingDataPointer)
 {
     // make a byte array big enough to contain the data
     ByteArray ba;
-    ba.resize(referenceString.size());
+    ba.resize((int)referenceString.size());
     
     // read the data directly into the byte array
     std::istringstream iss(referenceString);

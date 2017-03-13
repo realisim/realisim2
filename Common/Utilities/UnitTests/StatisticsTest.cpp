@@ -22,6 +22,6 @@ TEST(Statistics, general)
     //verified on wolfram
     EXPECT_DOUBLE_EQ(stats.getMin(), -69.01171);
     EXPECT_DOUBLE_EQ(stats.getMax(), 79.56491);
-    EXPECT_FLOAT_EQ(stats.getMean(), -8.20438);
-    EXPECT_FLOAT_EQ(stats.getStandardDeviation(), 52.795);
+    EXPECT_FLOAT_EQ((float)stats.getMean(), -8.20438f);
+    EXPECT_FLOAT_EQ((float)stats.getStandardDeviation(), 52.795f);
 }

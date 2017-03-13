@@ -112,17 +112,14 @@ namespace Math
         Matrix4 inverse() const;
         Matrix4& invert();
         bool isEqual( const Matrix4&, 
-                     double = std::numeric_limits<double>::epsilon() ) const; //-> a deplacer dans Math/IsEqual
-        //void setRotation( const Quaterniond& );
-        //void setScale( const Vector3d& );
+                     double = std::numeric_limits<double>::epsilon() ) const;
         Quaternion rotationAsQuaternion() const;
         Vector4 row(int) const;
-void set(const double*, bool iRowMajor = true);
-void set(const Vector3& iX);
-void set(const Quaternion& iX);
-void set(double iRadAngle, const Vector3& iAxis);
-void set(const Vector3& iX, const Vector3& iY, const Vector3& iZ);
-void setRow(int iRow, const Vector4&);
+        void set(const double*, bool iRowMajor = true);
+        void setChangeOfBasis(const Vector3& iX, const Vector3& iY, const Vector3& iZ);
+        void setRotation(const Quaternion& iX);
+        void setRotation(double iRadAngle, const Vector3& iAxis);
+        void setRow(int iRow, const Vector4&);
         void setTranslation( const Vector3& );
         Vector3 translationAsVector() const;
         Matrix4 transpose() const;
