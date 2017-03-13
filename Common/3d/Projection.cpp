@@ -18,6 +18,19 @@ mType(tOrthogonal)
 {}
 
 //-----------------------------------------------------------------------------
+Projection::Projection(double iLeft, double iRight,
+           double iBottom, double iTop,
+           double iNear, double iFar, Projection::Type iType) :
+mLeft(iLeft),
+mRight(iRight),
+mBottom(iBottom),
+mTop(iTop),
+mNear(iNear),
+mFar(iFar),
+mType(iType)
+{}
+
+//-----------------------------------------------------------------------------
 double Projection::bottom() const
 { return mBottom; }
 
@@ -56,22 +69,6 @@ void Projection::setLeft(double iV)
 //-----------------------------------------------------------------------------
 void Projection::setNear(double iV)
 { mNear = iV; }
-
-//-----------------------------------------------------------------------------
-void Projection::setOrthoProjection(double iVisibleGlUnit, double iNear, double iFar)
-{
-    setProjection(-iVisibleGlUnit / 2.0, iVisibleGlUnit / 2.0,
-                  -1.0, 1.0, iNear, iFar, Projection::tOrthogonal);
-}
-
-//-----------------------------------------------------------------------------
-void Projection::setOrthoProjection(double iVisibleGlUnitX, double iVisibleGlUnitY,
-                                    double iNear, double iFar)
-{
-    setProjection(-iVisibleGlUnitX / 2.0, iVisibleGlUnitX / 2.0,
-                  -iVisibleGlUnitY / 2.0, iVisibleGlUnitY / 2.0, iNear, iFar,
-                  Projection::tOrthogonal);
-}
 
 //-----------------------------------------------------------------------------
 /*iFov est en degree, iRatio est généralement le ratio du viewport sous la

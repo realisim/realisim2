@@ -20,7 +20,7 @@ namespace Math
         Quaternion& operator=(const Quaternion &iQ) = default;
         ~Quaternion();
         
-        Quaternion getConjugate() const;
+        Quaternion conjugate() const;
         Quaternion& invert();
         Quaternion inverse();
         double norm() const;

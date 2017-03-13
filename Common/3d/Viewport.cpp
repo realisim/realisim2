@@ -12,6 +12,14 @@ mHeight(1)
 {}
 
 //--------------------------------------------------------------------------
+Viewport::Viewport(int iWidth, int iHeight)
+{
+    // calling set to recompute orientation...
+    //
+    set(iWidth, iHeight);
+}
+
+//--------------------------------------------------------------------------
 Viewport::Orientation Viewport::orientation() const
 { return mOrientation; }
 

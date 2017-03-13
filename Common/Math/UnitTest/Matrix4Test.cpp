@@ -236,7 +236,7 @@ TEST(Matrix4, Functions)
     //const double* getDataPointer() const;
     {
         Matrix4 m(initializer);
-        EXPECT_EQ( 1, *(m.getDataPointer()) );
+        EXPECT_EQ( 1, *(m.dataPointer()) );
     }
 
     //Quaternion getRotationAsQuaternion() const;
@@ -247,14 +247,14 @@ TEST(Matrix4, Functions)
     //Vector4 getRow(int) const;
     {
         Matrix4 m(initializer);
-        Vector4 r = m.getRow(2);
+        Vector4 r = m.row(2);
         EXPECT_TRUE( r == Vector4(9, 10, 11, 12) );
     }
 
     //Vector3 getTranslationAsVector() const;
     {
         Matrix4 m(initializer);
-        Vector3 r = m.getTranslationAsVector();
+        Vector3 r = m.translationAsVector();
         EXPECT_TRUE( r == Vector3(4, 8, 12) );
     }
 
@@ -327,7 +327,7 @@ TEST(Matrix4, Functions)
         Vector3 t(1, 2, 3);
         Matrix4 m;
         m.setTranslation(t);
-        EXPECT_TRUE( t == m.getTranslationAsVector() );
+        EXPECT_TRUE( t == m.translationAsVector() );
     }
 
     //Matrix4 transpose() const;

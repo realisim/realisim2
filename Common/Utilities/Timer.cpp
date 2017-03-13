@@ -17,7 +17,7 @@ Timer::~Timer()
 
 //-------------------------------------------------------------------------
 //retourne le nombre de secondes écoulées entre le start et le stop;
-double Timer::getElapsed() const
+double Timer::elapsed() const
 {
   chrono::duration<double> timeSpan;
   switch (getState())

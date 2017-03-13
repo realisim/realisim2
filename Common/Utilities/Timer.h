@@ -16,7 +16,7 @@ namespace Utilities
     Timer();
     virtual ~Timer();
     
-    double getElapsed() const;
+    double elapsed() const;
 //void pause();
     void start();
     void stop();

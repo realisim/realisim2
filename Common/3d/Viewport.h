@@ -11,6 +11,7 @@ namespace Realisim
         {
         public:
             Viewport();
+            Viewport(int iWidth, int iHeight);
             Viewport(const Viewport&) = default;
             Viewport& operator=(const Viewport&) = default;
             ~Viewport() = default;

@@ -20,7 +20,7 @@ Vector2::Vector2(double iX, double iY)
 { set(iX, iY); }
 
 //----------------------------------------------------------------------------
-const double* Vector2::getDataPointer() const
+const double* Vector2::dataPointer() const
 { return &mData[0]; }
 
 //---------------------------------------------------------------------------

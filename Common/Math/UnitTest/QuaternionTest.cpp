@@ -128,7 +128,7 @@ TEST(Quaternion, Functions)
     {
         Quaternion q(1,2,3,4);
         Quaternion r(-1,-2,-3,4);
-        Quaternion c = q.getConjugate();
+        Quaternion c = q.conjugate();
         EXPECT_EQ_QUAT(c, r);
     }
     

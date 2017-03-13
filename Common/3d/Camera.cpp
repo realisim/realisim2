@@ -204,18 +204,20 @@ void Camera::rotate(double iRad, Vector3 iAxis,
 // by the pixel coordinate.
 //
 // Note:    since Qt has (0,0) at top-left of the window and openGL has (0,0) at
-//          bottom-left, we invert the y axis. This should probably be parametrized...
+//          bottom-left, the y axis need to be inverted if the iPixel coordinates
+//          comes from qt...
+//
+//          ex:
+//              	//Invert y axis since Qt and openGL are inverted on y...
+//                  const double pixelY = viewport().height() - iPixel.y();
+//
 Vector3 Camera::screenToWorld(const Vector2& iPixel, const Vector3& iRerefence) const
 {
-	const double pixelX = iPixel.x();
-	//Invect y axis since Qt and openGL are inverted on y...
-	const double pixelY = viewport().height() - iPixel.y();
-    
     Vector3 referenceNdc = projectToNdc(iRerefence);
     
     const Viewport& v = viewport();
-    Vector3 pixelNdc(pixelX / v.width() * 2.0 - 1,
-                     pixelY / v.height() * 2.0 - 1,
+    Vector3 pixelNdc(iPixel.x() / v.width() * 2.0 - 1,
+                     iPixel.y() / v.height() * 2.0 - 1,
                      referenceNdc.z() );
     
     // unproject the pixel ndc to get world coordinate
@@ -225,10 +227,12 @@ Vector3 Camera::screenToWorld(const Vector2& iPixel, const Vector3& iRerefence) 
 //-----------------------------------------------------------------------------
 // see screenToWorld
 //
-Vector3 Camera::screenDeltaToWorld(Vector2 iPixelDelta, const Vector3& iReference) const
+Vector3 Camera::screenDeltaToWorld(const Math::Vector2& iPixel,
+                                   const Vector2& iPixelDelta,
+                                   const Vector3& iReference) const
 {
-	Vector3 p0 = screenToWorld(Vector2(0.0), iReference);
-	Vector3 p1 = screenToWorld(iPixelDelta, iReference);
+	Vector3 p0 = screenToWorld(iPixel, iReference);
+	Vector3 p1 = screenToWorld(iPixel + iPixelDelta, iReference);
 	return p1 - p0;
 }
 
@@ -346,8 +350,8 @@ Vector3 Camera::worldDeltaToCamera(const Vector3& iV) const
 //-----------------------------------------------------------------------------
 // Convert a 3d world position to screen coordinates.
 //
-// Note: Qt y axis is inverted from openGL, so we invert y axis here to work
-// with Qt.
+// Note: Qt y axis is inverted from openGL, so if the result is to be displayed
+//  in a qt window, the y axis will need to be inverted
 //
 Vector2 Camera::worldToScreen(const Vector3& iP) const
 {
@@ -359,9 +363,8 @@ Vector2 Camera::worldToScreen(const Vector3& iP) const
     // range [0, 1] multiplied by viewport to get screen coordinates
     const Viewport& v = viewport();
     
-    // invert y axis for Qt.
     return Vector2(ndc.x() * v.width(),
-                   viewport().height() - ndc.y() * v.height() );
+                   ndc.y() * v.height() );
 }
 
 //-----------------------------------------------------------------------------

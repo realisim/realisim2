@@ -10,12 +10,13 @@ namespace TreeD
     class Projection
     {
     public:
+        enum Type{ tOrthogonal = 0, tPerspective };
+        
         Projection();
+        Projection(double iLeft, double iRight, double iBottom, double iTop, double iNear, double iFar, Projection::Type);
         Projection(const Projection&) = default;
         Projection& operator=(const Projection&) = default;
         ~Projection() = default;
-
-        enum Type{ tOrthogonal = 0, tPerspective };
       
         double bottom() const;
         double far() const;
@@ -27,8 +28,6 @@ namespace TreeD
         void setFar(double);
         void setLeft(double);
         void setNear(double);
-        void setOrthoProjection(double iVisibleGlUnit, double iNear, double iFar);
-        void setOrthoProjection(double, double, double, double);
         void setPerspectiveProjection(double iFov, double iRatio, double iNear, double iFar);
         void setProjection(double iLeft, double iRight, double iBottom, double iTop, double iNear, double iFar, Projection::Type);
         void setRight(double);

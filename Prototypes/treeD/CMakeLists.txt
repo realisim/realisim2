@@ -11,6 +11,7 @@ set( SOURCE_FILES ${SOURCE_FILES} CMakeLists.txt )
 add_component( "./" "application")
 add_component( "../../Common/Math" "Math")
 add_component( "../../Common/3d" "3d")
+add_component( "../../Common/Utilities" "Utilities")
 
 
 qt_automoc()

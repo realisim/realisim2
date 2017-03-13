@@ -40,6 +40,13 @@ Vector4::Vector4(double v)
 }
 
 //---------------------------------------------------------------------------
+const double* Vector4::dataPointer() const
+{
+    return &mData[0];
+}
+
+
+//---------------------------------------------------------------------------
 double Vector4::norm() const
 {
     return std::sqrt(mData[0]*mData[0] + mData[1]*mData[1] + mData[2]*mData[2] + mData[3]*mData[3]);
@@ -56,12 +63,6 @@ Vector4& Vector4::normalize()
     
     return (*this);
 
-}
-
-//---------------------------------------------------------------------------
-const double* Vector4::getDataPointer() const
-{
-    return &mData[0];
 }
 
 //---------------------------------------------------------------------------

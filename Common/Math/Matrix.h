@@ -93,11 +93,11 @@ namespace Math
         Matrix4( const Matrix4& ) = default;
         Matrix4& operator= (const Matrix4&) = default;
         Matrix4( const double*, bool iRowMajor = true );
-        Matrix4( Vector3 ); //translation
+        Matrix4( Vector3 iTranslation ); //translation
         Matrix4( Quaternion iQuatNormalized); //rotation -> dans Math/Interop -> Matrix4 toMatrix(const Quaternion)...
         //Matrix4( Vector3d, Quaterniond, Vector3d = Vector3d(1.0) ); //translation - rotation - scaling
-        Matrix4( double, Vector3 ); //rotation (angle et axe)
-        Matrix4( Vector3, Vector3, Vector3 ); //specification de la base
+        Matrix4( double iRadAngle, Vector3 iAxis ); //rotation (angle et axe)
+        Matrix4( Vector3 iX, Vector3 iY, Vector3 iZ ); //specification de la base
         ~Matrix4();
         
         double operator()(int, int) const;
@@ -106,21 +106,25 @@ namespace Math
         bool operator!= (const Matrix4&) const;
         Matrix4 operator* (const Matrix4&) const;
         Matrix4& operator*= (const Matrix4&);
-        Vector4 operator* (const Vector4&) const;        
-        //Vector3d operator* (const Vector3d&) const;
-        //Vector2d operator* (const Vector2d&) const;
+        Vector4 operator* (const Vector4&) const;
         
-        const double* getDataPointer() const;
-        Quaternion getRotationAsQuaternion() const;
-        Vector4 getRow(int) const;
-        Vector3 getTranslationAsVector() const;
+        const double* dataPointer() const;
         Matrix4 inverse() const;
         Matrix4& invert();
         bool isEqual( const Matrix4&, 
                      double = std::numeric_limits<double>::epsilon() ) const; //-> a deplacer dans Math/IsEqual
         //void setRotation( const Quaterniond& );
         //void setScale( const Vector3d& );
+        Quaternion rotationAsQuaternion() const;
+        Vector4 row(int) const;
+void set(const double*, bool iRowMajor = true);
+void set(const Vector3& iX);
+void set(const Quaternion& iX);
+void set(double iRadAngle, const Vector3& iAxis);
+void set(const Vector3& iX, const Vector3& iY, const Vector3& iZ);
+void setRow(int iRow, const Vector4&);
         void setTranslation( const Vector3& );
+        Vector3 translationAsVector() const;
         Matrix4 transpose() const;
         std::string toString(int iPrecision = 3) const;
         

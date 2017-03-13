@@ -24,7 +24,7 @@ Vector3::Vector3(const Vector2& iVect2, double iZ)
 { set(iVect2.x(), iVect2.y(), iZ); }
 
 //----------------------------------------------------------------------------
-const double* Vector3::getDataPointer() const
+const double* Vector3::dataPointer() const
 { return &mData[0]; }
 
 //---------------------------------------------------------------------------

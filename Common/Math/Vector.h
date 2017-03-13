@@ -19,7 +19,7 @@ namespace Math
         Vector2& operator=(const Vector2 &vect) = default;
         ~Vector2() = default;
 
-        const double* getDataPointer() const;
+        const double* dataPointer() const;
         bool isEqual(const Vector2&, double iEpsilon = std::numeric_limits<double>::epsilon() ) const;
         double norm() const;
         Vector2& normalize();
@@ -62,7 +62,7 @@ namespace Math
         Vector3& operator=(const Vector3 &vect) = default;
         ~Vector3() = default;
 
-        const double* getDataPointer() const;
+        const double* dataPointer() const;
         bool isEqual(const Vector3&, double iEpsilon = std::numeric_limits<double>::epsilon() ) const;
         double norm() const;
         Vector3& normalize();
@@ -114,7 +114,7 @@ namespace Math
         
         double norm() const;
         Vector4& normalize();
-        const double* getDataPointer() const;
+        const double* dataPointer() const;
         bool isEqual(const Vector4&, double iEpsizion = std::numeric_limits<double>::epsilon() ) const;
         Vector4 operator+ (const Vector4&);
         Vector4& operator+= (const Vector4&);

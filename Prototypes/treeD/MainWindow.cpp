@@ -7,6 +7,7 @@
 #endif
 
 #include <cmath>
+#include <limits>
 #include "MainWindow.h"
 #include <QCoreApplication>
 #include <QGroupBox>
@@ -19,27 +20,69 @@
 using namespace Realisim;
 using namespace Math;
 using namespace TreeD;
+using namespace std;
 
 Camera gDefaultCamera;
 
+//--------------
+Box::Box() :
+mMin(numeric_limits<double>::max()),
+mMax(-numeric_limits<double>::max()),
+mTransfo()
+{}
+
+//--------------
+void Box::add(Vector3 iP)
+{
+    mMin.setX( min(iP.x(), mMin.x()) );
+    mMin.setY( min(iP.y(), mMin.y()) );
+    mMin.setZ( min(iP.z(), mMin.z()) );
+    
+    mMax.setX( max(iP.x(), mMax.x()) );
+    mMax.setY( max(iP.y(), mMax.y()) );
+    mMax.setZ( max(iP.z(), mMax.z()) );
+}
+
+//--------------
+Vector3 Box::point(int iIndex) const
+{
+    Vector3 r;
+    switch (iIndex)
+    {
+        case 0: r = mMin; break;
+        case 1: r.set(mMax.x(), mMin.y(), mMin.z()); break;
+        case 2: r.set(mMax.x(), mMax.y(), mMin.z()); break;
+        case 3: r.set(mMin.x(), mMax.y(), mMin.z()); break;
+        case 4: r.set(mMax.x(), mMin.y(), mMax.z()); break;
+        case 5: r.set(mMin.x(), mMin.y(), mMax.z()); break;
+        case 6: r.set(mMin.x(), mMax.y(), mMax.z()); break;
+        case 7: r = mMax; break;
+        default:
+            break;
+    }
+    return r;
+}
+
+//----------------------------------------------
 Viewer::Viewer(QWidget* ipParent /*=0*/) :
 QOpenGLWidget(ipParent),
 mCamera(),
 mCameraMode(cmRotateAround),
+mSelectedBoxIndex(12),
 mMouseX(-1),
 mMouseY(-1),
 mMouseDeltaX(0),
 mMouseDeltaY(0),
-mMouseButtonPressed(false)
+mMouseLeftPressed(false),
+mMouseRightPressed(false)
 {
 	setFocusPolicy(Qt::StrongFocus);
     setMouseTracking(true);
     
     Projection p;
-    Viewport v;
-    v.set(400, 400);
+    Viewport v(400, 400);
     //p.setOrthoProjection(100, 1, 1000.0);
-    p.setPerspectiveProjection(32, 16/9.0, 1, 1000.0);
+    p.setPerspectiveProjection(50, 16/9.0, 1, 1000.0);
     //p.setProjection(-50, 50, -50, 50, 1, 1000, Projection::tPerspective);
     
     gDefaultCamera.setViewport(v);
@@ -48,6 +91,18 @@ mMouseButtonPressed(false)
                 Vector3(0.0, 0.0, 0.0),
                 Vector3(0.0, 1.0, 0.0) );
     mCamera = gDefaultCamera;
+    
+    //create 25 boxes for display
+    for(int i = -2; i <= 2; ++i)
+        for(int j = -2; j <= 2; ++j)
+        {
+            Box b;
+            b.mMin = Vector3(-5.0);
+            b.mMax = Vector3(5.0);
+            b.mTransfo = Matrix4( Vector3(i * 30, j*30, 0) );
+            mBoxes.push_back(b);
+        }
+    
 }
 
 Viewer::~Viewer()
@@ -66,7 +121,7 @@ void Viewer::drawCube()
     
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     
-    const int s = 10.0 / 2;
+    const double s = 1.0 / 2;
     
     glBegin(GL_QUADS);
     
@@ -123,8 +178,9 @@ void Viewer::handleUserInput()
     //--- mouse
     const double kDegreeToRadian = M_PI/180.0;
     const double f = 0.2;
-    if(mMouseButtonPressed)
+    if(mMouseLeftPressed)
     {
+        // move camera
         switch (mCameraMode)
         {
             case cmRotateAround:
@@ -152,6 +208,21 @@ void Viewer::handleUserInput()
             default: break;
         }
     }
+    else if(mMouseRightPressed)
+    {
+        // move selected object
+        Box& b = mBoxes[mSelectedBoxIndex];
+        
+        // since qt and opengl avec inverted y axis, we
+        // negate the y delta
+        //
+        const Vector2 screenPos(mMouseX, mMouseY);
+        const Vector2 screenDelta(mMouseDeltaX, -mMouseDeltaY);
+        const Vector3 boxCenter = (b.mTransfo * Vector4(b.center(), 1)).xyz();
+        const Vector3 worldDelta = camera().screenDeltaToWorld(screenPos, screenDelta, boxCenter);
+        b.mTransfo *= Matrix4(worldDelta);
+    }
+    
     mMouseDeltaX = 0;
     mMouseDeltaY = 0;
     
@@ -217,8 +288,6 @@ void Viewer::keyReleaseEvent(QKeyEvent* ipE)
 //-----------------------------------------------------------------------------
 void Viewer::mouseMoveEvent(QMouseEvent* ipE)
 {
-    mMouseButtonPressed = ipE->buttons() & Qt::LeftButton;
-    
     if(mMouseX != -1)
     {
         mMouseDeltaX = ipE->x() - mMouseX;
@@ -232,13 +301,24 @@ void Viewer::mouseMoveEvent(QMouseEvent* ipE)
 //-----------------------------------------------------------------------------
 void Viewer::mousePressEvent(QMouseEvent* ipE)
 {
-    Vector2 pixel(ipE->x(), ipE->y());
+    mMouseLeftPressed = ipE->buttons() & Qt::LeftButton;
+    mMouseRightPressed = ipE->buttons() & Qt::RightButton;
     
+//    //invert qt y axis for opengl...
+//    Vector2 pixel(ipE->x(), camera().viewport().height() - ipE->y());
+//    
 //    Vector3 screenToWorld = camera().screenToWorld(pixel, Vector3(0.0));
 //    Vector2 worldToScreen = camera().worldToScreen(Vector3(-30, 0, 0) );
 //    
 //    printf("screenToWorld: %s\n", screenToWorld.toString().c_str());
 //    printf("worldToScreen: %s\n", worldToScreen.toString().c_str());
+}
+
+//-----------------------------------------------------------------------------
+void Viewer::mouseReleaseEvent(QMouseEvent* ipE)
+{
+    if(ipE->button() == Qt::LeftButton){ mMouseLeftPressed = false; }
+    if(ipE->button() == Qt::RightButton){ mMouseRightPressed = false; }
 }
 
 //-----------------------------------------------------------------------------
@@ -248,28 +328,71 @@ void Viewer::paintGL()
     f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     glMatrixMode(GL_PROJECTION);
-    glLoadMatrixd(mCamera.projectionMatrix().getDataPointer() );
+    glLoadMatrixd(mCamera.projectionMatrix().dataPointer() );
     glMatrixMode(GL_MODELVIEW);
-    glLoadMatrixd(mCamera.viewMatrix().getDataPointer());
+    glLoadMatrixd(mCamera.viewMatrix().dataPointer());
     
-    for(int i = -2; i <= 2; ++i)
-        for(int j = -2; j <= 2; ++j)
-        {
-            glPushMatrix();
-            
-            glTranslated( i * 30, j * 30, 0.0 );
-            drawCube();
-            
-            glPopMatrix();
-        }
+    for(size_t i = 0; i < mBoxes.size(); ++i)
+    {
+        const Box& b = mBoxes[i];
+        
+        glPushMatrix();
+        glMultMatrixd(b.mTransfo.dataPointer());
+        glScaled(b.width(), b.height(), b.depth());
+        drawCube();
+        glPopMatrix();
+    }
+    
+    // switch to 2d proj and the projection of the selected
+    // box
+    Camera cam2d;
+    Viewport v(this->width(), this->height());
+    Projection p(0, v.width(),
+                 0, v.height(),
+                 1, 1000.0, Projection::tOrthogonal);
+    cam2d.setViewport(v);
+    cam2d.setProjection(p, true);
+    cam2d.set(Vector3(0, 0, 10), Vector3(0.0), Vector3(0.0, 1.0, 0.0)  );
+    
+    const Box& selectedBox = mBoxes[mSelectedBoxIndex];
+    Box projectedBox;
+    for(int i = 0; i < 8; ++i)
+    {
+        Vector3 p1 = (selectedBox.mTransfo * Vector4(selectedBox.point(i), 1.0)).xyz();
+        projectedBox.add( Vector3( camera().worldToScreen(p1), 0 ) );
+    }
+    
+    glMatrixMode(GL_PROJECTION);
+    glLoadMatrixd(cam2d.projectionMatrix().dataPointer() );
+    glMatrixMode(GL_MODELVIEW);
+    glLoadMatrixd(cam2d.viewMatrix().dataPointer());
+    
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_LIGHTING);
+    glLineWidth(3.0);
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    
+    glColor4ub(5.0, 235, 235, 255);
+    glBegin(GL_QUADS);
+    glVertex3dv(projectedBox.point(0).dataPointer());
+    glVertex3dv(projectedBox.point(1).dataPointer());
+    glVertex3dv(projectedBox.point(2).dataPointer());
+    glVertex3dv(projectedBox.point(3).dataPointer());
+    glEnd();
+    
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glLineWidth(1.0);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_DEPTH_TEST);
 }
 
 //-----------------------------------------------------------------------------
 void Viewer::resizeGL(int iW, int iH)
 {
-    Viewport v;
-    v.set(iW, iH);
+    Viewport v(iW, iH);
+    
     mCamera.setViewport(v);
+    gDefaultCamera.setViewport(v);
 }
 
 //-----------------------------------------------------------------------------
@@ -360,6 +483,7 @@ mTimerId(0)
 	}
     
     mTimerId = startTimer(0);
+    mTimerToUpdateGl.start();
 	updateUi();
 }
 
@@ -411,7 +535,12 @@ void MainWindow::timerEvent(QTimerEvent *ipE)
     if(ipE->timerId() == mTimerId)
     {
         mpViewer->handleUserInput();
-        mpViewer->update();
+        
+        if(mTimerToUpdateGl.elapsed() >= 1/60.0 )
+        {
+            mpViewer->update();
+            mTimerToUpdateGl.start();
+        }
     }
 }
 
