@@ -116,6 +116,32 @@ Camera Viewer::camera() const
 }
 
 //-----------------------------------------------------------------------------
+void Viewer::drawAxis()
+{
+    const Vector3 zero(0.0);
+    const Vector3 x(100.0, 0.0, 0.0);
+    const Vector3 y(0.0, 100.0, 0.0);
+    const Vector3 z(0.0, 0.0, 100.0);
+    glDisable(GL_LIGHTING);
+
+    glBegin(GL_LINES);
+
+    glColor3ub(255, 0, 0);
+    glVertex3dv(zero.dataPointer());
+    glVertex3dv(x.dataPointer());
+
+    glColor3ub(0, 255, 0);
+    glVertex3dv(zero.dataPointer());
+    glVertex3dv(y.dataPointer());
+
+    glColor3ub(0, 0, 255);
+    glVertex3dv(zero.dataPointer());
+    glVertex3dv(z.dataPointer());
+
+    glEnd();
+}
+
+//-----------------------------------------------------------------------------
 void Viewer::drawCube()
 {
     glDisable(GL_LIGHTING);
@@ -343,6 +369,9 @@ void Viewer::paintGL()
         drawCube();
         glPopMatrix();
     }
+
+    // draw axis
+    drawAxis();
     
     // switch to 2d proj and the projection of the selected
     // box
@@ -362,7 +391,7 @@ void Viewer::paintGL()
         Vector3 p1 = (selectedBox.mTransfo * Vector4(selectedBox.point(i), 1.0)).xyz();
         projectedBox.add( Vector3( camera().worldToScreen(p1), 0 ) );
     }
-    
+
     glMatrixMode(GL_PROJECTION);
     glLoadMatrixd(cam2d.projectionMatrix().dataPointer() );
     glMatrixMode(GL_MODELVIEW);

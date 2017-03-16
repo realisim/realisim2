@@ -30,7 +30,7 @@ int Viewport::height() const
 //--------------------------------------------------------------------------
 double Viewport::ratio() const
 {
-	return width() / (double)height();
+    return width() / (double)height();
 }
 
 //--------------------------------------------------------------------------
@@ -52,5 +52,5 @@ Vector2 Viewport::size() const
 //--------------------------------------------------------------------------
 int Viewport::width() const
 {
-	return mWidth;
+    return mWidth;
 }

@@ -50,6 +50,7 @@ public:
 protected:
     enum CameraMode{cmRotateAround, cmFree};
     
+    void drawAxis();
     void drawCube();
     void handleUserInput();
 	virtual void initializeGL() override;

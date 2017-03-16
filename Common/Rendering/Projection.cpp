@@ -54,41 +54,41 @@ double Projection::nearPlane() const
 //-----------------------------------------------------------------------------
 Math::Matrix4 Projection::projectionMatrix() const
 {
-	Matrix4 result;
+    Matrix4 result;
 
-	const double l = left();
-	const double r = right();
-	const double b = bottom();
-	const double t = top();
-	const double f = farPlane();
-	const double n = nearPlane();
+    const double l = left();
+    const double r = right();
+    const double b = bottom();
+    const double t = top();
+    const double f = farPlane();
+    const double n = nearPlane();
 
-	switch (type())
-	{
-	case Projection::tOrthogonal:
-	{
-		double m[4][4] = {
-			{ 2.0 / (r - l), 0.0, 0.0, -(r + l) / (r - l) },
-			{ 0.0, 2.0 / (t - b), 0.0, -(t + b) / (t - b) },
-			{ 0.0, 0.0, -2.0 / (f - n), -(f + n) / (f - n) },
-			{ 0, 0, 0, 1.0 },
-		};
-		result.set(m[0], true);
-	}	break;
-	case Projection::tPerspective:
-	{
-		double m[4][4] = {
-			{ (2.0*n) / (r - l), 0.0, (r + l) / (r - l), 0.0 },
-			{ 0.0, (2.0*n) / (t - b), (t + b) / (t - b), 0.0 },
-			{ 0, 0, -(f + n) / (f - n), (-2 * f * n) / (f - n) },
-			{ 0.0, 0.0, -1, 0.0 },
-		};
-		result.set(m[0], true);
-	} break;
-	default: break;
-	}
+    switch (type())
+    {
+    case Projection::tOrthogonal:
+    {
+        double m[4][4] = {
+            { 2.0 / (r - l), 0.0, 0.0, -(r + l) / (r - l) },
+            { 0.0, 2.0 / (t - b), 0.0, -(t + b) / (t - b) },
+            { 0.0, 0.0, -2.0 / (f - n), -(f + n) / (f - n) },
+            { 0, 0, 0, 1.0 },
+        };
+        result.set(m[0], true);
+    }    break;
+    case Projection::tPerspective:
+    {
+        double m[4][4] = {
+            { (2.0*n) / (r - l), 0.0, (r + l) / (r - l), 0.0 },
+            { 0.0, (2.0*n) / (t - b), (t + b) / (t - b), 0.0 },
+            { 0, 0, -(f + n) / (f - n), (-2 * f * n) / (f - n) },
+            { 0.0, 0.0, -1, 0.0 },
+        };
+        result.set(m[0], true);
+    } break;
+    default: break;
+    }
 
-	return result;
+    return result;
 }
 
 //-----------------------------------------------------------------------------
@@ -112,8 +112,9 @@ void Projection::setNearPlane(double iV)
 { mNear = iV; }
 
 //-----------------------------------------------------------------------------
-/*iFov est en degree, iRatio est généralement le ratio du viewport sous la
- forme height / width ) */
+// iFov est en degree, iRatio est généralement le ratio du viewport sous la
+// forme width / height ).
+//
 void Projection::setPerspectiveProjection(double iFov, double iRatio,
                                           double iNear, double iFar )
 {

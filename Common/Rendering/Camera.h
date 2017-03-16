@@ -10,6 +10,99 @@ namespace Realisim
 {
 namespace Rendering
 {
+    // This class present a Camera in 3d space.
+    //
+    // In its simple form a camera is positionned in space and looks in a certain
+    // direction. Many parameters concerning the projection and the zoom can be
+    // modified. It is also possible to convert 3d world position to camera space 
+    // or screen space (and vice versa) via this class.
+    //
+    // 1- Positionning the camera
+    //      Function set( Vector3 iEye, Vector3 iLookAt, Vector3 iUp ) is used to 
+    //      position the camera. see cpp file for details.
+    //
+    // 2- Tuning the projection parameters
+    //      Modification to the projection is mostly done via method setProjection.
+    //      See Projection class. An optical zoom can be applied via method
+    //      setZoomFactor(). The zoom factor is applied to the current projection
+    //      and can be queried via getZoomFactor().
+    //
+    // 3- Coordinate systems
+    //      The camera has a right hand coordinate system. The coordinate system is 
+    //      dependant on method set(). Here are a couple of example:
+    //
+    //      1- 
+    //      set(Vector3(0, 0, 100),     // positionned at 100 on z axis
+    //          Vector3(0, 0, 0),       // looking at zero
+    //          Vector3(0, 1, 0) );     // y is up.
+    //
+    //      The resulting camera coordinate system will be: 
+    //          As specified, looking down on the z axis with y as up vector.
+    //          Following the right hand system, x as the lateral vector.
+    //
+    //            Y
+    //            ^
+    //            |
+    //            |
+    //            ------> x
+    //           /
+    //          /
+    //         Z
+    //
+    //      2- 
+    //      set(Vector3(0, 0, -100),     // positionned at 100 on z axis
+    //          Vector3(0, 0, 0),       // looking at zero
+    //          Vector3(0, 1, 0) );     // y is up.
+    //
+    //      The resulting camera coordinate system will be: 
+    //          As specified, looking down on the -z axis with y as up vector.
+    //          Following the right hand system, -x is as the lateral vector.
+    //
+    //            Y
+    //            ^
+    //            |  -Z
+    //            | /
+    //    -X ------/
+    //
+    //
+    //      3- 
+    //      set(Vector3(0, 100, 0),     // positionned at 100 on z axis
+    //          Vector3(0, 0, 0),       // looking at zero
+    //          Vector3(0, 0, 1) );     // y is up.
+    //
+    //      The resulting camera coordinate system will be: 
+    //          As specified, looking down on the y axis with Z as up vector.
+    //          Following the right hand system, x  as the lateral vector.
+    //
+    //            Z
+    //            ^
+    //            |
+    //            |
+    //     X ------
+    //           /
+    //          /
+    //         y
+    //
+    //
+    //  4- Tranformation between coordinate systems:
+    //      The following methods performs transformation between world, camera
+    //      and screen space:
+    //      
+    //      cameraToWorld(), cameraDeltaToWorld()
+    //      screenToWorld(), screenDeltaToWorld()
+    //      worldToCamera(), worldDeltaToCamera()
+    //      worldToScreen(), worldDeltaToSreen()
+    //
+    //      These methods come with two variant. The non *DeltaTo* transform a point
+    //      from one corrdinate system to another. worldToScreen() will convert a
+    //      3d point in world space to a 2d point in screen (pixel) space.
+    //
+    //      The *DeltaTo* variation is simple a convenience to transform a magnitude
+    //      from one coordinate system to another.
+    //
+    //      Note: cameraToScreen is not present but can be achieve by calling
+    //          worldToScreen( cameraToWorld() );
+    //
     class Camera
     {
     public:
