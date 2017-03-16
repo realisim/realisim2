@@ -20,7 +20,7 @@
 
 using namespace Realisim;
 using namespace Math;
-using namespace TreeD;
+using namespace Rendering;
 using namespace std;
 
 Camera gDefaultCamera;

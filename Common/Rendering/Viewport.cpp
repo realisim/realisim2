@@ -1,8 +1,8 @@
-#include "3d/Viewport.h"
+#include "Rendering/Viewport.h"
 
 using namespace Realisim;
 using namespace Math;
-using namespace TreeD;
+using namespace Rendering;
 
 
 Viewport::Viewport() :

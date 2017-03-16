@@ -1,11 +1,11 @@
 #define _USE_MATH_DEFINES
 
-#include "3d/Projection.h"
+#include "Rendering/Projection.h"
 #include <cmath>
 
 using namespace Realisim;
 using namespace Math;
-using namespace TreeD;
+using namespace Rendering;
 
 //-----------------------------------------------------------------------------
 Projection::Projection() :

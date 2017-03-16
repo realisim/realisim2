@@ -5,7 +5,7 @@
 
 namespace Realisim
 {
-    namespace TreeD
+    namespace Rendering
     {
         class Viewport
         {

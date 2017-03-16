@@ -1,5 +1,5 @@
 
-PROJECT(TreeD)
+PROJECT(Camera)
 
 #output apps in bin/"BuildConfiguration"/${PROJECT_NAME}
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${PROJECT_NAME})
@@ -10,7 +10,7 @@ INCLUDE( "../../CMakeModules/OpenGL.cmake" )
 set( SOURCE_FILES ${SOURCE_FILES} CMakeLists.txt )
 add_component( "./" "application")
 add_component( "../../Common/Math" "Math")
-add_component( "../../Common/3d" "3d")
+add_component( "../../Common/Rendering" "Rendering")
 add_component( "../../Common/Utilities" "Utilities")
 
 qt_automoc()

@@ -1,14 +1,14 @@
 
 #pragma once
 
-#include "3d/Projection.h"
-#include "3d/Viewport.h"
+#include "Rendering/Projection.h"
+#include "Rendering/Viewport.h"
 #include "Math/Matrix.h"
 #include "Math/Vector.h"
 
 namespace Realisim
 {
-namespace TreeD
+namespace Rendering
 {
     class Camera
     {

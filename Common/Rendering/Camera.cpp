@@ -1,12 +1,12 @@
 
 
-#include "3d/Camera.h"
+#include "Rendering/Camera.h"
 #include <iomanip>
 #include <sstream>
 
 using namespace Realisim;
 using namespace Math;
-using namespace TreeD;
+using namespace Rendering;
 
 //-----------------------------------------------------------------------------
 //--- Camera

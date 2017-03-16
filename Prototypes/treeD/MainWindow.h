@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "3d/Camera.h"
+#include "Rendering/Camera.h"
 #include <map>
 #include <QLabel>
 #include <QMainWindow>
@@ -44,8 +44,8 @@ public:
 	Viewer(QWidget*);
 	~Viewer();
 
-    Realisim::TreeD::Camera camera() const;
-    void setCamera(Realisim::TreeD::Camera&);
+    Realisim::Rendering::Camera camera() const;
+    void setCamera(Realisim::Rendering::Camera&);
     
 protected:
     enum CameraMode{cmRotateAround, cmFree};
@@ -61,7 +61,7 @@ protected:
 	virtual void paintGL() override;
     virtual void resizeGL(int, int) override;
     
-    Realisim::TreeD::Camera mCamera;
+    Realisim::Rendering::Camera mCamera;
     CameraMode mCameraMode;
     std::vector<Box> mBoxes;
     int mSelectedBoxIndex;
