@@ -87,7 +87,7 @@ mMouseRightPressed(false)
     //p.setProjection(-50, 50, -50, 50, 1, 1000, Projection::tPerspective);
     
     gDefaultCamera.setViewport(v);
-    gDefaultCamera.setProjection(p, true);
+    gDefaultCamera.setProjection(p);
     gDefaultCamera.set(Vector3(0.0, 0.0, 300),
                 Vector3(0.0, 0.0, 0.0),
                 Vector3(0.0, 1.0, 0.0) );
@@ -352,7 +352,7 @@ void Viewer::paintGL()
                  0, v.height(),
                  1, 1000.0, Projection::tOrthogonal);
     cam2d.setViewport(v);
-    cam2d.setProjection(p, true);
+    cam2d.setProjection(p);
     cam2d.set(Vector3(0, 0, 10), Vector3(0.0), Vector3(0.0, 1.0, 0.0)  );
     
     const Box& selectedBox = mBoxes[mSelectedBoxIndex];
@@ -497,7 +497,7 @@ void MainWindow::cameraProjOrthoClicked()
                     -100, 100,
                     p.nearPlane(), p.farPlane(),
                     Projection::tOrthogonal);
-    c.setProjection(p, true);
+    c.setProjection(p);
     mpViewer->setCamera(c);
     
     updateUi();
@@ -508,7 +508,7 @@ void MainWindow::cameraProjPerspectiveClicked()
 {
     Camera c = mpViewer->camera();
     Projection p = gDefaultCamera.projection();
-    c.setProjection(p, true);
+    c.setProjection(p);
     mpViewer->setCamera(c);
 
     updateUi();

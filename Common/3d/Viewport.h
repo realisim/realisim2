@@ -20,9 +20,10 @@ namespace Realisim
             
             Orientation orientation() const;
             int height() const;
-            int width() const;
+			double ratio() const;
             void set(int, int);
             Math::Vector2 size() const;
+			int width() const;
             
         protected:
             Orientation mOrientation;

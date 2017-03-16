@@ -52,6 +52,46 @@ double Projection::nearPlane() const
 { return mNear; }
 
 //-----------------------------------------------------------------------------
+Math::Matrix4 Projection::projectionMatrix() const
+{
+	Matrix4 result;
+
+	const double l = left();
+	const double r = right();
+	const double b = bottom();
+	const double t = top();
+	const double f = farPlane();
+	const double n = nearPlane();
+
+	switch (type())
+	{
+	case Projection::tOrthogonal:
+	{
+		double m[4][4] = {
+			{ 2.0 / (r - l), 0.0, 0.0, -(r + l) / (r - l) },
+			{ 0.0, 2.0 / (t - b), 0.0, -(t + b) / (t - b) },
+			{ 0.0, 0.0, -2.0 / (f - n), -(f + n) / (f - n) },
+			{ 0, 0, 0, 1.0 },
+		};
+		result.set(m[0], true);
+	}	break;
+	case Projection::tPerspective:
+	{
+		double m[4][4] = {
+			{ (2.0*n) / (r - l), 0.0, (r + l) / (r - l), 0.0 },
+			{ 0.0, (2.0*n) / (t - b), (t + b) / (t - b), 0.0 },
+			{ 0, 0, -(f + n) / (f - n), (-2 * f * n) / (f - n) },
+			{ 0.0, 0.0, -1, 0.0 },
+		};
+		result.set(m[0], true);
+	} break;
+	default: break;
+	}
+
+	return result;
+}
+
+//-----------------------------------------------------------------------------
 double Projection::right() const
 { return mRight; }
 

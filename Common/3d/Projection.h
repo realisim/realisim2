@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "Math/Matrix.h"
 #include "Math/Vector.h"
 
 namespace Realisim
@@ -23,6 +24,7 @@ namespace TreeD
         double left() const;
         double height() const;
         double nearPlane() const;
+		Math::Matrix4 projectionMatrix() const;
         double right() const;
         void setBottom(double);
         void setFarPlane(double);

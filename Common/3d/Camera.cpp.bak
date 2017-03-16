@@ -51,7 +51,7 @@ Vector3 Camera::cameraDeltaToWorld(const Vector3& iV) const
 
 //-----------------------------------------------------------------------------
 void Camera::computeProjection()
-{
+{	
 	const Projection& p = projection();
 	// La projectio est lié au viewport. Ici, nous voulons que la camera
 	// conserve la projection demandé par setProjection() même quand le 
@@ -255,7 +255,7 @@ std::string Camera::toString() const
 {
     using namespace std;
     ostringstream oss;
-    
+        
     oss << fixed << setprecision(3);
     oss << "\n\nPos: " << mPosition.x() << " " << mPosition.y() << " " << mPosition.z();
     oss << "\nLook: " << mLookAt.x() << " " << mLookAt.y() << " " << mLookAt.z();

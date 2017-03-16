@@ -49,7 +49,7 @@ namespace TreeD
     protected:  
         void computeProjection(); 
         void computeViewMatrix();
-        const Math::Vector3& lookVector() const;
+        const Math::Vector3& lookVector() const;;
         Math::Vector3 projectToNdc(const Math::Vector3& iWorld) const;
         Math::Vector3 unprojectFromNdc(const Math::Vector3& iNdc) const;
         
