@@ -132,9 +132,9 @@ size_t ByteArray::capacity() const
 }
 
 //-------------------------------------------------------
-size_t ByteArray::capLength(size_t iLength) const
+size_t ByteArray::capLength(int iLength) const
 {
-    size_t l = iLength;
+    int l = iLength;
     if( l < 0 || l > size() )
     { l = size(); }
     return l;

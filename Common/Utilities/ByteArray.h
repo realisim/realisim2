@@ -70,7 +70,7 @@ namespace Utilities
             std::string mData; //metre un char* pour supporter fromRawData...
         };
 
-        size_t capLength(size_t iLength) const;
+        size_t capLength(int iLength) const;
         void removeTrailing0();
         void addTrailing0();
 
