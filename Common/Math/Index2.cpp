@@ -72,28 +72,28 @@ Index2& Index2::operator-= (const Index2 &iIndex)
 //-----------------------------------------------------------------------------
 Index2 Index2::operator* (double iV) const
 {
-    return Index2(iV*mX, iV*mY);
+    return Index2( (int)(iV*mX), (int)(iV*mY) );
 }
 
 //-----------------------------------------------------------------------------
 Index2& Index2::operator*= (double iV)
 {
-    mX *= iV;
-    mY *= iV;
+    mX = (int)(iV*mX);
+    mY = (int)(iV*mY);
     return *this;
 }
 
 //-----------------------------------------------------------------------------
 Index2 Index2::operator/ (double iV) const
 {
-    return Index2(mX/iV, mY/iV);
+    return Index2((int)(mX / iV), (int)(mY / iV));
 }
 
 //-----------------------------------------------------------------------------
 Index2& Index2::operator/= (double iV)
 {
-    mX /= iV;
-    mY /= iV;
+    mX = (int)(mX / iV);
+    mY = (int)(mY / iV);
     return *this;
 }
 

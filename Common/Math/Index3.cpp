@@ -77,30 +77,30 @@ Index3& Index3::operator-= (const Index3 &iIndex)
 //------------------------------------------------------------------------
 Index3 Index3::operator* (double iV) const
 {
-    return Index3(iV*mX, iV*mY, iV*mZ);
+    return Index3((int)(iV*mX), (int)(iV*mY), (int)(iV*mZ));
 }
 
 //------------------------------------------------------------------------
 Index3& Index3::operator*= (double iV)
 {
-    mX *= iV;
-    mY *= iV;
-    mZ *= iV;
+    mX = (int)(iV*mX);
+    mY = (int)(iV*mY);
+    mZ = (int)(iV*mZ);
     return *this;
 }
 
 //------------------------------------------------------------------------
 Index3 Index3::operator/ (double iV) const
 {
-    return Index3(mX/iV, mY/iV, mZ/iV);
+    return Index3((int)(mX/iV), (int)(mY / iV), (int)(mZ / iV));
 }
 
 //------------------------------------------------------------------------
 Index3& Index3::operator/= (double iV)
 {
-    mX /= iV;
-    mY /= iV;
-    mZ /= iV;
+    mX = (int)(mX / iV);
+    mY = (int)(mY / iV);
+    mZ = (int)(mZ / iV);
     return *this;
 }
 
