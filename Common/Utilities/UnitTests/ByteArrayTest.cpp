@@ -322,10 +322,14 @@ TEST(ByteArray, ReadTest)
     ByteArray ba(loremIpsum);
     std::istringstream iss(ba.constData());
     
-    char *charRead = new char[ba.size()];
+    // +1 to add '\0'
+    char *charRead = new char[ba.size() + 1];
     iss.read(charRead, ba.size());
-    
+    charRead[ba.size()] = '\0';
+
     EXPECT_STREQ(loremIpsum.c_str(), charRead);
+
+    delete[] charRead;
 }
 
 TEST(ByteArray, WriteTest_usingOperatorBracket)
