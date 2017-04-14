@@ -9,7 +9,9 @@ namespace Utilities
      This class uses a copy-on-write mechanism. Please refer to http://doc.qt.io/qt-5/implicit-sharing.html
      for a detailed explanation.
 
-     
+     Note:
+        method constData() quarantees that no copy will occurs.
+        method data() will copy the content since it might be overwritten.
     */
     class ByteArray
     {
