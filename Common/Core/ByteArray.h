@@ -3,7 +3,7 @@
 
 namespace Realisim
 {
-namespace Utilities
+namespace Core
 {
     /*
      This class uses a copy-on-write mechanism. Please refer to http://doc.qt.io/qt-5/implicit-sharing.html

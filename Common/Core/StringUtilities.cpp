@@ -6,7 +6,7 @@
 
 namespace Realisim
 {
-namespace Utilities
+namespace Core
 {
     using namespace std;
     //-------------------------------------------------------------------------

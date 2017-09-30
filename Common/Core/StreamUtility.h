@@ -7,7 +7,7 @@
 
 namespace Realisim
 {
-namespace Utilities
+namespace Core
 {
     class StreamUtility
     {

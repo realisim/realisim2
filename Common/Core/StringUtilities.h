@@ -5,7 +5,7 @@
 
 namespace Realisim
 {
-namespace Utilities
+namespace Core
 {
     std::string fromVector(std::vector<std::string>& iInput, char iSeparator);
     int toInt(const std::string& iInput, bool *oSucess = nullptr);

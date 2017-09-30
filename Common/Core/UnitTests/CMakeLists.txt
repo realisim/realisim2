@@ -9,7 +9,7 @@ include("../../../CMakeModules/Gtest.cmake")
 # Add sources
 #------------------------
 add_component("./" "TestFiles")
-add_component("../" "Utilities")
+add_component("../" "Core")
 
 #------------------------
 # Add and link executable

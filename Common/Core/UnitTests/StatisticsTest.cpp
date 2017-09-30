@@ -1,9 +1,9 @@
 #include "gtest/gtest.h"
 #include "Math/IsEqual.h"
-#include "Utilities/Statistics.h"
+#include "Core/Statistics.h"
 
 using namespace Realisim;
-using namespace Utilities;
+using namespace Core;
 
 
 TEST(Statistics, general)

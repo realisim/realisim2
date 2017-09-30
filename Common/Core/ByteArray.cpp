@@ -3,7 +3,7 @@
 #include <cassert>
 
 using namespace Realisim;
-using namespace Utilities;
+using namespace Core;
 using namespace std;
 
 ByteArray::ByteArray() : mpGuts(nullptr)

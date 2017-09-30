@@ -1,8 +1,8 @@
 
-#include "Utilities/Timer.h"
+#include "Core/Timer.h"
 
 using namespace Realisim;
-using namespace Utilities;
+using namespace Core;
 using namespace std;
 
 Timer::Timer() :

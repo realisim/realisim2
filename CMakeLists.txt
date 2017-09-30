@@ -67,5 +67,5 @@ endif()
 # unit tests if desired
 if( BUILD_UNIT_TESTS )
     add_subdirectory(Common/Math/UnitTest)
-    add_subdirectory(Common/Utilities/UnitTests)
+    add_subdirectory(Common/Core/UnitTests)
 endif()

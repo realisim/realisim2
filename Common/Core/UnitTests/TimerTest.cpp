@@ -1,10 +1,10 @@
 #include "gtest/gtest.h"
-#include "Utilities/Timer.h"
+#include "Core/Timer.h"
 
 #include <thread>
 
 using namespace Realisim;
-using namespace Utilities;
+using namespace Core;
 
 TEST(Timer, test)
 {

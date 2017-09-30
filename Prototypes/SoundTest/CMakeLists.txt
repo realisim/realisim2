@@ -12,7 +12,7 @@ set( SOURCE_FILES ${SOURCE_FILES} "./CMakeLists.txt" )
 add_component( "." "Application" )
 add_component("../../Common/Math" "Math")
 add_component("../../Common/Interface/Audio" "Audio")
-add_component("../../Common/Utilities" "Utilities")
+add_component("../../Common/Core" "Core")
 
 qt_automoc()
 

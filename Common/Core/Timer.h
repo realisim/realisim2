@@ -5,7 +5,7 @@
 
 namespace Realisim
 {
-namespace Utilities
+namespace Core
 {
   //Cette classe fonctionne comme un chronomètre. Elle sert a calculer
   //des intervals de temps.

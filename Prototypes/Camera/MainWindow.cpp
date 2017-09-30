@@ -355,16 +355,16 @@ void Viewer::paintGL()
     f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     glMatrixMode(GL_PROJECTION);
-    glLoadMatrixd(mCamera.projectionMatrix().dataPointer() );
+    glLoadMatrixd(mCamera.projectionMatrix().getDataPointer() );
     glMatrixMode(GL_MODELVIEW);
-    glLoadMatrixd(mCamera.viewMatrix().dataPointer());
+    glLoadMatrixd(mCamera.viewMatrix().getDataPointer());
     
     for(size_t i = 0; i < mBoxes.size(); ++i)
     {
         const Box& b = mBoxes[i];
         
         glPushMatrix();
-        glMultMatrixd(b.mTransfo.dataPointer());
+        glMultMatrixd(b.mTransfo.getDataPointer());
         glScaled(b.width(), b.height(), b.depth());
         drawCube();
         glPopMatrix();
@@ -393,9 +393,9 @@ void Viewer::paintGL()
     }
 
     glMatrixMode(GL_PROJECTION);
-    glLoadMatrixd(cam2d.projectionMatrix().dataPointer() );
+    glLoadMatrixd(cam2d.projectionMatrix().getDataPointer() );
     glMatrixMode(GL_MODELVIEW);
-    glLoadMatrixd(cam2d.viewMatrix().dataPointer());
+    glLoadMatrixd(cam2d.viewMatrix().getDataPointer());
     
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_LIGHTING);

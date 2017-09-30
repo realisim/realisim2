@@ -1,11 +1,11 @@
 #include <algorithm>
 #include <cmath>
-#include "Utilities/Statistics.h"
+#include "Core/Statistics.h"
 #include <limits>
 
 
 using namespace Realisim;
-using namespace Utilities;
+using namespace Core;
 
 Statistics::Statistics() :
   mKeepSamples(false),

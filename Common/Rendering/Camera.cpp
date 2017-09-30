@@ -40,13 +40,13 @@ Camera::~Camera()
 //-----------------------------------------------------------------------------
 Vector3 Camera::cameraToWorld(const Vector3& iP) const
 {
-    return (viewMatrix().inverse() * Vector4(iP, 1)).xyz();
+    return (viewMatrix().getInverse() * Vector4(iP, 1)).xyz();
 }
 
 //-----------------------------------------------------------------------------
 Vector3 Camera::cameraDeltaToWorld(const Vector3& iV) const
 {
-    return (viewMatrix().inverse() * Vector4(iV, 0)).xyz();
+    return (viewMatrix().getInverse() * Vector4(iV, 0)).xyz();
 }
 
 //-----------------------------------------------------------------------------
@@ -164,7 +164,7 @@ void Camera::rotate(double iRad, Vector3 iAxis,
 
     Matrix4 r(iRad, iAxis);
     Matrix4 t(iAxisPos);
-    r = t * r * t.inverse();
+    r = t * r * t.getInverse();
 
     eye = (r * Vector4(eye, 1)).xyz();
     lookat = (r * Vector4(lookat, 1)).xyz();
@@ -309,7 +309,7 @@ void Camera::translateTo(const Vector3& iV)
 //
 Vector3 Camera::unprojectFromNdc(const Vector3& iNdc) const
 {
-    Vector4 r = (projectionMatrix() * viewMatrix()).inverse() * Vector4(iNdc, 1);
+    Vector4 r = (projectionMatrix() * viewMatrix()).getInverse() * Vector4(iNdc, 1);
     return r.xyz() / r.w();
 }
 

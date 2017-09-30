@@ -1,8 +1,8 @@
 #include "gtest/gtest.h"
-#include "Utilities/StringUtilities.h"
+#include "Core/StringUtilities.h"
 
 using namespace Realisim;
-using namespace Utilities;
+using namespace Core;
 using namespace std;
 
 TEST(StringUtilities, toInt)

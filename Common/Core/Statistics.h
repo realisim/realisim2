@@ -5,7 +5,7 @@
 
 namespace Realisim
 {
-namespace Utilities
+namespace Core
 {
 
   //Ce bout de code est fortement inspiré de :

@@ -12,7 +12,7 @@
 #include <QRadioButton>
 #include <QSlider>
 #include <QTimerEvent>
-#include "Utilities/Timer.h"
+#include "Core/Timer.h"
 #include <vector>
 
 //-------------------------------------------------------------------
@@ -108,6 +108,6 @@ protected:
 
 	//--- data
     int mTimerId;
-    Realisim::Utilities::Timer mTimerToUpdateGl;
+    Realisim::Core::Timer mTimerToUpdateGl;
 };
 

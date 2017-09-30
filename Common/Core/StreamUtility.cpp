@@ -4,7 +4,7 @@
 
 using namespace std;
 using namespace Realisim;
-using namespace Utilities;
+using namespace Core;
 
 namespace
 {
