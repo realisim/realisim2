@@ -40,13 +40,6 @@ Vector4::Vector4(double v)
 }
 
 //---------------------------------------------------------------------------
-const double* Vector4::dataPointer() const
-{
-    return &mData[0];
-}
-
-
-//---------------------------------------------------------------------------
 double Vector4::norm() const
 {
     return std::sqrt(mData[0]*mData[0] + mData[1]*mData[1] + mData[2]*mData[2] + mData[3]*mData[3]);
@@ -63,6 +56,17 @@ Vector4& Vector4::normalize()
     
     return (*this);
 
+}
+
+Vector4	Vector4::multiplyComponents(const Vector4& v) const
+{
+	return Vector4(this->x()*v.x(), this->y()*v.y(), this->z()*v.z(), this->w()*v.w());
+}
+
+//---------------------------------------------------------------------------
+const double* Vector4::dataPointer() const
+{
+    return &mData[0];
 }
 
 //---------------------------------------------------------------------------
@@ -171,6 +175,42 @@ double Vector4::operator* (const Vector4 &vect) const // dot product
         y() * vect.y() + 
         z() * vect.z() +
         w() * vect.w() );
+}
+
+//----------------------------------------------------------------------------
+bool Vector4::operator> (const Vector4& iV) const
+{
+    return mData[0] > iV.mData[0] &&
+        mData[1] > iV.mData[1] &&
+        mData[2] > iV.mData[2] &&
+        mData[3] > iV.mData[3];
+}
+
+//----------------------------------------------------------------------------
+bool Vector4::operator>= (const Vector4& iV) const
+{
+    return mData[0] >= iV.mData[0] &&
+        mData[1] >= iV.mData[1] &&
+        mData[2] >= iV.mData[2] &&
+        mData[3] >= iV.mData[3];
+}
+
+//----------------------------------------------------------------------------
+bool Vector4::operator< (const Vector4& iV) const
+{
+    return mData[0] < iV.mData[0] &&
+        mData[1] < iV.mData[1] &&
+        mData[2] < iV.mData[2] &&
+        mData[3] < iV.mData[3];
+}
+
+//----------------------------------------------------------------------------
+bool Vector4::operator<= (const Vector4& iV) const
+{
+    return mData[0] <= iV.mData[0] &&
+        mData[1] <= iV.mData[1] &&
+        mData[2] <= iV.mData[2] &&
+        mData[3] <= iV.mData[3];
 }
 
 //-----------------------------------------------------------------------------

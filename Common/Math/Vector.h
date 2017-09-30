@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "VectorI.h"
 #include <limits>
 #include <string>
 
@@ -15,6 +16,7 @@ namespace Math
         Vector2();
         Vector2(double iV);
         Vector2(double iX, double iY);
+        Vector2(const Vector2i &iVector2i);
         Vector2(const Vector2 &iVect) = default;
         Vector2& operator=(const Vector2 &vect) = default;
         ~Vector2() = default;
@@ -23,7 +25,9 @@ namespace Math
         bool isEqual(const Vector2&, double iEpsilon = std::numeric_limits<double>::epsilon() ) const;
         double norm() const;
         Vector2& normalize();
-        
+
+		Vector2	multiplyComponents(const Vector2& v) const;
+
         Vector2 operator+ (const Vector2 &vect) const;
         Vector2& operator+= (const Vector2 &vect);
         Vector2 operator- (const Vector2 &vect) const;
@@ -36,6 +40,10 @@ namespace Math
         bool operator== ( const Vector2& ) const;
         bool operator!= ( const Vector2& ) const;
         double operator* (const Vector2 &vect) const; // dot product
+        bool operator > (const Vector2 &vect) const;
+        bool operator >= (const Vector2 &vect) const;
+        bool operator < (const Vector2 &vect) const;
+        bool operator <= (const Vector2 &vect) const;
 
         void setX(double);
         void setY(double);
@@ -46,7 +54,6 @@ namespace Math
         std::string toString(int iPrecision =3) const;
 
     protected:
-    private:
         double mData[2];
     };
     
@@ -66,6 +73,8 @@ namespace Math
         bool isEqual(const Vector3&, double iEpsilon = std::numeric_limits<double>::epsilon() ) const;
         double norm() const;
         Vector3& normalize();
+
+		Vector3	multiplyComponents(const Vector3&) const;
         
         Vector3 operator+ (const Vector3 &vect) const;
         Vector3& operator+= (const Vector3 &vect);
@@ -80,6 +89,10 @@ namespace Math
         bool operator!= ( const Vector3& ) const;
         Vector3 operator^ (const Vector3 &vect) const; // scalar product
         double operator* (const Vector3 &vect) const; // dot product
+        bool operator > (const Vector3 &vect) const;
+        bool operator >= (const Vector3 &vect) const;
+        bool operator < (const Vector3 &vect) const;
+        bool operator <= (const Vector3 &vect) const;
 
         void setX(double);
         void setY(double);
@@ -95,7 +108,6 @@ namespace Math
         std::string toString(int iPrecision =3) const;
 
     protected:
-    private:
         double mData[3];
     };
     
@@ -114,6 +126,9 @@ namespace Math
         
         double norm() const;
         Vector4& normalize();
+
+		Vector4	multiplyComponents(const Vector4& v) const;
+
         const double* dataPointer() const;
         bool isEqual(const Vector4&, double iEpsizion = std::numeric_limits<double>::epsilon() ) const;
         Vector4 operator+ (const Vector4&);
@@ -129,6 +144,10 @@ namespace Math
         bool operator!= ( const Vector4& ) const;
 //Vector4 operator^ (const Vector4 &vect) const; // scalar product
         double operator* (const Vector4 &vect) const; // dot product
+        bool operator> (const Vector4 &vect) const;
+        bool operator>= (const Vector4 &vect) const;
+        bool operator< (const Vector4 &vect) const;
+        bool operator<= (const Vector4 &vect) const;
         
         void set(double x, double y, double z, double w);
         void setX(double x);
@@ -141,7 +160,8 @@ namespace Math
         double z() const;
         double w() const;
         Vector3 xyz() const;
-    private:
+
+    protected:
         double mData[4];
     };
  

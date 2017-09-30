@@ -1,6 +1,4 @@
 
-#define _USE_MATH_DEFINES // for C++ mostly M_PI
-
 #include "gtest/gtest.h"
 #include "Math/isEqual.h"
 #include "Math/Matrix.h"
@@ -233,13 +231,13 @@ TEST(Matrix4, Functions)
         9,10,11,12,
         13,14,15,16};
     
-    //const double* getDataPointer() const;
+    //const double* dataPointer() const;
     {
         Matrix4 m(initializer);
         EXPECT_EQ( 1, *(m.getDataPointer()) );
     }
 
-    //Matrix4 inverse() const;
+    //Matrix4 getInverse() const;
     {
         // this is a singular matrix... thus impossible to inverse
         // in that case, we return an identity matrix...
@@ -331,6 +329,17 @@ TEST(Matrix4, Functions)
         //already tested by constructor
     }
 
+    //void setAsScaling(const Vector3& scale);
+    {
+        Matrix4 m;
+        m.setAsScaling(Vector3(1, 2, 3));
+
+        EXPECT_TRUE(m.getRow(0) == Vector4(1, 0, 0, 0));
+        EXPECT_TRUE(m.getRow(1) == Vector4(0, 2, 0, 0));
+        EXPECT_TRUE(m.getRow(2) == Vector4(0, 0, 3, 0));
+        EXPECT_TRUE(m.getRow(3) == Vector4(0, 0, 0, 1));
+    }
+
     //void setRow(int iRow, const Vector4&);
     {
         Matrix4 m;
@@ -351,6 +360,14 @@ TEST(Matrix4, Functions)
         Matrix4 m;
         m.setAsTranslation(t);
         EXPECT_TRUE( t == m.getTranslationAsVector() );
+
+        Matrix4 m2(Quaternion(1,2,3,4));
+        m2.setAsTranslation(Vector3(1, 2, 3));
+
+        EXPECT_TRUE(m2.getRow(0) == Vector4(1, 0, 0, 1));
+        EXPECT_TRUE(m2.getRow(1) == Vector4(0, 1, 0, 2));
+        EXPECT_TRUE(m2.getRow(2) == Vector4(0, 0, 1, 3));
+        EXPECT_TRUE(m2.getRow(3) == Vector4(0, 0, 0, 1));
     }
 
     //Vector3 translationAsVector() const;
@@ -360,15 +377,27 @@ TEST(Matrix4, Functions)
         EXPECT_TRUE( r == Vector3(4, 8, 12) );
     }
 
-    //Matrix4 transpose() const;
+    //Matrix4& transpose();
     {
         Matrix4 m(initializer);
-        Matrix4 m2 = m.transpose();
+        m.transpose();
         double result[16] = {
             1,5,9,13,
             2,6,10,14,
             3,7,11,15,
             4,8,12,16};
+        EXPECT_EQ_MATRIX4(m, result);
+    }
+
+    //Matrix4 getTransposed() const;
+    {
+        Matrix4 m(initializer);
+        Matrix4 m2 = m.getTransposed();
+        double result[16] = {
+            1,5,9,13,
+            2,6,10,14,
+            3,7,11,15,
+            4,8,12,16 };
         EXPECT_EQ_MATRIX4(m2, result);
     }
 

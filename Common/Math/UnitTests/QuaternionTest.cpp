@@ -1,4 +1,3 @@
-#define _USE_MATH_DEFINES // for C++ mostly M_PI
 
 #include "gtest/gtest.h"
 #include "Math/isEqual.h"
