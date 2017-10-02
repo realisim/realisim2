@@ -6,7 +6,7 @@ using namespace Rendering;
 
 
 Viewport::Viewport() :
-mOrientation(oHorizontal),
+mOrientation(oPaysage),
 mWidth(1),
 mHeight(1)
 {}
@@ -20,37 +20,55 @@ Viewport::Viewport(int iWidth, int iHeight)
 }
 
 //--------------------------------------------------------------------------
-Viewport::Orientation Viewport::orientation() const
+int Viewport::getHeight() const
+{
+	return mHeight;
+}
+
+//--------------------------------------------------------------------------
+Viewport::Orientation Viewport::getOrientation() const
 { return mOrientation; }
 
 //--------------------------------------------------------------------------
-int Viewport::height() const
-{ return mHeight; }
+double Viewport::getRatio() const
+{
+    return getWidth() / (double)getHeight();
+}
 
 //--------------------------------------------------------------------------
-double Viewport::ratio() const
+Vector2 Viewport::getSize() const
 {
-    return width() / (double)height();
+	return Vector2(getWidth(), getHeight());
+}
+
+//--------------------------------------------------------------------------
+int Viewport::getWidth() const
+{
+	return mWidth;
+}
+
+//--------------------------------------------------------------------------
+bool Viewport::operator==(const Viewport& iV)
+{
+	return mOrientation == iV.mOrientation &&
+		mWidth == iV.mWidth &&
+		mHeight == iV.mHeight;
+}
+
+//--------------------------------------------------------------------------
+bool Viewport::operator!=(const Viewport& iV)
+{
+	return !operator==(iV);
 }
 
 //--------------------------------------------------------------------------
 void Viewport::set(int iW, int iH)
 {
-    if(width() != iW || height() != iH)
+    if(getWidth() != iW || getHeight() != iH)
     {
         mWidth = iW;
         mHeight = iH;
 
-        mOrientation = mHeight > mWidth ? oVertical : oHorizontal; 
+        mOrientation = mHeight > mWidth ? oPortrait : oPaysage; 
     }
-}
-
-//--------------------------------------------------------------------------
-Vector2 Viewport::size() const
-{ return Vector2(width(), height()); }
-
-//--------------------------------------------------------------------------
-int Viewport::width() const
-{
-    return mWidth;
 }

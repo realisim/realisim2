@@ -1,7 +1,6 @@
-#define _USE_MATH_DEFINES
-
-#include "Rendering/Projection.h"
 #include <cmath>
+#include "Rendering/Projection.h"
+
 
 using namespace Realisim;
 using namespace Math;
@@ -19,6 +18,12 @@ mType(tOrthogonal)
 {}
 
 //-----------------------------------------------------------------------------
+Projection::Projection(double iFovX, double iRatio, double iNear, double iFar)
+{
+	setPerspectiveProjectionWithRatio(iFovX, iRatio, iNear, iFar);
+}
+
+//-----------------------------------------------------------------------------
 Projection::Projection(double iLeft, double iRight,
            double iBottom, double iTop,
            double iNear, double iFar, Projection::Type iType) :
@@ -32,38 +37,40 @@ mType(iType)
 {}
 
 //-----------------------------------------------------------------------------
-double Projection::bottom() const
+double Projection::getBottom() const
 { return mBottom; }
 
 //-----------------------------------------------------------------------------
-double Projection::farPlane() const
+double Projection::getFar() const
 { return mFar; }
 
 //-----------------------------------------------------------------------------
-double Projection::left() const
+double Projection::getHeight() const
+{
+	return fabs(mTop - mBottom);
+}
+
+//-----------------------------------------------------------------------------
+double Projection::getLeft() const
 { return mLeft; }
 
 //-----------------------------------------------------------------------------
-double Projection::height() const
-{ return fabs(mTop - mBottom); }
-
-//-----------------------------------------------------------------------------
-double Projection::nearPlane() const
+double Projection::getNear() const
 { return mNear; }
 
 //-----------------------------------------------------------------------------
-Math::Matrix4 Projection::projectionMatrix() const
+Math::Matrix4 Projection::getProjectionMatrix() const
 {
     Matrix4 result;
 
-    const double l = left();
-    const double r = right();
-    const double b = bottom();
-    const double t = top();
-    const double f = farPlane();
-    const double n = nearPlane();
+    const double l = getLeft();
+    const double r = getRight();
+    const double b = getBottom();
+    const double t = getTop();
+    const double f = getFar();
+    const double n = getNear();
 
-    switch (type())
+    switch (getType())
     {
     case Projection::tOrthogonal:
     {
@@ -83,6 +90,7 @@ Math::Matrix4 Projection::projectionMatrix() const
             { 0, 0, -(f + n) / (f - n), (-2 * f * n) / (f - n) },
             { 0.0, 0.0, -1, 0.0 },
         };
+
         result.set(m[0], true);
     } break;
     default: break;
@@ -92,15 +100,49 @@ Math::Matrix4 Projection::projectionMatrix() const
 }
 
 //-----------------------------------------------------------------------------
-double Projection::right() const
+double Projection::getRight() const
 { return mRight; }
+
+//-----------------------------------------------------------------------------
+Math::Vector2 Projection::getSize() const
+{ return Vector2(getWidth(), getHeight()); }
+
+//-----------------------------------------------------------------------------
+double Projection::getTop() const
+{ return mTop; }
+
+//-----------------------------------------------------------------------------
+Projection::Type Projection::getType() const
+{ return mType; }
+
+//-----------------------------------------------------------------------------
+double Projection::getWidth() const
+{ return fabs(mRight - mLeft); }
+
+//-----------------------------------------------------------------------------
+bool Projection::operator==(const Projection& iP)
+{
+	return mLeft == iP.mLeft &&
+		mRight == iP.mRight &&
+		mBottom == iP.mBottom &&
+		mTop == iP.mTop &&
+		mNear == iP.mNear &&
+		mFar == iP.mFar &&
+		mType == iP.mType;
+}
+
+//-----------------------------------------------------------------------------
+bool Projection::operator!=(const Projection& iP)
+{
+	return !operator==(iP); 
+}
 
 //-----------------------------------------------------------------------------
 void Projection::setBottom(double iV)
 { mBottom = iV; }
 
 //-----------------------------------------------------------------------------
-void Projection::setFarPlane(double iV)
+void Projection::setFar(double iV)
 { mFar = iV; }
 
 //-----------------------------------------------------------------------------
@@ -108,23 +150,8 @@ void Projection::setLeft(double iV)
 { mLeft = iV; }
 
 //-----------------------------------------------------------------------------
-void Projection::setNearPlane(double iV)
+void Projection::setNear(double iV)
 { mNear = iV; }
-
-//-----------------------------------------------------------------------------
-// iFov est en degree, iRatio est généralement le ratio du viewport sous la
-// forme width / height ).
-//
-void Projection::setPerspectiveProjection(double iFov, double iRatio,
-                                          double iNear, double iFar )
-{
-    const double kDegreeToRadian = M_PI/180.0;
-    double halfHeight = iNear * tan(iFov * 0.5 * kDegreeToRadian);
-
-    double halfWidth = iRatio * halfHeight;
-    setProjection(-halfWidth, halfWidth, -halfHeight, halfHeight,
-                  iNear, iFar, Projection::tPerspective );
-}
 
 //-----------------------------------------------------------------------------
 void Projection::setProjection(double iLeft, double iRight,
@@ -142,26 +169,36 @@ void Projection::setProjection(double iLeft, double iRight,
 }
 
 //-----------------------------------------------------------------------------
+void Projection::setPerspectiveProjection(double iFovX, double iFovY, double iNear, double iFar)
+{
+	const double kDegreeToRadian = M_PI / 180.0;
+	const double halfWidth = iNear * tan(iFovX * 0.5 * kDegreeToRadian);
+	const double halfHeight = iNear * tan(iFovY * 0.5 * kDegreeToRadian);
+
+	setProjection(-halfWidth, halfWidth, -halfHeight, halfHeight,
+		iNear, iFar, Projection::tPerspective);
+}
+
+//-----------------------------------------------------------------------------
+// iFov est en degree, iRatio est généralement le ratio du viewport sous la
+// forme width / height ).
+//
+void Projection::setPerspectiveProjectionWithRatio(double iFovX, double iRatio,
+                                          double iNear, double iFar )
+{
+    const double kDegreeToRadian = M_PI/180.0;
+	const double halfWidth = iNear * tan(iFovX * 0.5 * kDegreeToRadian);
+	const double halfHeight = halfWidth/iRatio;
+
+    setProjection(-halfWidth, halfWidth, -halfHeight, halfHeight,
+                  iNear, iFar, Projection::tPerspective );
+}
+
+//-----------------------------------------------------------------------------
 void Projection::setRight(double iV)
 { mRight = iV; }
 
 //-----------------------------------------------------------------------------
 void Projection::setTop(double iV)
 { mTop = iV; }
-
-//-----------------------------------------------------------------------------
-Math::Vector2 Projection::size() const
-{ return Vector2(width(), height()); }
-
-//-----------------------------------------------------------------------------
-double Projection::top() const
-{ return mTop; }
-
-//-----------------------------------------------------------------------------
-Projection::Type Projection::type() const
-{ return mType; }
-
-//-----------------------------------------------------------------------------
-double Projection::width() const
-{ return fabs(mRight - mLeft); }
 
