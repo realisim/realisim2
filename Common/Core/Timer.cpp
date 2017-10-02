@@ -16,7 +16,9 @@ Timer::~Timer()
 {}
 
 //-------------------------------------------------------------------------
-//retourne le nombre de secondes écoulées entre le start et le stop;
+// retourne le nombre de secondes écoulées entre le start et le stop;
+// expliquer de elapse apres start
+//
 double Timer::elapsed() const
 {
   chrono::duration<double> timeSpan;

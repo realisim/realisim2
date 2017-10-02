@@ -6,12 +6,16 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${PROJECT_NAME})
 
 INCLUDE( "../../CMakeModules/Qt5.cmake" )
 INCLUDE( "../../CMakeModules/OpenGL.cmake" )
+INCLUDE( "../../CMakeModules/Lodepng.cmake" )
+INCLUDE( "../../CMakeModules/Half.cmake" )
 
 set( SOURCE_FILES ${SOURCE_FILES} CMakeLists.txt )
 add_component( "./" "application")
 add_component( "../../Common/Math" "Math")
 add_component( "../../Common/Rendering" "Rendering")
 add_component( "../../Common/Core" "Core")
+add_component( "../../Common/Core/${PLATFORM_SPECIFIC_FOLDER}" "Core/${PLATFORM_SPECIFIC_FOLDER}")
+add_component( "../../Common/Core/ImageSupport" "Core/ImageSupport")
 
 qt_automoc()
 

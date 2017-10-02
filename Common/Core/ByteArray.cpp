@@ -22,7 +22,6 @@ mpGuts(nullptr)
         { mpGuts->mData = string(iData, iLength); }
         else
         { mpGuts->mData = iData; }
-        addTrailing0();
     }
     
 }
@@ -33,7 +32,6 @@ mpGuts(nullptr)
 {
     makeGuts();
     mpGuts->mData = iData;
-    addTrailing0();
 }
 
 //-------------------------------------------------------
@@ -55,7 +53,6 @@ ByteArray& ByteArray::operator=(const char* iData)
 {
     detachGuts();
     mpGuts->mData = iData;
-    addTrailing0();
     return *this;
 }
 
@@ -64,27 +61,12 @@ ByteArray::~ByteArray()
 {
     deleteGuts();
 }
-
-//-------------------------------------------------------
-void ByteArray::addTrailing0()
-{
-    mpGuts->mData.push_back('\0');
-}
-
-
-//-------------------------------------------------------
-const std::string& ByteArray::asString() const
-{
-    return mpGuts->mData;
-}
     
 //-------------------------------------------------------
 ByteArray& ByteArray::append(const char* iData)
 {
     detachGuts();
-    removeTrailing0();
     mpGuts->mData += iData;
-    addTrailing0();
     return *this;
 }
 
@@ -92,9 +74,7 @@ ByteArray& ByteArray::append(const char* iData)
 ByteArray& ByteArray::append(const char* iData, int iLength)
 {
     detachGuts();
-    removeTrailing0();
     mpGuts->mData += string(iData, iLength);
-    addTrailing0();
     return *this;
 }
 
@@ -102,9 +82,7 @@ ByteArray& ByteArray::append(const char* iData, int iLength)
 ByteArray& ByteArray::append(const std::string& iData)
 {
     detachGuts();
-    removeTrailing0();
     mpGuts->mData += iData;
-    addTrailing0();
     return *this;
 }
 
@@ -112,10 +90,8 @@ ByteArray& ByteArray::append(const std::string& iData)
 ByteArray& ByteArray::append(const ByteArray& iOther)
 {
     detachGuts();
-    removeTrailing0();
     // we recreate a string to remove the trailing \0 from iOther.
     mpGuts->mData += string(iOther.mpGuts->mData.c_str(), iOther.size());
-    addTrailing0();
     return *this;
 }
 
@@ -132,6 +108,8 @@ size_t ByteArray::capacity() const
 }
 
 //-------------------------------------------------------
+// ensures that iLength is within bounds of the current data buffer.
+//
 size_t ByteArray::capLength(int iLength) const
 {
     size_t l = (size_t)iLength;
@@ -153,15 +131,30 @@ void ByteArray::clear()
 }
 
 //-------------------------------------------------------
+// Returns a const pointer to the data. This is guaranteed
+// to never make a copy of the data.
+//
 const char* ByteArray::constData() const
 {
-    // not using c_str() because it adds a '\0' and we
-    // already have a trailing '\0'
+    // not using c_str() because it adds a '\0'
     //
     return &(mpGuts->mData[0]);
 }
 
 //-------------------------------------------------------
+// Returns a const reference to the data. This is guaranteed
+// to never make a copy of the data. see method nonConstString() for
+// a non const reference with a possible deep copy.
+//
+const std::string& ByteArray::constString() const
+{
+    return mpGuts->mData;
+}
+
+//-------------------------------------------------------
+// returns a pointer to the data. When the refCount is greater than 1,
+// a deep copy will be performed. When the refCount is 1, no copy is performed.
+//
 char* ByteArray::data()
 {
     detachGuts();
@@ -254,9 +247,21 @@ void ByteArray::makeGuts()
 }
 
 //-------------------------------------------------------
+// Returns a subpart of the data starting at byte iPos with a lenght of iLength.
+// If iLenght is -1, it will return a buffer starting at iPos to the end.
+//
 ByteArray ByteArray::mid(size_t iPos, int iLength /*= -1*/) const
 {
     return ByteArray( mpGuts->mData.substr(iPos,iLength) );
+}
+
+//-------------------------------------------------------
+// see method constString()
+//
+std::string& ByteArray::nonConstString()
+{
+    detachGuts();
+    return mpGuts->mData;
 }
 
 //-------------------------------------------------------
@@ -277,8 +282,8 @@ bool ByteArray::operator!=(const ByteArray& iOther) const
 //-------------------------------------------------------
 ByteArray ByteArray::operator+(const ByteArray& iOther) const
 {
-    // we recreate strings using size() simply to remove
-    // the trailing \0 from bytearray
+    // we recreate strings using size() to gurarantee
+    // all data (even \0) are taken.
     //
     return ByteArray(
         string(mpGuts->mData.c_str(), size()) +
@@ -288,8 +293,8 @@ ByteArray ByteArray::operator+(const ByteArray& iOther) const
 //-------------------------------------------------------
 ByteArray ByteArray::operator+(const char* iData)
 {
-    // we recreate strings using size() simply to remove
-    // the trailing \0 from bytearray
+    // we recreate strings using size() to gurarantee
+    // all data (even \0) are taken.
     //
     return ByteArray(
                      string(mpGuts->mData.c_str(), size()) +
@@ -299,8 +304,8 @@ ByteArray ByteArray::operator+(const char* iData)
 //-------------------------------------------------------
 ByteArray ByteArray::operator+(const std::string& iData)
 {
-    // we recreate strings using size() simply to remove
-    // the trailing \0 from bytearray
+    // we recreate strings using size() to gurarantee
+    // all data (even \0) are taken.
     //
     return ByteArray(
                      string(mpGuts->mData.c_str(), size()) +
@@ -310,11 +315,11 @@ ByteArray ByteArray::operator+(const std::string& iData)
 //-------------------------------------------------------
 ByteArray& ByteArray::operator+=(const ByteArray& iOther)
 {
-    
     detachGuts();
-    removeTrailing0();
+    // we recreate strings using size() to gurarantee
+    // all data (even \0) are taken.
+    //
     mpGuts->mData += string(iOther.mpGuts->mData.c_str(), iOther.size());
-    addTrailing0();
     return *this;
 }
 
@@ -322,9 +327,7 @@ ByteArray& ByteArray::operator+=(const ByteArray& iOther)
 ByteArray& ByteArray::operator+=(const char* iData)
 {
     detachGuts();
-    removeTrailing0();
     mpGuts->mData += iData;
-    addTrailing0();
     return *this;
 }
 
@@ -332,20 +335,18 @@ ByteArray& ByteArray::operator+=(const char* iData)
 ByteArray& ByteArray::operator+=(const std::string& iData)
 {
     detachGuts();
-    removeTrailing0();
     mpGuts->mData += iData;
-    addTrailing0();
     return *this;
 }
 
 //-------------------------------------------------------
-char ByteArray::operator[](int iIndex) const
+char ByteArray::operator[](size_t iIndex) const
 {
     return mpGuts->mData[iIndex];
 }
 
 //-------------------------------------------------------
-char& ByteArray::operator[](int iIndex)
+char& ByteArray::operator[](size_t iIndex)
 {
     detachGuts();
     return mpGuts->mData[iIndex];
@@ -374,55 +375,62 @@ int ByteArray::refCount() const
 }
 
 //-------------------------------------------------------
-void ByteArray::removeTrailing0()
+void ByteArray::reserve(size_t iSize)
 {
-    if(!isEmpty() && mpGuts->mData.back() == '\0')
-    {
-        mpGuts->mData.pop_back();
-    }
+    detachGuts();
+    mpGuts->mData.reserve(iSize);
 }
 
 //-------------------------------------------------------
-void ByteArray::reserve(int iSize)
+void ByteArray::resize(size_t iSize)
 {
     detachGuts();
-    // +1 to account for trailing zero
-    mpGuts->mData.reserve(iSize + 1);
-}
-
-//-------------------------------------------------------
-void ByteArray::resize(int iSize)
-{
-    detachGuts();
-    removeTrailing0();
     mpGuts->mData.resize(iSize);
-    addTrailing0();
 }
 
 //-------------------------------------------------------
-size_t ByteArray::size() const
+void ByteArray::set(const char *ipData, size_t iLength)
 {
-    size_t r = mpGuts->mData.size();
-    if( !isEmpty() )
+    detachGuts();
+
+    if (ipData != nullptr && iLength > 0)
     {
-        // -1 to account for trailing 0
-        --r;
+        mpGuts->mData = string(ipData, iLength);
     }
-    return r;
+}
+
+//-------------------------------------------------------
+void ByteArray::set(const std::string &iData)
+{
+    detachGuts();
+    mpGuts->mData = iData;
+}
+
+//-------------------------------------------------------
+void ByteArray::set(const ByteArray &iData)
+{
+    detachGuts();
+    shareGuts(iData.mpGuts);
 }
 
 //-------------------------------------------------------
 void ByteArray::shareGuts(Guts *ipShared)
 {
     //if same guts do nothing
-    if(mpGuts != ipShared)
+    if (mpGuts != ipShared)
     {
-        if( atomic_fetch_add(&(ipShared->mRefCount), 1) > 0 )
+        if (atomic_fetch_add(&(ipShared->mRefCount), 1) > 0)
         {
             deleteGuts();
             mpGuts = ipShared;
         }
     }
+}
+
+//-------------------------------------------------------
+size_t ByteArray::size() const
+{
+    return mpGuts->mData.size();
 }
 
 //-------------------------------------------------------

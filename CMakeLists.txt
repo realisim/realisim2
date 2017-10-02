@@ -19,6 +19,19 @@ set( SOURCE_FILES "" )
 set( INCLUDE_FILES "" )
 
 #------------------------------------------------------------------------------
+# GLobal variable to hold the platform specific folder.
+# this represent the name of the folder containing the platform
+# specific code, libs etc...
+#------------------------------------------------------------------------------
+SET(PLATFORM_SPECIFIC_FOLDER "")
+IF(WIN32)
+    SET(PLATFORM_SPECIFIC_FOLDER "windows")
+ELSEIF(APPLE)
+    SET(PLATFORM_SPECIFIC_FOLDER "mac")
+ENDIF(WIN32)
+
+message("PLATFORM_SPECIFIC_FOLDER " ${PLATFORM_SPECIFIC_FOLDER})
+#------------------------------------------------------------------------------
 # add supplementary functions to cmake
 #------------------------------------------------------------------------------
 INCLUDE( "CMakeModules/AddComponent.cmake" )
@@ -66,6 +79,6 @@ endif()
 
 # unit tests if desired
 if( BUILD_UNIT_TESTS )
-    add_subdirectory(Common/Math/UnitTest)
+    add_subdirectory(Common/Math/UnitTests)
     add_subdirectory(Common/Core/UnitTests)
 endif()

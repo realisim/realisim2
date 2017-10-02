@@ -14,7 +14,9 @@ namespace Core
   {
   public:
     Timer();
-    virtual ~Timer();
+    Timer(const Timer&) = delete;
+    Timer& operator=(const Timer&) = delete;
+    ~Timer();
     
     double elapsed() const;
 //void pause();
@@ -23,9 +25,6 @@ namespace Core
     
   protected:
     enum state{ sIdle, sRunning, sStopped };
-    
-    Timer(const Timer&);
-    Timer& operator=(const Timer&);
     
     state getState() const {return mState;}
     void goToState(state);
@@ -36,5 +35,4 @@ namespace Core
   };
 
 } // end of namespace utils
-} // end of namespace realisim
-
+} 

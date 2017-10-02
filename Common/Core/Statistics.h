@@ -27,24 +27,24 @@ namespace Core
   public:
     Statistics();
     Statistics(const Statistics&);
-    virtual ~Statistics();
+    Statistics& operator=(const Statistics&)=delete;
+    ~Statistics();
     
     void add(double);
     void add(const std::vector<double>&);
     void add(const double*, unsigned int);
+    double average() const;
     void clear();
-    double getMax() const {return mMax;}
-    double getMean() const;
-    double getMin() const {return mMin;}
-    unsigned int getNumberOfSamples() const {return mNumberOfSamples;}
-    double getSample(unsigned int) const;
-    double getStandardDeviation() const;
     bool isKeepingSamples() const {return mKeepSamples;}
     void keepSamples(bool iK) {mKeepSamples = iK;}
+    double maximum() const {return mMax;}
+    double minimum() const {return mMin;}
+    unsigned int numberOfSamples() const {return mNumberOfSamples;}
+    double sample(unsigned int) const;
+    double standardDeviation() const;
+	std::string toCsv() const;
     
   protected:
-    Statistics& operator=(const Statistics&);    
-    
     bool mKeepSamples;
     std::vector<double> mSamples;
     unsigned int mNumberOfSamples;
@@ -55,5 +55,5 @@ namespace Core
   };
 
 } // end of namespace utils
-} // end of namespace realisim
+} 
 

@@ -217,7 +217,7 @@ TEST(ByteArray, Functions)
     {
         ByteArray ba(referenceData);
         EXPECT_TRUE(ba.size() == 12);
-        const std::string& s = ba.asString();
+        const std::string& s = ba.constString();
         for(int i = 0; i < referenceData.size(); ++i)
         {
             EXPECT_EQ( s[i], referenceData[i] );
@@ -254,10 +254,10 @@ TEST(ByteArray, Functions)
         ByteArray ba;
         ba.resize(12);
         ba.fill('\x62');
-        EXPECT_STREQ(ba.constData(), "\x62\x62\x62\x62\x62\x62\x62\x62\x62\x62\x62\x62\x0");
+        EXPECT_STREQ(ba.constData(), "\x62\x62\x62\x62\x62\x62\x62\x62\x62\x62\x62\x62");
         
         ba.fill('\x63', 6);
-        EXPECT_STREQ(ba.constData(), "\x63\x63\x63\x63\x63\x63\x62\x62\x62\x62\x62\x62\x0");
+        EXPECT_STREQ(ba.constData(), "\x63\x63\x63\x63\x63\x63\x62\x62\x62\x62\x62\x62");
     }
     
     //bool isEmpty() const
@@ -308,12 +308,21 @@ TEST(ByteArray, TrailingZero)
     //fill it with garbage...
     memset(pString, 62, ba.size() * 2);
     
-    // +1 on the memcpy to capture the trailing \0
-    memcpy(pString, ba.constData(), ba.size()+1);
-    
-    // constructing a string from pString which has a \0 right at the end.
-    // should make a new string exactly the size of reference string.
-    EXPECT_TRUE( std::string(pString).size() == referenceString.size() );
+    // copy ba's content into pString. Since there
+    // is no trailing 0, constructing a string from
+    // pString will keep the original garbage and determining
+    // the size of the string will depend when a \0 is encountered
+    // in memory.
+    memcpy(pString, ba.constData(), ba.size());
+    EXPECT_TRUE(std::string(pString).size() >= referenceString.size());
+
+    // Here, using asString.c_str() we ensure a trailing \0 is present
+    // and using ba.size() + 1 to account for that trailing \0 we can
+    // make a proper null terminated string which will be equal to the
+    // reference string.
+    //
+    memcpy(pString, ba.constString().c_str(), ba.size()+1);
+    EXPECT_TRUE(std::string(pString).size() == referenceString.size());
     EXPECT_STREQ(pString, referenceString.c_str());
 }
 

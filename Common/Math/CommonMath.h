@@ -5,30 +5,33 @@
 #include "IsEqual.h"
 
 // remove warning if function not used
-#pragma warning(push)
-#pragma warning(disable : 4505)
+#define SUPPRESS_WARNING(a) (void)a
 
 
-static const double radiansToDegrees(const double& d )
+static inline const double radiansToDegrees(const double& d )
 {
+    SUPPRESS_WARNING(radiansToDegrees);
 	return d*(180./M_PI);
 }
 
-static const double degreesToRadians(const double& d)
+static inline const double degreesToRadians(const double& d)
 {
+    SUPPRESS_WARNING(degreesToRadians);
 	return d*(M_PI/180.);
 }
 
-static const double degreesMinutesSecondsToDegrees(const int& degree,const int& minutes,const double& seconds)
+static inline const double degreesMinutesSecondsToDegrees(const int& degree,const int& minutes,const double& seconds)
 {
+    SUPPRESS_WARNING(degreesMinutesSecondsToDegrees);
 	// take out sign
 	const double absoluteDegree = abs(degree);
 	return std::copysign((double)absoluteDegree + ((double)minutes/60.0) + ((double)seconds/3600.0),degree);
 }
-static void degreesToDegreesMinutesSeconds(const double& decimalDegrees,int& degree,int& minutes,double& seconds)
+static inline void degreesToDegreesMinutesSeconds(const double& decimalDegrees,int& degree,int& minutes,double& seconds)
 {
+    SUPPRESS_WARNING(degreesToDegreesMinutesSeconds);
 	// take out sign
-	const double absoluteDegree = abs(decimalDegrees);
+	const double absoluteDegree = std::abs(decimalDegrees);
 
 	degree = (int)absoluteDegree;
 	minutes = (int)((absoluteDegree-degree)*60.0);
@@ -37,5 +40,3 @@ static void degreesToDegreesMinutesSeconds(const double& decimalDegrees,int& deg
 	// put back the sign in degree
 	degree = (int)std::copysign((double)degree,decimalDegrees);
 }
-
-#pragma warning(pop)
