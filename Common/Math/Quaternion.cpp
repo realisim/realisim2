@@ -25,12 +25,6 @@ Quaternion::~Quaternion()
 {}
 
 //----------------------------------------------------------------------------
-Quaternion Quaternion::conjugate() const
-{
-    return Quaternion(-mX, -mY, -mZ, mW);
-}
-
-//----------------------------------------------------------------------------
 void Quaternion::setW(double iW)
 {
     mW = iW;
@@ -191,11 +185,17 @@ Quaternion& Quaternion::operator*= (double iValue)
 }
 
 //----------------------------------------------------------------------------
+Quaternion Quaternion::getConjugate() const
+{
+    return Quaternion(-mX, -mY, -mZ, mW);
+}
+
+//----------------------------------------------------------------------------
 Quaternion Quaternion::inverse()
 {
     Quaternion r(*this);
     double squareNorm = 1.0 / (r.x()*r.x() + r.y()*r.y() + r.z()*r.z() + r.w()*r.w());
-    r = r.conjugate() * squareNorm;
+    r = r.getConjugate() * squareNorm;
     return r;
 }
 
@@ -203,7 +203,7 @@ Quaternion Quaternion::inverse()
 Quaternion& Quaternion::invert()
 {
     double squareNorm = 1.0 / (mX * mX + mY * mY + mZ* mZ + mW * mW);
-    *this = (*this).conjugate() * squareNorm;
+    *this = (*this).getConjugate() * squareNorm;
     return *this;
 }
 

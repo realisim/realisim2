@@ -1,6 +1,6 @@
 #include <limits>
 #include <sstream>
-#include "Utilities/StreamUtility.h"
+#include "Core/StreamUtility.h"
 #include "Wave.h"
 
 
@@ -176,8 +176,8 @@ void Wave::loadHeader()
 bool Wave::parseHeader(ifstream& ifs)
 {
     // see specification
-    Utilities::StreamUtility su;
-    su.setStreamFormat(Utilities::StreamUtility::eLittleEndian);
+    Core::StreamUtility su;
+    su.setStreamFormat(Core::StreamUtility::eLittleEndian);
     
     bool ok = true;
     
@@ -237,8 +237,8 @@ bool Wave::parseHeader(ifstream& ifs)
 //-----------------------------------------------------------------------------
 bool Wave::parsePayload(ifstream& ifs)
 {
-    Utilities::StreamUtility su;
-    su.setStreamFormat(Utilities::StreamUtility::eLittleEndian);
+    Core::StreamUtility su;
+    su.setStreamFormat(Core::StreamUtility::eLittleEndian);
     
     bool ok = true;
     bool done = false;

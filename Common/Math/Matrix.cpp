@@ -19,7 +19,7 @@ namespace
     {
         double mA[4][4], mB[4][4];
         //double aug[4][8];
-        //La matrice augmenté est sout la forme [ A | B ]
+        //La matrice augmenté est sous la forme [ A | B ]
         //on transpose la matrice iAug a la volé
         int nbCols = 8;
         for( int i = 0; i < 4; ++i )
@@ -70,13 +70,13 @@ Matrix4::Matrix4( Vector3 iV )
 //
 Matrix4::Matrix4( Quaternion iQ )
 {
-    setRotation(iQ);
+    setAsRotation(iQ);
 }
 //------------------------------------------------------------------------------
 /*angle en radian et axe de rotation */
 Matrix4::Matrix4( double iAngle, Vector3 iAxis )
 {
-    setRotation(iAngle, iAxis);
+    setAsRotation(iAngle, iAxis);
 }
 //------------------------------------------------------------------------------
 /*Matrice de passage
@@ -93,7 +93,7 @@ Matrix4::~Matrix4()
 {}
 
 //------------------------------------------------------------------------------
-const double* Matrix4::dataPointer() const
+const double* Matrix4::getDataPointer() const
 { return m[0]; }
 
 //------------------------------------------------------------------------------
@@ -108,7 +108,7 @@ void Matrix4::import( const double* ipM, bool iRowMajor /*=true*/ )
 {
     memcpy( &m, ipM, 16*sizeof(double) );
     if( iRowMajor )
-    { *this = transpose(); }
+    { transpose(); }
 }
 
 //------------------------------------------------------------------------------
@@ -120,7 +120,7 @@ void Matrix4::import( const double* ipM, bool iRowMajor /*=true*/ )
  dire que A[colonne][ligne]. Pour simplifier, la matrice augmenter est en
  row-major et les commentaires sont en notation mathématique (row-major)
  A[ligne, colonne]. */
-Matrix4 Matrix4::inverse() const
+Matrix4 Matrix4::getInverse() const
 {
     //la matrice augmenter est comme suis [A | I]
     double aug[4][8];
@@ -197,9 +197,75 @@ Matrix4 Matrix4::inverse() const
 }
 
 //------------------------------------------------------------------------------
+Quaternion Matrix4::getRotationAsQuaternion() const
+{
+    double x, y, z, w;
+    double trace = m[0][0] + m[1][1] + m[2][2];
+    if (trace > 0.0)
+    {
+        double s = sqrt(trace + 1.0) * 2.0;
+        w = 0.25 * s;
+        x = (m[1][2] - m[2][1]) / s;
+        y = (m[2][0] - m[0][2]) / s;
+        z = (m[0][1] - m[1][0]) / s;
+    }
+    else if (m[0][0] > m[1][1] && m[0][0] > m[2][2])
+    {
+        double s = sqrt(1.0 + m[0][0] - m[1][1] - m[2][2]) * 2;
+        w = (m[1][2] - m[2][1]) / s;
+        x = 0.25 * s;
+        y = (m[0][1] + m[1][0]) / s;
+        z = (m[2][0] + m[0][2]) / s;
+    }
+    else if (m[1][1] > m[2][2])
+    {
+        double s = sqrt(1.0 + m[1][1] - m[0][0] - m[2][2]) * 2;
+        w = (m[2][0] - m[0][2]) / s;
+        x = (m[0][1] + m[1][0]) / s;
+        y = 0.25 * s;
+        z = (m[1][2] + m[2][1]) / s;
+    }
+    else
+    {
+        double s = sqrt(1.0 + m[2][2] - m[0][0] - m[1][1]) * 2;
+        w = (m[0][1] - m[1][0]) / s;
+        x = (m[2][0] + m[0][2]) / s;
+        y = (m[1][2] + m[2][1]) / s;
+        z = 0.25 * s;
+    }
+    Quaternion r(x, y, z, w);
+    r.normalize();
+    return r;
+}
+
+//------------------------------------------------------------------------------
+Vector4 Matrix4::getRow(int iRow) const
+{
+    return Vector4(m[0][iRow], m[1][iRow], m[2][iRow], m[3][iRow]);
+}
+
+//------------------------------------------------------------------------------
+/*La translation est dans la colonne 3*/
+Vector3 Matrix4::getTranslationAsVector() const
+{
+    return Vector3(m[3][0], m[3][1], m[3][2]);
+}
+
+//------------------------------------------------------------------------------
+Matrix4 Matrix4::getTransposed() const
+{
+    Matrix4 r;
+    r.m[0][0] = m[0][0]; r.m[0][1] = m[1][0]; r.m[0][2] = m[2][0]; r.m[0][3] = m[3][0];
+    r.m[1][0] = m[0][1]; r.m[1][1] = m[1][1]; r.m[1][2] = m[2][1]; r.m[1][3] = m[3][1];
+    r.m[2][0] = m[0][2]; r.m[2][1] = m[1][2]; r.m[2][2] = m[2][2]; r.m[2][3] = m[3][2];
+    r.m[3][0] = m[0][3]; r.m[3][1] = m[1][3]; r.m[3][2] = m[2][3]; r.m[3][3] = m[3][3];
+    return r;
+}
+
+//------------------------------------------------------------------------------
 Matrix4& Matrix4::invert()
 {
-    *this = this->inverse();
+    *this = this->getInverse();
     return *this;
 }
 
@@ -287,60 +353,12 @@ Matrix4& Matrix4::operator*= (const Matrix4& iM)
 //------------------------------------------------------------------------------
 Vector4 Matrix4::operator* (const Vector4& iV) const
 {
-    double x,y,z,w;
-    x = m[0][0]*iV.x() + m[1][0]*iV.y() + m[2][0]*iV.z() + m[3][0]*iV.w();
-    y = m[0][1]*iV.x() + m[1][1]*iV.y() + m[2][1]*iV.z() + m[3][1]*iV.w();;
-    z = m[0][2]*iV.x() + m[1][2]*iV.y() + m[2][2]*iV.z() + m[3][2]*iV.w();;
-    w = m[0][3]*iV.x() + m[1][3]*iV.y() + m[2][3]*iV.z() + m[3][3]*iV.w();;
+    double x = m[0][0]*iV.x() + m[1][0]*iV.y() + m[2][0]*iV.z() + m[3][0]*iV.w();
+    double y = m[0][1]*iV.x() + m[1][1]*iV.y() + m[2][1]*iV.z() + m[3][1]*iV.w();
+    double z = m[0][2]*iV.x() + m[1][2]*iV.y() + m[2][2]*iV.z() + m[3][2]*iV.w();
+    double w = m[0][3]*iV.x() + m[1][3]*iV.y() + m[2][3]*iV.z() + m[3][3]*iV.w();
+	
     return Vector4( x, y, z, w );
-}
-
-//------------------------------------------------------------------------------
-Quaternion Matrix4::rotationAsQuaternion() const
-{
-    double x, y, z, w;
-    double trace = m[0][0] + m[1][1] + m[2][2];
-    if( trace > 0.0 )
-    {
-        double s = sqrt(trace+1.0) * 2.0;
-        w = 0.25 * s;
-        x = ( m[1][2] - m[2][1] ) / s;
-        y = ( m[2][0] - m[0][2] ) / s;
-        z = ( m[0][1] - m[1][0] ) / s;
-    }
-    else if ( m[0][0] > m[1][1] && m[0][0] > m[2][2] )
-    {
-        double s = sqrt(1.0 + m[0][0] - m[1][1] - m[2][2]) * 2;
-        w = ( m[1][2] - m[2][1] ) / s;
-        x = 0.25 * s;
-        y = ( m[0][1] + m[1][0] ) / s;
-        z = ( m[2][0] + m[0][2] ) / s;
-    }
-    else if ( m[1][1] > m[2][2] )
-    {
-        double s = sqrt(1.0 + m[1][1] - m[0][0] - m[2][2] ) * 2;
-        w = ( m[2][0] - m[0][2] ) / s;
-        x = ( m[0][1] + m[1][0] ) / s;
-        y = 0.25 * s;
-        z = ( m[1][2] + m[2][1] ) / s;
-    }
-    else
-    {
-        double s = sqrt(1.0 + m[2][2] - m[0][0] - m[1][1] ) * 2;
-        w = ( m[0][1] - m[1][0] ) / s;
-        x = ( m[2][0] + m[0][2] ) / s;
-        y = ( m[1][2] + m[2][1] ) / s;
-        z = 0.25 * s;
-    }
-    Quaternion r( x, y, z, w );
-    r.normalize();
-    return r;
-}
-
-//------------------------------------------------------------------------------
-Vector4 Matrix4::row(int iRow) const
-{
-    return Vector4( m[0][iRow], m[1][iRow], m[2][iRow], m[3][iRow] );
 }
 
 //------------------------------------------------------------------------------
@@ -362,7 +380,10 @@ void Matrix4::set(const double* ipM, bool iRowMajor/* = true*/)
 { import(ipM, iRowMajor); }
 
 //------------------------------------------------------------------------------
-void Matrix4::setRotation(const Quaternion& iQ)
+// set the matrix as a rotation matrix. The rotation reflects the quaternion
+// iQ
+//
+void Matrix4::setAsRotation(const Quaternion& iQ)
 {
     double x = iQ.x(), y = iQ.y(), z = iQ.z(), w = iQ.w();
     double mat[4][4] = {
@@ -384,7 +405,9 @@ void Matrix4::setRotation(const Quaternion& iQ)
 }
 
 //------------------------------------------------------------------------------
-void Matrix4::setRotation(double iRadAngle, const Vector3& iAxis)
+// see setAsRotation(const Quaternion& iQ)
+//
+void Matrix4::setAsRotation(double iRadAngle, const Vector3& iAxis)
 {
     Quaternion q;
     q.setRotation( iRadAngle, iAxis );
@@ -401,8 +424,26 @@ void Matrix4::setRow(int iRow, const Vector4& iV)
 }
 
 //------------------------------------------------------------------------------
-void Matrix4::setTranslation( const Vector3& iP )
-{ m[3][0]=iP.x(); m[3][1] = iP.y(); m[3][2] = iP.z(); }
+// sets the matrix as a translation matrix. The translation is iP
+//
+void Matrix4::setAsTranslation( const Vector3& iP )
+{ 
+    identity();
+    m[3][0]=iP.x(); m[3][1] = iP.y(); m[3][2] = iP.z();
+}
+
+//------------------------------------------------------------------------------
+// sets the Matrix as a scale matrix. The scale is equal to iScale
+//
+void Matrix4::setAsScaling( const Vector3& iScale )
+{
+	const double temp[] = { iScale.x(),0.0,0.0,0.0,
+							0.0,iScale.y(),0.0,0.0,
+							0.0,0.0,iScale.z(),0.0,
+							0.0,0.0,0.0,1.0	};
+	
+    import(&temp[0], true);
+}
 
 //------------------------------------------------------------------------------
 /*Retourne un string formater qui presente la matrice sous forme row-major.*/
@@ -425,19 +466,17 @@ std::string Matrix4::toString(int iPrecision /*=3*/) const
 }
 
 //------------------------------------------------------------------------------
-/*La translation est dans la colonne 3*/
-Vector3 Matrix4::translationAsVector() const
-{ return Vector3( m[3][0], m[3][1], m[3][2] ); }
-
-//------------------------------------------------------------------------------
-// Returns the transposed matrix
+// transpose the matrix. see also getTransposed().
 //
-Matrix4 Matrix4::transpose() const
+Matrix4& Matrix4::transpose()
 {
-    Matrix4 r; 
-    r.m[0][0] = m[0][0]; r.m[0][1] = m[1][0]; r.m[0][2] = m[2][0]; r.m[0][3] = m[3][0];
-    r.m[1][0] = m[0][1]; r.m[1][1] = m[1][1]; r.m[1][2] = m[2][1]; r.m[1][3] = m[3][1];
-    r.m[2][0] = m[0][2]; r.m[2][1] = m[1][2]; r.m[2][2] = m[2][2]; r.m[2][3] = m[3][2];
-    r.m[3][0] = m[0][3]; r.m[3][1] = m[1][3]; r.m[3][2] = m[2][3]; r.m[3][3] = m[3][3];
-    return r;
+    double t = 0.0;
+    for(int row = 0; row < 4; ++row)
+        for (int col = row; col < 4; ++col)
+        {
+            t = m[row][col];
+            m[row][col] = m[col][row];
+            m[col][row] = t;
+        }
+    return *this;
 }

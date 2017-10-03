@@ -53,6 +53,11 @@ Vector3& Vector3::normalize()
     return (*this);
 }
 
+Vector3	Vector3::multiplyComponents(const Vector3& v) const
+{
+	return Vector3(this->x()*v.x(), this->y()*v.y(), this->z()*v.z());
+}
+
 //----------------------------------------------------------------------------
 // strictement egale, pour une comparaison un peu plus permissive, voir
 // Math::isEqual( const Vector3&, const Vector3&, double )
@@ -188,6 +193,38 @@ Vector3 Vector3::operator^ (const Vector3 &vect) const
 double Vector3::operator* (const Vector3 &vect) const
 {
     return ( x() * vect.x() + y() * vect.y() + z() * vect.z() );
+}
+
+//----------------------------------------------------------------------------
+bool Vector3::operator> (const Vector3& iV) const
+{
+    return mData[0] > iV.mData[0] &&
+        mData[1] > iV.mData[1] &&
+        mData[2] > iV.mData[2];
+}
+
+//----------------------------------------------------------------------------
+bool Vector3::operator>= (const Vector3& iV) const
+{
+    return mData[0] >= iV.mData[0] &&
+        mData[1] >= iV.mData[1] &&
+        mData[2] >= iV.mData[2];
+}
+
+//----------------------------------------------------------------------------
+bool Vector3::operator< (const Vector3& iV) const
+{
+    return mData[0] < iV.mData[0] &&
+        mData[1] < iV.mData[1] &&
+        mData[2] < iV.mData[2];
+}
+
+//----------------------------------------------------------------------------
+bool Vector3::operator<= (const Vector3& iV) const
+{
+    return mData[0] <= iV.mData[0] &&
+        mData[1] <= iV.mData[1] &&
+        mData[2] <= iV.mData[2];
 }
 
 //---------------------------------------------------------------------------

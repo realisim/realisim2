@@ -18,7 +18,7 @@ namespace Rendering
     // or screen space (and vice versa) via this class.
     //
     // 1- Positionning the camera
-    //      Function set( Vector3 iEye, Vector3 iLookAt, Vector3 iUp ) is used to 
+    //      Function set( Vector3 iEye, Vector3 iFocal, Vector3 iUp ) is used to 
     //      position the camera. see cpp file for details.
     //
     // 2- Tuning the projection parameters
@@ -97,7 +97,7 @@ namespace Rendering
     //      from one corrdinate system to another. worldToScreen() will convert a
     //      3d point in world space to a 2d point in screen (pixel) space.
     //
-    //      The *DeltaTo* variation is simple a convenience to transform a magnitude
+    //      The *DeltaTo* variation is simply a convenience to transform a magnitude
     //      from one coordinate system to another.
     //
     //      Note: cameraToScreen is not present but can be achieve by calling
@@ -110,45 +110,50 @@ namespace Rendering
         Camera();
         Camera(const Camera&) = default;
         Camera& operator=( const Camera& ) = default;
-        virtual ~Camera();
+        ~Camera();
         
         Math::Vector3 cameraToWorld( const Math::Vector3& ) const;
         Math::Vector3 cameraDeltaToWorld( const Math::Vector3& ) const;
-        const Math::Vector3& lateralVector() const;
-        const Math::Vector3& lookAt() const;
-        const Math::Vector3& position() const;
-        const Projection& projection() const;
-        const Math::Matrix4& projectionMatrix() const;
-        void rotate( double iRad, Math::Vector3 iAxis, Math::Vector3 iAxisPos = Math::Vector3() );
-        Math::Vector3 screenToWorld( const Math::Vector2& iPixel, const Math::Vector3& iReference ) const;
-        Math::Vector3 screenDeltaToWorld( const Math::Vector2& iPixel, const Math::Vector2& iPixelDelta, const Math::Vector3& iReference ) const;
-        void set( const Math::Vector3& iEye, const Math::Vector3& iLookAt, const Math::Vector3& iUp );
+		Math::Vector3 getDirection() const;
+        const Math::Vector3& getFocal() const;
+		const Math::Vector3& getLateralVector() const;
+        const Math::Vector3& getPosition() const;
+        const Projection& getProjection() const;
+        const Math::Matrix4& getProjectionMatrix() const;
+		const Math::Vector3& getUp() const;
+		const Math::Matrix4& getViewMatrix() const;
+        const Math::Matrix4& getViewMatrixInverse() const;
+		const Viewport& getViewport() const;
+		double getZoomFactor() const;
+		bool isProjectionProportionalToViewport() const;
+		Math::Vector3 ndcToWorld(const Math::Vector3&) const;
+//		Math::Vector3 ndcDeltaToWorld(const Math::Vector3&) const;  
+        Math::Vector3 pixelToWorld( const Math::Vector2& iPixel, const Math::Vector3& iReference ) const;
+        Math::Vector3 pixelDeltaToWorld( const Math::Vector2& iPixel, const Math::Vector2& iPixelDelta, const Math::Vector3& iReference ) const;
+		void rotate(double iRad, Math::Vector3 iAxis, Math::Vector3 iAxisPos = Math::Vector3());
+        void set( const Math::Vector3& iEye, const Math::Vector3& iFocal, const Math::Vector3& iUp );
         void setProjection( const Projection& );
+		void setProjectionProportionalToViewport(bool);
         void setViewport( const Viewport& );
         void setZoomFactor(double);
+		std::string toString() const;
         void translate( const Math::Vector3& );
-        void translateTo( const Math::Vector3& );
-        const Math::Vector3& upVector() const;
-        const Math::Matrix4& viewMatrix() const;
-        const Viewport& viewport() const;
+        void translateTo( const Math::Vector3& );       
         Math::Vector3 worldToCamera( const Math::Vector3& ) const;
         Math::Vector3 worldDeltaToCamera( const Math::Vector3& ) const;
-        Math::Vector2 worldToScreen( const Math::Vector3& ) const;
-        Math::Vector2 worldDeltaToSreen( const Math::Vector3& ) const;
-        double zoomFactor() const;
-        
-        std::string toString() const;
+		Math::Vector3 worldToNdc(const Math::Vector3&) const;
+		Math::Vector3 worldDeltaToNdc(const Math::Vector3&) const;
+        Math::Vector2 worldToPixel( const Math::Vector3&, bool *iIsOnscreen = nullptr ) const;
+        Math::Vector2 worldDeltaToPixel( const Math::Vector3&, bool *iIsOnscreen = nullptr ) const;
         
     protected:  
         void computeProjection(); 
         void computeViewMatrix();
         const Math::Vector3& lookVector() const;
-        Math::Vector3 projectToNdc(const Math::Vector3& iWorld) const;
-        Math::Vector3 unprojectFromNdc(const Math::Vector3& iNdc) const;
         
         Math::Vector3 mPosition;
         Math::Vector3 mLateralVector;
-        Math::Vector3 mLookAt;
+        Math::Vector3 mFocal;
         Math::Vector3 mLookVector;
         Math::Vector3 mUpVector;
         Projection mProjection;
@@ -156,6 +161,8 @@ namespace Rendering
         Viewport mViewport;
         mutable Math::Matrix4 mProjectionMatrix;
         mutable Math::Matrix4 mViewMatrix;
+        mutable Math::Matrix4 mViewMatrixInverse;
+		bool mIsProjectionProportionalToViewport;
     };
     
 } //treeD

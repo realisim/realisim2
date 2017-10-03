@@ -19,6 +19,15 @@ Vector2::Vector2(double iV)
 Vector2::Vector2(double iX, double iY)
 { set(iX, iY); }
 
+//-----------------------------------------------------------------------------
+// implicit constructor for Vector2i
+//
+Vector2::Vector2(const Vector2i &iVector2i)
+{
+    set(iVector2i.x(), iVector2i.y());
+}
+
+
 //----------------------------------------------------------------------------
 const double* Vector2::dataPointer() const
 { return &mData[0]; }
@@ -45,6 +54,11 @@ Vector2& Vector2::normalize()
     if( !isEqual(n, 0.0) )
     { (*this) /= this->norm(); }
     return (*this);
+}
+
+Vector2	Vector2::multiplyComponents(const Vector2& v) const
+{
+	return Vector2(this->x()*v.x(), this->y()*v.y());
 }
 
 //----------------------------------------------------------------------------
@@ -163,6 +177,34 @@ Vector2& Vector2::operator/= (double val)
 double Vector2::operator* (const Vector2 &vect) const
 {
     return ( x() * vect.x() + y() * vect.y() );
+}
+
+//----------------------------------------------------------------------------
+bool Vector2::operator> (const Vector2& iV) const
+{
+    return mData[0] > iV.mData[0] &&
+        mData[1] > iV.mData[1];
+}
+
+//----------------------------------------------------------------------------
+bool Vector2::operator>= (const Vector2& iV) const
+{
+    return mData[0] >= iV.mData[0] &&
+        mData[1] >= iV.mData[1];
+}
+
+//----------------------------------------------------------------------------
+bool Vector2::operator< (const Vector2& iV) const
+{
+    return mData[0] < iV.mData[0] &&
+        mData[1] < iV.mData[1];
+}
+
+//----------------------------------------------------------------------------
+bool Vector2::operator<= (const Vector2& iV) const
+{
+    return mData[0] <= iV.mData[0] &&
+        mData[1] <= iV.mData[1];
 }
 
 //---------------------------------------------------------------------------

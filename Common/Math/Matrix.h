@@ -108,21 +108,23 @@ namespace Math
         Matrix4& operator*= (const Matrix4&);
         Vector4 operator* (const Vector4&) const;
         
-        const double* dataPointer() const;
-        Matrix4 inverse() const;
+        const double* getDataPointer() const;
+        Matrix4 getInverse() const;
+        Quaternion getRotationAsQuaternion() const;
+        Vector4 getRow(int) const;
+        Vector3 getTranslationAsVector() const;
+        Matrix4 getTransposed() const;
         Matrix4& invert();
         bool isEqual( const Matrix4&, 
                      double = std::numeric_limits<double>::epsilon() ) const;
-        Quaternion rotationAsQuaternion() const;
-        Vector4 row(int) const;
         void set(const double*, bool iRowMajor = true);
         void setChangeOfBasis(const Vector3& iX, const Vector3& iY, const Vector3& iZ);
-        void setRotation(const Quaternion& iX);
-        void setRotation(double iRadAngle, const Vector3& iAxis);
-        void setRow(int iRow, const Vector4&);
-        void setTranslation( const Vector3& );
-        Vector3 translationAsVector() const;
-        Matrix4 transpose() const;
+        void setAsRotation(const Quaternion& iX);
+        void setAsRotation(double iRadAngle, const Vector3& iAxis);
+        void setAsScaling(const Vector3& scale);
+        void setAsTranslation(const Vector3&);
+        void setRow(int iRow, const Vector4&);        
+        Matrix4& transpose();
         std::string toString(int iPrecision = 3) const;
         
     protected:

@@ -17,8 +17,15 @@ file( GLOB iPATH_SOURCE_FILES
 file( GLOB iPATH_INCLUDE_FILES
   ${iPath}/*.h )
 
+# Replace / by \\ present in iDasplayedName so we can create a folder hierachy in the solution.
+# For example: 
+#   ${iDisplayedName} = 'Simulator/Palettes'
+#
+string(REPLACE "/" "\\" source_group_msvc ${iDisplayedName})
+source_group ("${source_group_msvc}" FILES ${iPATH_INCLUDE_FILES} ${iPATH_SOURCE_FILES})
+
 source_group (${iDisplayedName} FILES ${iPATH_INCLUDE_FILES})
-source_group (${iDisplayedName}\\cpp FILES ${iPATH_SOURCE_FILES})
+source_group (${iDisplayedName} FILES ${iPATH_SOURCE_FILES})
 
 # add sources and include to global variable
 set( SOURCE_FILES ${SOURCE_FILES} ${iPATH_SOURCE_FILES} )

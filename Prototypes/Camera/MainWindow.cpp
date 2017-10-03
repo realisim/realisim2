@@ -223,7 +223,7 @@ void Viewer::handleUserInput()
                 
             case cmFree:
             {
-                Vector3 rotateAboutPos = c.position();
+                Vector3 rotateAboutPos = c.getPosition();
                 Vector3 rotateAboutAxisX = c.cameraDeltaToWorld(Vector3(1.0, 0.0, 0.0));
                 
                 c.rotate( -mMouseDeltaY * kDegreeToRadian * f, rotateAboutAxisX,
@@ -246,7 +246,7 @@ void Viewer::handleUserInput()
         const Vector2 screenPos(mMouseX, mMouseY);
         const Vector2 screenDelta(mMouseDeltaX, -mMouseDeltaY);
         const Vector3 boxCenter = (b.mTransfo * Vector4(b.center(), 1)).xyz();
-        const Vector3 worldDelta = camera().screenDeltaToWorld(screenPos, screenDelta, boxCenter);
+        const Vector3 worldDelta = camera().pixelDeltaToWorld(screenPos, screenDelta, boxCenter);
         b.mTransfo *= Matrix4(worldDelta);
     }
     
@@ -355,16 +355,16 @@ void Viewer::paintGL()
     f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
     glMatrixMode(GL_PROJECTION);
-    glLoadMatrixd(mCamera.projectionMatrix().dataPointer() );
+    glLoadMatrixd(mCamera.getProjectionMatrix().getDataPointer() );
     glMatrixMode(GL_MODELVIEW);
-    glLoadMatrixd(mCamera.viewMatrix().dataPointer());
+    glLoadMatrixd(mCamera.getViewMatrix().getDataPointer());
     
     for(size_t i = 0; i < mBoxes.size(); ++i)
     {
         const Box& b = mBoxes[i];
         
         glPushMatrix();
-        glMultMatrixd(b.mTransfo.dataPointer());
+        glMultMatrixd(b.mTransfo.getDataPointer());
         glScaled(b.width(), b.height(), b.depth());
         drawCube();
         glPopMatrix();
@@ -377,8 +377,8 @@ void Viewer::paintGL()
     // box
     Camera cam2d;
     Viewport v(this->width(), this->height());
-    Projection p(0, v.width(),
-                 0, v.height(),
+    Projection p(0, v.getWidth(),
+                 0, v.getHeight(),
                  1, 1000.0, Projection::tOrthogonal);
     cam2d.setViewport(v);
     cam2d.setProjection(p);
@@ -389,13 +389,13 @@ void Viewer::paintGL()
     for(int i = 0; i < 8; ++i)
     {
         Vector3 p1 = (selectedBox.mTransfo * Vector4(selectedBox.point(i), 1.0)).xyz();
-        projectedBox.add( Vector3( camera().worldToScreen(p1), 0 ) );
+        projectedBox.add( Vector3( camera().worldToPixel(p1), 0 ) );
     }
 
     glMatrixMode(GL_PROJECTION);
-    glLoadMatrixd(cam2d.projectionMatrix().dataPointer() );
+    glLoadMatrixd(cam2d.getProjectionMatrix().getDataPointer() );
     glMatrixMode(GL_MODELVIEW);
-    glLoadMatrixd(cam2d.viewMatrix().dataPointer());
+    glLoadMatrixd(cam2d.getViewMatrix().getDataPointer());
     
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_LIGHTING);
@@ -521,10 +521,10 @@ mTimerId(0)
 void MainWindow::cameraProjOrthoClicked()
 {
     Camera c = mpViewer->camera();
-    Projection p = c.projection();
+    Projection p = c.getProjection();
     p.setProjection(-100, 100,
                     -100, 100,
-                    p.nearPlane(), p.farPlane(),
+                    p.getNear(), p.getFar(),
                     Projection::tOrthogonal);
     c.setProjection(p);
     mpViewer->setCamera(c);
@@ -536,7 +536,7 @@ void MainWindow::cameraProjOrthoClicked()
 void MainWindow::cameraProjPerspectiveClicked()
 {
     Camera c = mpViewer->camera();
-    Projection p = gDefaultCamera.projection();
+    Projection p = gDefaultCamera.getProjection();
     c.setProjection(p);
     mpViewer->setCamera(c);
 
@@ -577,7 +577,7 @@ void MainWindow::timerEvent(QTimerEvent *ipE)
 //-----------------------------------------------------------------------------
 void MainWindow::updateUi()
 {
-    switch (mpViewer->camera().projection().type()) {
+    switch (mpViewer->camera().getProjection().getType()) {
         case Projection::tOrthogonal:
             mpOrthoProj->setChecked(true);
             break;
@@ -603,9 +603,9 @@ void MainWindow::updateUi()
     }
     
     //--- zoom
-    const double z = mpViewer->camera().zoomFactor();
+    const double z = mpViewer->camera().getZoomFactor();
     mpZoomFactor->setValue( z * 10 );
-    mpZoomFactorLabel->setText( QString::number(mpViewer->camera().zoomFactor(), 'f', 1) );
+    mpZoomFactorLabel->setText( QString::number(mpViewer->camera().getZoomFactor(), 'f', 1) );
 	update();
 	mpViewer->update();
 }
