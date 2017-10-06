@@ -15,11 +15,12 @@ namespace LightBeam
         RayTracer(const RayTracer&) = delete;
         RayTracer& operator=(const RayTracer&) = delete;
         ~RayTracer();
-
-        void render();
         
         Broker& getBroker();
+        void render();
+        
     protected:
+    
         Broker &mBrokerRef;
     };
 }

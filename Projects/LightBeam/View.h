@@ -18,6 +18,7 @@ namespace LightBeam
         View(QWidget *ipParent, Broker *ipBroker);
         ~View() = default;
 
+        void initialize();
         void updateUi();
         
     signals:

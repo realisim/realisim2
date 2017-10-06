@@ -33,6 +33,7 @@ MainWindow::MainWindow(Broker *ipBroker) : QMainWindow(),
         pLyt->addWidget(mpView);
     }
     
+    mpView->initialize();
     updateUi();
 }
 

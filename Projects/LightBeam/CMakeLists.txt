@@ -10,6 +10,7 @@ INCLUDE( "../../CMakeModules/Half.cmake" )
 
 set( SOURCE_FILES ${SOURCE_FILES} CMakeLists.txt )
 add_component( "./" "LightBeam")
+add_component( "./DataStructure" "LightBeam/DataStructure")
 add_component( "../../Common/Core" "Core")
 add_component( "../../Common/Core/${PLATFORM_SPECIFIC_FOLDER}" "Core/${PLATFORM_SPECIFIC_FOLDER}")
 add_component( "../../Common/Core/ImageSupport" "Core/ImageSupport")
