@@ -1,5 +1,5 @@
 #pragma once
-
+#include "DataStructure/ImageCells.h"
 
 namespace Realisim
 {
@@ -20,7 +20,9 @@ namespace LightBeam
         void render();
         
     protected:
-    
+        void rayCast(ImageCells::Node*);
+        void render(ImageCells::Node*);
+        
         Broker &mBrokerRef;
     };
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "DataStructure/ImageCells.h"
 #include "Interface/Mouse.h"
 #include <qlabel.h>
 class QResizeEvent;
@@ -28,6 +29,8 @@ namespace LightBeam
         Broker& getBroker();
         virtual void mousePressEvent(QMouseEvent *) override;
         virtual void mouseReleaseEvent(QMouseEvent *) override;
+        void reconstructImage();
+        void reconstructImage(ImageCells::Node*, int iDepth = 0);
         virtual void resizeEvent(QResizeEvent *) override;
 
         //--- ui

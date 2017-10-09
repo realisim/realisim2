@@ -16,6 +16,10 @@ Rendering::Camera& Broker::getCamera()
 { return mCamera; }
 
 //-----------------------------------------------------------------------------
+ImageCells& Broker::getImageCells()
+{ return mImageCells; }
+
+//-----------------------------------------------------------------------------
 FrameBuffer& Broker::getFrameBuffer()
 { return mFrameBuffer; }
 

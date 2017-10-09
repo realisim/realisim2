@@ -1,5 +1,6 @@
 
 #include "Broker.h"
+#include "Geometry/Rectangle.h"
 #include "Math/Vector.h"
 #include <QImage>
 #include <qlayout.h>
@@ -9,6 +10,7 @@
 
 using namespace Realisim;
     using namespace Core;
+    using namespace Geometry;
     using namespace Interface;
     using namespace LightBeam;
     using namespace Math;
@@ -37,7 +39,7 @@ void View::initialize()
     // resize the projection and viewport of the camera
     Camera &cRef = b.getCamera();
     
-    cRef.set(Vector3(0, 0, 100),
+    cRef.set(Vector3(0, 12, 100),
              Vector3(0, 0, 0),
              Vector3(0, 1, 0));
     
@@ -59,6 +61,11 @@ void View::mousePressEvent(QMouseEvent *ipE)
     mMouse.setPosition(ipE->x(), ipE->y());
     
     emit viewChanged();
+    
+    // les 2 prochaines lignes sont la en attendant
+    // le thread de calcul...
+    reconstructImage();
+    updateUi();
 }
 
 //-----------------------------------------------------------------------------
@@ -66,6 +73,45 @@ void View::mouseReleaseEvent(QMouseEvent *ipE)
 {
     mMouse.setButtonReleased(Mouse::bLeft);
     mMouse.setPosition(ipE->x(), ipE->y());
+}
+
+//-----------------------------------------------------------------------------
+void View::reconstructImage()
+{
+    ImageCells &cells = getBroker().getImageCells();
+    reconstructImage(cells.getRoot());
+}
+
+//-----------------------------------------------------------------------------
+void View::reconstructImage(ImageCells::Node* ipNode, int iDepth)
+{
+    Broker &b = getBroker();
+    FrameBuffer &fb = b.getFrameBuffer();
+    Core::Image &cb = fb.getColorBuffer();
+    
+    if(iDepth == 3)
+    {
+        Rectangle r = ipNode->getCoverage();
+        const Vector2 bl = r.getBottomLeft();
+        const Vector2 tr = r.getTopRight();
+        
+        for(int y = bl.y(); y < tr.y(); ++y)
+            for(int x = bl.x(); x < tr.x(); ++x)
+            {
+                cb.setPixelColor(Vector2i(x,y), ipNode->getColor());
+            }
+    }
+    
+    // check if pixel coverage is smaller dans 1 square pixel...
+    if(iDepth <= 3)
+    {
+        for(size_t i = 0; i < ipNode->mChilds.size(); ++i)
+        {
+            ImageCells::Node *c = ipNode->mChilds[i];
+            reconstructImage(c, iDepth + 1);
+        }
+    }
+    
 }
 
 //-----------------------------------------------------------------------------
