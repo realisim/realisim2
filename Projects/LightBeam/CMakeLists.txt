@@ -4,6 +4,11 @@ PROJECT(LightBeam)
 #output apps in bin/"BuildConfiguration"/${PROJECT_NAME}
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${PROJECT_NAME})
 
+#------------------------
+# Add define
+#------------------------
+add_definitions(-D_USE_MATH_DEFINES)
+
 INCLUDE( "../../CMakeModules/Qt5.cmake" )
 INCLUDE( "../../CMakeModules/Lodepng.cmake" )
 INCLUDE( "../../CMakeModules/Half.cmake" )

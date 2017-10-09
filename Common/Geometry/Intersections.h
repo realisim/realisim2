@@ -12,11 +12,11 @@ namespace Geometry
 
     //--- Line
     bool intersects(const Line&, const Plane&, IntersectionType* = nullptr);
-    Math::Vector3 intersect(const Line&, const Plane&, IntersectionType* = nullptr);
+    IntersectionType intersect(const Line&, const Plane&, Math::Vector3 *oP, Math::Vector3 *oNormal);
 
     //--- Plane
     bool intersects(const Plane&, const Line&, IntersectionType* = nullptr);
-    Math::Vector3 intersect(const Plane&, const Line&, IntersectionType* = nullptr);
+    IntersectionType intersect(const Plane&, const Line&, Math::Vector3 *oP, Math::Vector3 *oNormal);
 
 }
 }

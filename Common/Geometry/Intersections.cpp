@@ -15,8 +15,7 @@ namespace Geometry
     //--- line/plane
     bool intersects(const Line& iL, const Plane& iP, IntersectionType* ipIt)
     {
-        IntersectionType t;
-        intersect(iL, iP, &t);
+        IntersectionType t = intersect(iL, iP, nullptr, nullptr);
 
         if(ipIt != nullptr){ *ipIt = t; }
 
@@ -26,9 +25,12 @@ namespace Geometry
     //--- line/plane
     //https://en.wikipedia.org/wiki/Line%E2%80%93plane_intersection
     //
-    Math::Vector3 intersect(const Line& iL, const Plane& iP, IntersectionType* ipIt)
+    IntersectionType intersect(const Line& iL,
+                               const Plane& iP,
+                               Math::Vector3 *oP,
+                               Math::Vector3 *oNormal)
     {
-        Vector3 r;
+        Vector3 p;
         IntersectionType t;
   
         const Vector3 l = iL.getDirection();
@@ -50,11 +52,12 @@ namespace Geometry
             t = itPoint;
             // compute the point of intersection d
             const double d = (p0-l0)*n / (l*n);
-            r = l*d + l0;
+            p = l*d + l0;
         }
 
-        if(ipIt != nullptr) { *ipIt = t; }
-        return r;
+        if(oP != nullptr) { *oP = p; }
+        if(oNormal != nullptr) { *oNormal = iP.getNormal(); }
+        return t;
     }
 
     //-------------------------------------------------------------------------
@@ -65,8 +68,11 @@ namespace Geometry
     { return intersects(iL, iP, ipIt); }
 
     // plane/Line
-    Math::Vector3 intersect(const Plane& iP, const Line& iL, IntersectionType* ipIt)
-    { return intersect(iL, iP, ipIt); }
+    IntersectionType intersect(const Plane& iP,
+                               const Line& iL,
+                               Math::Vector3* oP,
+                               Math::Vector3* oNormal)
+    { return intersect(iL, iP, oP, oNormal); }
 
 }
 }

@@ -14,6 +14,8 @@ namespace Geometry
 
 	  The plane can be invalid, meaning it is mathematically unusable. For
 	  example, when 3 colinear points are given...
+
+      The normal obtained via getNormal is always normalized.
 	*/
     class Plane
     {
@@ -24,7 +26,8 @@ namespace Geometry
         Plane( const Plane& ) = default;
         Plane& operator= ( const Plane& ) = default;
         ~Plane();
-        
+
+        double distance(const Math::Vector3& p) const;        
         Math::Vector3 getNormal() const;
 		//getParametricFrom(double *a, double *b, double *c, double *d) const;
         Math::Vector3 getPoint() const;
@@ -32,7 +35,7 @@ namespace Geometry
 		Mesh makeMesh(const Math::Vector2& iSizeInMeter) const;
         void set(const Math::Vector3& p, const Math::Vector3& n);
         void set(const Math::Vector3& p0, const Math::Vector3& p1, const Math::Vector3& p2);
-    
+
     protected:
 		void validate();
 

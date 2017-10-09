@@ -103,6 +103,11 @@ void View::updateUi()
             im.getWidth(),
             im.getHeight(),
             QImage::Format_RGBA8888);
+        
+        //QImage has image origin at topLeft while
+        //we have bottomleft... lets flip it.
+        qim = qim.mirrored(false, true);
+        
         mpImageLabel->setPixmap(QPixmap::fromImage(qim));
     }
 }

@@ -1,6 +1,4 @@
 /**/
-#define _USE_MATH_DEFINES
-
 #include "Broker.h"
 #include "MainWindow.h"
 #include <QCoreApplication>
