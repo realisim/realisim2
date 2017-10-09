@@ -39,7 +39,7 @@ void RayTracer::render()
     const int h = viewport.getHeight();
     for(int y = 0; y < h; ++y)
     {
-        for(int x = 0; w; ++x)
+        for(int x = 0; x < w; ++x)
         {
             const Vector2i pixel(x, y);
 
