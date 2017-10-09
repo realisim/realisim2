@@ -5,6 +5,7 @@
 #include "Rendering/Viewport.h"
 #include "Math/Matrix.h"
 #include "Math/Vector.h"
+#include "Geometry/Frustum.h"
 
 namespace Realisim
 {
@@ -116,7 +117,9 @@ namespace Rendering
         Math::Vector3 cameraDeltaToWorld( const Math::Vector3& ) const;
 		Math::Vector3 getDirection() const;
         const Math::Vector3& getFocal() const;
+        Realisim::Geometry::Frustum getFrustum() const;
 		const Math::Vector3& getLateralVector() const;
+        const Math::Vector3& getLookVector() const;
         const Math::Vector3& getPosition() const;
         const Projection& getProjection() const;
         const Math::Matrix4& getProjectionMatrix() const;
@@ -145,11 +148,10 @@ namespace Rendering
 		Math::Vector3 worldDeltaToNdc(const Math::Vector3&) const;
         Math::Vector2 worldToPixel( const Math::Vector3&, bool *iIsOnscreen = nullptr ) const;
         Math::Vector2 worldDeltaToPixel( const Math::Vector3&, bool *iIsOnscreen = nullptr ) const;
-        
+
     protected:  
         void computeProjection(); 
         void computeViewMatrix();
-        const Math::Vector3& lookVector() const;
         
         Math::Vector3 mPosition;
         Math::Vector3 mLateralVector;
@@ -163,6 +165,8 @@ namespace Rendering
         mutable Math::Matrix4 mViewMatrix;
         mutable Math::Matrix4 mViewMatrixInverse;
 		bool mIsProjectionProportionalToViewport;
+
+
     };
     
 } //treeD

@@ -127,10 +127,71 @@ const Vector3& Camera::getFocal() const
 { return mFocal; }
 
 //-----------------------------------------------------------------------------
+Realisim::Geometry::Frustum Camera::getFrustum() const
+{
+    const Realisim::Rendering::Projection& projection = this->getProjection();
+    Realisim::Math::Vector3 corners[8];
+    corners[0] = mPosition;
+    corners[1] = mPosition;
+    corners[2] = mPosition;
+    corners[3] = mPosition;
+    corners[4] = mPosition;
+    corners[5] = mPosition;
+    corners[6] = mPosition;
+    corners[7] = mPosition;
+
+    const double distanceRatio = projection.getFar() / projection.getNear();
+
+    corners[0] += mLateralVector*(projection.getLeft());     // low left near
+    corners[0] += mUpVector*(projection.getBottom());
+    corners[0] += mLookVector*(-projection.getNear());
+
+    corners[1] += mLateralVector*(projection.getRight());    // low right near
+    corners[1] += mUpVector*(projection.getBottom());
+    corners[1] += mLookVector*(-projection.getNear());
+
+    corners[2] += mLateralVector*(projection.getRight());    // high right near
+    corners[2] += mUpVector*(projection.getTop());
+    corners[2] += mLookVector*(-projection.getNear());
+
+    corners[3] += mLateralVector*(projection.getLeft());     // high left near
+    corners[3] += mUpVector*(projection.getTop());
+    corners[3] += mLookVector*(-projection.getNear());
+
+    corners[4] += mLateralVector*(distanceRatio*projection.getLeft());     // low left far
+    corners[4] += mUpVector*(distanceRatio*projection.getBottom());
+    corners[4] += mLookVector*(-projection.getFar());
+
+    corners[5] += mLateralVector*(distanceRatio*projection.getRight());    // low right far
+    corners[5] += mUpVector*(distanceRatio*projection.getBottom());
+    corners[5] += mLookVector*(-projection.getFar());
+
+    corners[6] += mLateralVector*(distanceRatio*projection.getRight());    // high right far
+    corners[6] += mUpVector*(distanceRatio*projection.getTop());
+    corners[6] += mLookVector*(-projection.getFar());
+
+    corners[7] += mLateralVector*(distanceRatio*projection.getLeft());     // high left far
+    corners[7] += mUpVector*(distanceRatio*projection.getTop());
+    corners[7] += mLookVector*(-projection.getFar());
+
+    Realisim::Geometry::Frustum frustum;
+    frustum.set(corners);
+
+    return frustum;
+}
+
+//-----------------------------------------------------------------------------
 // The lateral vector (in world space) represents the axis of rotation for Yaw.
 //
 const Vector3& Camera::getLateralVector() const
 { return mLateralVector; }
+
+//-----------------------------------------------------------------------------
+// The vector formed by getPosition() - getFocal(). It is the vector representing
+// the axis of rotation for Roll.
+//
+const Vector3& Camera::getLookVector() const
+{ return mLookVector; }
 
 //-----------------------------------------------------------------------------
 // The position of the camera in world space.
@@ -177,13 +238,6 @@ double Camera::getZoomFactor() const
 //-----------------------------------------------------------------------------
 bool Camera::isProjectionProportionalToViewport() const
 { return mIsProjectionProportionalToViewport; }
-
-//-----------------------------------------------------------------------------
-// The vector formed by getPosition() - getFocal(). It is the vector representing
-// the axis of rotation for Roll.
-//
-const Vector3& Camera::lookVector() const
-{ return mLookVector; }
 
 //-----------------------------------------------------------------------------
 // Unprojects a ndc coordinates back to 3d world coordinate.

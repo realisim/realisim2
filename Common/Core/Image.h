@@ -125,7 +125,8 @@ namespace Core
         //virtual bool saveAs(const std::string& iFilenamePath, const DdsImage::SaveOptions& iSaveOption); //implicitly save as DDS.
         virtual void set(const std::string& iFilenamePath);
         virtual void setFilenamePath(const std::string& iFilenamePath);
-//virtual void set(int iWidth, int iHeight, ImageInternalFormat iIf); // this would allocate the data storage...
+        virtual void set(int iWidth, int iHeight, ImageInternalFormat iIf);
+        virtual void set(const Math::Vector2i& iSize, ImageInternalFormat iIf);
         virtual void setData(int iWidth, int iHeight, ImageInternalFormat iIf, const char* ipData);
 
         virtual void setPixelColor(Math::Vector2i iPixel, const Color& iCol); //this should be changed to Color which abstracts rgb8, 16 and float

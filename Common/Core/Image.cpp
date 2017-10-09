@@ -776,6 +776,26 @@ void Image::set(const std::string& iFilenamePath)
 }
 
 //----------------------------------------------------------------------------
+void Image::set(int iWidth, int iHeight, ImageInternalFormat iIf)
+{
+    clear();
+    
+    mSizeInPixel.set(iWidth, iHeight);
+    mInternalFormat = iIf;
+    mSizeInBytes = (uint64_t)getWidth() *
+        (uint64_t)getHeight() *
+        (uint64_t)getNumberOfChannels() *
+        (uint64_t)getBytesPerChannel();
+    mImageData.resize(mSizeInBytes);
+    
+    mIsValid = true;
+}
+
+//----------------------------------------------------------------------------
+void Image::set(const Math::Vector2i& iSize, ImageInternalFormat iIf)
+{ set(iSize.x(), iSize.y(), iIf); }
+
+//----------------------------------------------------------------------------
 void Image::setData(int iWidth, int iHeight, 
     ImageInternalFormat iIf,
     const char* ipData)
