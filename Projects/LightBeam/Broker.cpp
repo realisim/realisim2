@@ -16,12 +16,12 @@ Rendering::Camera& Broker::getCamera()
 { return mCamera; }
 
 //-----------------------------------------------------------------------------
-ImageCells& Broker::getImageCells()
-{ return mImageCells; }
+Core::Image& Broker::getFinalImage()
+{ return mFinalImage; }
 
 //-----------------------------------------------------------------------------
-FrameBuffer& Broker::getFrameBuffer()
-{ return mFrameBuffer; }
+RenderStack& Broker::getRenderStack()
+{ return mRenderStack; }
 
 //-----------------------------------------------------------------------------
 Scene& Broker::getScene()

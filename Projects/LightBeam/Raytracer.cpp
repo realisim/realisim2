@@ -17,7 +17,10 @@ using namespace std;
 //-----------------------------------------------------------------------------
 RayTracer::RayTracer(Broker *ipBroker) :
     mBrokerRef(*ipBroker)
-{}
+{
+//    using namespace placeholders;
+//    mRenderQueue.setProcessingFunction()
+}
 
 //-----------------------------------------------------------------------------
 RayTracer::~RayTracer()
@@ -28,90 +31,82 @@ Broker& RayTracer::getBroker()
 { return mBrokerRef; }
 
 //-----------------------------------------------------------------------------
+void RayTracer::rayCast(ImageCells& iCells,
+    const Vector2i& iCell,
+    const Frustum& iFrustum)
+{
+    Broker &b = getBroker();
+    Camera &cRef = b.getCamera();
+    
+    // make ray for given pixel
+    const Rectangle& r = iCells.getCellCoverage(iCell);
+    const Vector2 pixelPos = r.getCenter();
+    
+    const Vector3 camPos = cRef.getPosition();
+    Line ray(camPos,
+             cRef.pixelToWorld(pixelPos,
+                               camPos + cRef.getDirection().normalize()));
+    
+    //--- default color
+    Color c(0.0, 0.0, 0.0, 1.0);
+    
+    //--- intersects with scene.
+    Plane plane(Vector3(0.0, -12, 0.0), Vector3(1.0, 1.0, 0.0));
+    
+    Vector3 p, n;
+    IntersectionType pType = intersect(ray, plane, &p, &n);
+    if(pType != itNone &&
+       iFrustum.contains(p))
+    {
+        c.set(1.0, 0.0, 0.0, 1.0);
+    }
+    
+    iCells.setCellValue(iCell, c, (p - camPos).norm());
+}
+
+//-----------------------------------------------------------------------------
 void RayTracer::render()
 {
     Broker &b = getBroker();
     Camera &cRef = b.getCamera();
     const Viewport& viewport = cRef.getViewport();
     
-    ImageCells& cells = b.getImageCells();
-    cells.setCoverage(0, 0, viewport.getWidth(), viewport.getHeight());
+    RenderStack& rs = b.getRenderStack();
+
+// dummy stuff avant de mettre le thread...
+rs.mStack.clear();
+rs.mStack.push_back(ImageCells());
+rs.mStack.push_back(ImageCells());
     
-    render(cells.getRoot());
+    int nextStackIndex = rs.mStack.size();
+    uint64_t numberOfCells = pow(2, nextStackIndex);
+    
+    ImageCells cells;
+    Rectangle coverage(Vector2i(0, 0),
+                       viewport.getWidth(), viewport.getHeight());
+    cells.setSize(Vector2i(numberOfCells, numberOfCells));
+    cells.setCoverage(coverage);
+    
+    render(cells);
+    rs.mStack.push_back(cells);
 }
 
 //-----------------------------------------------------------------------------
-void RayTracer::rayCast(ImageCells::Node* ipNode)
+void RayTracer::render(ImageCells& iCells)
 {
     Broker &b = getBroker();
     Camera &cRef = b.getCamera();
     const Frustum frustum = cRef.getFrustum();
     
-    // make ray for given pixel
-    const Rectangle& r = ipNode->getCoverage();
-    Vector2 pixelPos = r.getCenter();
-    
-    const Vector3 camPos = cRef.getPosition();
-    Line ray(camPos,
-        cRef.pixelToWorld(pixelPos,
-            camPos + cRef.getDirection().normalize()));
-    
-    //--- default color
-    Color c(0.0, 0.0, 0.0, 1.0);
-    
-    //--- intersects with scene.
-    Plane plane(Vector3(0.0, -12, 0.0), Vector3(0.0, 1.0, 0.0));
-    
-    Vector3 p, n;
-    IntersectionType pType = intersect(ray, plane, &p, &n);
-    if(pType != itNone &&
-       frustum.contains(p))
+    const int w = iCells.getWidthInCells();
+    const int h = iCells.getHeightInCells();
+    for(int y = 0; y < h; ++y)
     {
-        c.set(1.0, 0.0, 0.0, 1.0);
-    }
-    
-    ipNode->setColor(c);
-    ipNode->setDepth( (p - camPos).norm() );
-}
-
-//-----------------------------------------------------------------------------
-void RayTracer::render(ImageCells::Node* ipNode)
-{
-    // breadth first approach
-    deque<ImageCells::Node*> q;
-    q.push_back(ipNode);
-    
-    int depth = 0;
-    while(!q.empty())
-    {
-        // grab and remove the front node.
-        ImageCells::Node *n = q.front();
-        q.pop_front();
-        
-        rayCast(n);
-    
-        caca de caca.
-        
-        /*Le quad tree c'Est mauvais...
-         On serait mieux avec un frameBuffer avec un coverage
-         de la taille du viewport. Et un nombre de pixel 
-         corresoind au nombre de cellule pour ce niveau de raster
-         Ainsi on minimize l'Espace mémoire de calcul et on
-         facilite le rende...
-        
-        */
-        // add another level
-        if(depth <= 3)
+        for(int x = 0; x < w; ++x)
         {
-            //split and add childs.
-            n->split();
-            for(size_t i = 0; i < n->mChilds.size(); ++i)
-            {
-                q.push_back(n->mChilds[i]);
-            }
-            depth++;
+            const Vector2i cell(x, y);
+            
+            rayCast(iCells, cell, frustum);
         }
     }
-    
-    
 }

@@ -30,7 +30,6 @@ namespace LightBeam
         virtual void mousePressEvent(QMouseEvent *) override;
         virtual void mouseReleaseEvent(QMouseEvent *) override;
         void reconstructImage();
-        void reconstructImage(ImageCells::Node*, int iDepth = 0);
         virtual void resizeEvent(QResizeEvent *) override;
 
         //--- ui

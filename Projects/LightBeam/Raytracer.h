@@ -1,5 +1,7 @@
 #pragma once
+#include "Core/MessageQueue.h"
 #include "DataStructure/ImageCells.h"
+#include "Geometry/Frustum.h"
 
 namespace Realisim
 {
@@ -20,10 +22,13 @@ namespace LightBeam
         void render();
         
     protected:
-        void rayCast(ImageCells::Node*);
-        void render(ImageCells::Node*);
+    
+        void rayCast(ImageCells& iCells, const Math::Vector2i& iCell, const Geometry::Frustum& iFrustum);
+        void render(ImageCells& iCells);
         
         Broker &mBrokerRef;
+//        Core::MessageQueue mRenderQueue;
+//        Core::MessageQueue mDoneQueue;
     };
 }
 }

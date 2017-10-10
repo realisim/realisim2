@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Color.h"
+#include "Core/Image.h"
 #include "Geometry/Rectangle.h"
 #include "Math/Vector.h"
 
@@ -12,43 +13,41 @@ namespace LightBeam
     {
     public:
         ImageCells();
-        ImageCells(const ImageCells&) = delete;
-        ImageCells& operator=(const ImageCells&) = delete;
+        ImageCells(const ImageCells&) = default;
+        ImageCells& operator=(const ImageCells&) = default;
         ~ImageCells() = default;
 
-        struct Node
-        {
-            Node();
-            ~Node();
-
-            friend class ImageCells;
-
-            const Core::Color& getColor() const;
-            const Geometry::Rectangle& getCoverage() const;
-            double getDepth() const;
-            void setColor(const Core::Color&);
-            void setDepth(double);
-            void split();
-
-            Node* mpParent;
-            std::vector<Node*> mChilds;
-
-        protected:
-
-            Geometry::Rectangle mCoverage;
-            Core::Color mRgba;
-            double mDepth;
-        };
-
         void clear();
-        static uint64_t getNumberOfNodeAtDepthLevel(int);
-        Node *getRoot();
-        void setCoverage(double iX, double iY, double iW, double iH);
+        Core::Color getCellColor(const Math::Vector2i& iCell) const;
+        Geometry::Rectangle getCellCoverage(const Math::Vector2i& iCellIndex);
+        const Geometry::Rectangle& getCoverage() const;
+        double getCellDepth(const Math::Vector2i& iCell) const;
+        int getHeightInCells() const;
+        int getWidthInCells() const;
+        Math::Vector2i getSizeInCells() const;
+        bool isValid();
+        void set(const Math::Vector2i& iSizeInCells, const Geometry::Rectangle& iCoverage);
+        void setCellValue(const Math::Vector2i& iCell, const Core::Color& iC, double iDepth);
+        void setSize(const Math::Vector2i& iSizeInCells);
+        void setCoverage(const Geometry::Rectangle&);
 
     protected:
+        Geometry::Rectangle mCoverage;
+        Core::Image mRgba;
+        Core::Image mDepth;
+    };
+    
+    
+    class RenderStack
+    {
+    public:
+        RenderStack() = default;
+        RenderStack(const RenderStack&) = delete;
+        RenderStack& operator=(const RenderStack&) = delete;
+        ~RenderStack() = default;
 
-        Node *mpRoot; //never null
-        
+    //protected:
+        std::vector<ImageCells> mStack;
     };
 }
 }

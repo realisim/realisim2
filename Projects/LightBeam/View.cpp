@@ -78,40 +78,32 @@ void View::mouseReleaseEvent(QMouseEvent *ipE)
 //-----------------------------------------------------------------------------
 void View::reconstructImage()
 {
-    ImageCells &cells = getBroker().getImageCells();
-    reconstructImage(cells.getRoot());
-}
-
-//-----------------------------------------------------------------------------
-void View::reconstructImage(ImageCells::Node* ipNode, int iDepth)
-{
     Broker &b = getBroker();
-    FrameBuffer &fb = b.getFrameBuffer();
-    Core::Image &cb = fb.getColorBuffer();
+    RenderStack &rs = b.getRenderStack();
+    ImageCells &cells = rs.mStack.back();
     
-    if(iDepth == 3)
-    {
-        Rectangle r = ipNode->getCoverage();
-        const Vector2 bl = r.getBottomLeft();
-        const Vector2 tr = r.getTopRight();
-        
-        for(int y = bl.y(); y < tr.y(); ++y)
-            for(int x = bl.x(); x < tr.x(); ++x)
-            {
-                cb.setPixelColor(Vector2i(x,y), ipNode->getColor());
-            }
-    }
+    Camera &cRef = b.getCamera();
+    const Viewport &vp = cRef.getViewport();
     
-    // check if pixel coverage is smaller dans 1 square pixel...
-    if(iDepth <= 3)
-    {
-        for(size_t i = 0; i < ipNode->mChilds.size(); ++i)
+    // init final image
+    Image &im = b.getFinalImage();
+    im.set(vp.getWidth(), vp.getHeight(), iifRgbaUint8);
+    
+    // reconstruct image from cells
+    for(int cellY = 0; cellY < cells.getHeightInCells(); ++cellY)
+        for(int cellX = 0; cellX < cells.getWidthInCells(); ++cellX)
         {
-            ImageCells::Node *c = ipNode->mChilds[i];
-            reconstructImage(c, iDepth + 1);
+            const Vector2i cellIndex(cellX, cellY);
+            Rectangle r = cells.getCellCoverage(cellIndex);
+            const Vector2 bl = r.getBottomLeft();
+            const Vector2 tr = r.getTopRight();
+            
+            for(int y = bl.y(); y < tr.y(); ++y)
+                for(int x = bl.x(); x < tr.x(); ++x)
+                {
+                    im.setPixelColor(Vector2i(x,y), cells.getCellColor(cellIndex));
+                }
         }
-    }
-    
 }
 
 //-----------------------------------------------------------------------------
@@ -127,12 +119,6 @@ void View::resizeEvent(QResizeEvent *ipE)
     v.set(w, h);
     cRef.setViewport(v);
     
-    // resize the frame buffer.
-    // -2 to leave a bit of room to down size the widget...
-    //
-    Math::Vector2i s(w - 2, h - 2);
-    b.getFrameBuffer().setSize(s);
-    
     updateUi();
 }
 
@@ -140,11 +126,9 @@ void View::resizeEvent(QResizeEvent *ipE)
 void View::updateUi()
 {
     Broker &b = getBroker();
-    FrameBuffer &fRef = b.getFrameBuffer();
-    if(fRef.isValid())
+    Image &im = b.getFinalImage();
+    if(im.isValid())
     {
-        Image im = fRef.getColorBuffer();
-        
         QImage qim((const uint8_t*)im.getImageData().constData(),
             im.getWidth(),
             im.getHeight(),

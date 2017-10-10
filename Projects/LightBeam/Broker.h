@@ -2,7 +2,6 @@
 
 #include "DataStructure/ImageCells.h"
 #include "DataStructure/Scene.h"
-#include "FrameBuffer.h"
 #include "Rendering/Camera.h"
 
 namespace Realisim
@@ -16,13 +15,13 @@ namespace LightBeam
         ~Broker();
 
         Rendering::Camera& getCamera();
-        ImageCells& getImageCells();
+        Core::Image& getFinalImage();
         Scene& getScene();
-        FrameBuffer& getFrameBuffer();
+        RenderStack& getRenderStack();
         
     protected:
-        FrameBuffer mFrameBuffer;
-        ImageCells mImageCells;
+        Core::Image mFinalImage;
+        RenderStack mRenderStack;
         Rendering::Camera mCamera;
         Scene mScene;
     };
