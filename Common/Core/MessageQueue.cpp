@@ -45,7 +45,8 @@ void MessageQueue::clear()
 //------------------------------------------------------------------------------
 void MessageQueue::dummyProcessingFunction(Message* iM)
 {
-    printf("dummy processing function\n" );
+    (void)iM; //suppress warning
+    printf("dummy processing function\n");
 }
 
 //------------------------------------------------------------------------------

@@ -24,9 +24,6 @@ file( GLOB iPATH_INCLUDE_FILES
 string(REPLACE "/" "\\" source_group_msvc ${iDisplayedName})
 source_group ("${source_group_msvc}" FILES ${iPATH_INCLUDE_FILES} ${iPATH_SOURCE_FILES})
 
-source_group (${iDisplayedName} FILES ${iPATH_INCLUDE_FILES})
-source_group (${iDisplayedName} FILES ${iPATH_SOURCE_FILES})
-
 # add sources and include to global variable
 set( SOURCE_FILES ${SOURCE_FILES} ${iPATH_SOURCE_FILES} )
 set( INCLUDE_FILES ${INCLUDE_FILES} ${iPATH_INCLUDE_FILES} )

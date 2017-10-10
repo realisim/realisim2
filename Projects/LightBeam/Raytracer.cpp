@@ -56,8 +56,8 @@ void RayTracer::processRenderMessage(MessageQueue::Message* ipM)
                 const Viewport& viewport = cRef.getViewport();
                 RenderStack& rs = b.getRenderStack();
             
-                int nextStackIndex = rs.mStack.size();
-                uint64_t numberOfCells = pow(2, nextStackIndex);
+                size_t nextStackIndex = rs.mStack.size();
+                int numberOfCells = (int)pow(2, nextStackIndex);
             
                 ImageCells cells;
                 Rectangle coverage(Vector2i(0, 0),
@@ -138,6 +138,7 @@ void RayTracer::render()
     
     // clear the render stack
     rs.mStack.clear();
+    rs.mStack.reserve(20);
     
     // start thread
     mRenderQueue.startInThread();

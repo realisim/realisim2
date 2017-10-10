@@ -4,9 +4,19 @@
 
 #include "IsEqual.h"
 
-// remove warning if function not used
-#define SUPPRESS_WARNING(a) (void)a
+#ifdef _WIN32
 
+    #ifndef UNUSED
+    //#define UNUSED(x) __pragma(warning(suppress:4100)) x
+
+    #define SUPPRESS_WARNING(a) __pragma(warning(suppress:4551 4100)) a
+    #endif
+
+#else
+    // remove warning if function not used
+    #define SUPPRESS_WARNING(a) (void)a
+
+#endif _WIN32
 
 static inline const double radiansToDegrees(const double& d )
 {

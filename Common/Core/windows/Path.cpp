@@ -4,7 +4,10 @@
 #include "Path.h"
 #include <regex>
 #include <sstream>
-#include <unistd.h>
+#include <direct.h>
+#include <Windows.h>
+
+
 
 #include <direct.h>
 #include <Windows.h>
@@ -39,12 +42,13 @@ string Path::getCurrentWorkingDirectory()
 {
 	string r;
 	char currentPath[FILENAME_MAX];
-	if (getcwd(currentPath, sizeof(currentPath)))
-	{
-		currentPath[sizeof(currentPath) - 1] = '\0';
-		//r = sanitize(currentPath);
-		r = currentPath;
-	}
+
+    if (_getcwd(currentPath, sizeof(currentPath)))
+    {
+        currentPath[sizeof(currentPath) - 1] = '\0';
+        //r = sanitize(currentPath);
+        r = currentPath;
+    }
 
 	return r;
 }
@@ -130,5 +134,5 @@ string Path::sanitize(const string & path)
 void Path::setCurrentWorkingDirectory(const std::string & path)
 {
 	string p = sanitize(path);
-	chdir(path.c_str());
+	_chdir(path.c_str());
 }

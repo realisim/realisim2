@@ -47,6 +47,11 @@ namespace LightBeam
         ~RenderStack() = default;
 
     //protected:
+        // This is really a piece of shit...
+        // we grab reference of ImagesCells in the viewer...
+        // Since the raytracer pushes back into the vector, the
+        // address gets invalidated...
+        //
         std::vector<ImageCells> mStack;
     };
 }
