@@ -124,6 +124,7 @@ namespace Core
         void clear();
         int getNumberOfMessages() const;
         state getState() const;
+        bool isEmpty() const;
         void post( Message* );
         void processNextMessage();
         void processMessages();

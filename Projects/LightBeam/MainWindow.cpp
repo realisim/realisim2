@@ -32,12 +32,25 @@ MainWindow::MainWindow(Broker *ipBroker) : QMainWindow(),
     }
     
     mpView->initialize();
-    updateUi();
+    
+    mUpdateTimerId = startTimer(30);
 }
 
 //-----------------------------------------------------------------------------
 Broker& MainWindow::getBroker()
 { return mBrokerRef; }
+
+//-----------------------------------------------------------------------------
+void MainWindow::timerEvent(QTimerEvent *ipE)
+{
+    if(ipE->timerId() == mUpdateTimerId)
+    {
+        if(mRayTracer.hasNewFrameAvailable())
+        {
+            mpView->updateUi();
+        }
+    }
+}
 
 //-----------------------------------------------------------------------------
 void MainWindow::viewChanged()

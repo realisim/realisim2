@@ -18,17 +18,28 @@ namespace LightBeam
         RayTracer& operator=(const RayTracer&) = delete;
         ~RayTracer();
         
+        bool hasNewFrameAvailable() const;
         Broker& getBroker();
         void render();
         
     protected:
+        class Message : public Core::MessageQueue::Message
+        {
+        public:
+            explicit Message(void* ipSender = nullptr);
+            
+            enum Action{aNone, aStopRendering, aRender, aFrameDone};
+            Action mAction;
+        };
     
+        Message* makeMessage(Message::Action);
+        void processRenderMessage(Core::MessageQueue::Message*);
         void rayCast(ImageCells& iCells, const Math::Vector2i& iCell, const Geometry::Frustum& iFrustum);
         void render(ImageCells& iCells);
         
         Broker &mBrokerRef;
-//        Core::MessageQueue mRenderQueue;
-//        Core::MessageQueue mDoneQueue;
+        Core::MessageQueue mRenderQueue;
+        mutable Core::MessageQueue mDoneQueue;
     };
 }
 }

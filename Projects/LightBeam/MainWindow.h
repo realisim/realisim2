@@ -4,6 +4,7 @@
 #pragma once
 
 #include <QMainWindow>
+#include <QTimerEvent>
 #include "Raytracer.h"
 
 namespace Realisim
@@ -26,8 +27,10 @@ namespace LightBeam
         
     protected:
         Broker& getBroker();
+        virtual void timerEvent(QTimerEvent *) override;
         void updateUi();
 
+        int mUpdateTimerId;
         Broker &mBrokerRef;
         View *mpView;
         RayTracer mRayTracer;

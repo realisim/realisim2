@@ -62,9 +62,6 @@ void View::mousePressEvent(QMouseEvent *ipE)
     
     emit viewChanged();
     
-    // les 2 prochaines lignes sont la en attendant
-    // le thread de calcul...
-    reconstructImage();
     updateUi();
 }
 
@@ -80,6 +77,10 @@ void View::reconstructImage()
 {
     Broker &b = getBroker();
     RenderStack &rs = b.getRenderStack();
+    
+    //early out
+    if(rs.mStack.empty()){ return; }
+    
     ImageCells &cells = rs.mStack.back();
     
     Camera &cRef = b.getCamera();
@@ -87,7 +88,7 @@ void View::reconstructImage()
     
     // init final image
     Image &im = b.getFinalImage();
-    im.set(vp.getWidth(), vp.getHeight(), iifRgbaUint8);
+    im.set(vp.getWidth() - 2, vp.getHeight() - 2, iifRgbaUint8);
     
     // reconstruct image from cells
     for(int cellY = 0; cellY < cells.getHeightInCells(); ++cellY)
@@ -119,12 +120,14 @@ void View::resizeEvent(QResizeEvent *ipE)
     v.set(w, h);
     cRef.setViewport(v);
     
-    updateUi();
+    viewChanged();
 }
 
 //-----------------------------------------------------------------------------
 void View::updateUi()
 {
+    reconstructImage();
+
     Broker &b = getBroker();
     Image &im = b.getFinalImage();
     if(im.isValid())

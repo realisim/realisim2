@@ -65,6 +65,16 @@ MessageQueue::state MessageQueue::getState() const
 }
 
 //------------------------------------------------------------------------------
+bool MessageQueue::isEmpty() const
+{
+    bool r = true;
+    mMutex.lock();
+    r = mQueue.empty();
+    mMutex.unlock();
+    return r;
+}
+
+//------------------------------------------------------------------------------
 void MessageQueue::post( Message* iM )
 {
     // the queue will not accept messages when a request to stop
