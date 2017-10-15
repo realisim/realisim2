@@ -28,9 +28,5 @@ Interface::Mouse& Broker::getMouse()
 { return mMouse; }
 
 //-----------------------------------------------------------------------------
-ImageCells& Broker::getImageCells()
-{ return mImageCells; }
-
-//-----------------------------------------------------------------------------
 Scene& Broker::getScene()
 { return mScene; }

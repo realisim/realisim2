@@ -1,6 +1,5 @@
 #pragma once
 
-#include "DataStructure/ImageCells.h"
 #include "DataStructure/Scene.h"
 #include "Interface/Keyboard.h"
 #include "Interface/Mouse.h"
@@ -22,14 +21,12 @@ namespace LightBeam
         Interface::Keyboard& getKeyboard();
         Interface::Mouse& getMouse();
         Scene& getScene();
-        ImageCells& getImageCells();
         
     protected:
         Interface::Keyboard mKeyboard;
         Interface::Mouse mMouse;
     
         Core::Image mFinalImage;
-        ImageCells mImageCells;
         Rendering::Camera mCamera;
         Scene mScene;
     };
