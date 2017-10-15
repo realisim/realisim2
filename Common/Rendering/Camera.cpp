@@ -114,10 +114,11 @@ void Camera::computeViewMatrix()
 //-----------------------------------------------------------------------------
 // returns a vector representing, in world coordinate, the look direction
 // of the camera. getFocal() - getPosition()
+// Direction is always normalized
 //
 Vector3 Camera::getDirection() const
 {
-	return getFocal() - getPosition();
+    return -mLookVector;
 }
 
 //-----------------------------------------------------------------------------
@@ -354,7 +355,7 @@ void Camera::set(const Vector3& iEye,
 
     mUpVector = mLookVector ^ mLateralVector;
     mUpVector.normalize();
-
+    
     computeViewMatrix();
 }
 

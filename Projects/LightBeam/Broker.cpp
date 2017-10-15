@@ -16,8 +16,16 @@ Rendering::Camera& Broker::getCamera()
 { return mCamera; }
 
 //-----------------------------------------------------------------------------
-FrameBuffer& Broker::getFrameBuffer()
-{ return mFrameBuffer; }
+Core::Image& Broker::getFinalImage()
+{ return mFinalImage; }
+
+//-----------------------------------------------------------------------------
+Interface::Keyboard& Broker::getKeyboard()
+{return mKeyboard; }
+
+//-----------------------------------------------------------------------------
+Interface::Mouse& Broker::getMouse()
+{ return mMouse; }
 
 //-----------------------------------------------------------------------------
 Scene& Broker::getScene()

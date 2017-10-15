@@ -127,6 +127,12 @@ string Path::sanitize(const string & path)
 void Path::setCurrentWorkingDirectory(const std::string & path)
 {
 	string p = sanitize(path);
-	int r = chdir(path.c_str());
+    
+#if _NDEBUG
+    int r = chdir(path.c_str());
     assert(r == 0);
+#else
+    chdir(path.c_str());
+#endif
+	
 }

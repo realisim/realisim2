@@ -135,6 +135,22 @@ Image::Format Image::getFormatFromExtension(const std::string& iExtension)
 {
     Image::Format r = fUnsupported;
 
+#ifdef _WIN32
+    if (_stricmp(iExtension.c_str(), "raw") == 0)
+    { r = fRaw; }
+    else if (_stricmp(iExtension.c_str(), "rgb") == 0)
+    { r = fRgb; }
+    /*else if (_stricmp(iExtension.c_str(), "dds") == 0)
+    { r = fDds; }*/
+    else if (_stricmp(iExtension.c_str(), "png") == 0)
+    { r = fPng; }
+    /*else if (_stricmp(iExtension.c_str(), "tif") == 0 ||
+        _stricmp(iExtension.c_str(), "tiff") == 0)
+    { r = fTiff; }*/
+    else if (_stricmp(iExtension.c_str(), "hgt") == 0)
+    { r = fHgt; }
+    else { r = fUnsupported; }
+#else
     if(strcasecmp( iExtension.c_str(), "raw" ) == 0)
     { r = fRaw; }
     else if(strcasecmp( iExtension.c_str(), "rgb" ) == 0)
@@ -151,6 +167,8 @@ Image::Format Image::getFormatFromExtension(const std::string& iExtension)
         r = fHgt;
     }
     else { r = fUnsupported; }
+#endif
+
 
     return r;
 }

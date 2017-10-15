@@ -15,9 +15,13 @@ Line::Line() :
 Line::Line(const Math::Vector3& p0, const Math::Vector3& p1) :
     mOrigin(p0),
     mDirection(p1 - p0)
-{}
+{
+    mDirection.normalize();
+}
 
 //-----------------------------------------------------------------------------
+// returns the direction as a unit vector.
+//
 Math::Vector3 Line::getDirection() const
 { return mDirection; }
 
@@ -36,6 +40,7 @@ void Line::set(const Math::Vector3& p0, const Math::Vector3& p1)
 {
     mOrigin = p0;
     mDirection = p1 - p0;
+    mDirection.normalize();
 }
 
 //-----------------------------------------------------------------------------

@@ -13,6 +13,10 @@ INCLUDE( "../../CMakeModules/Qt5.cmake" )
 INCLUDE( "../../CMakeModules/Lodepng.cmake" )
 INCLUDE( "../../CMakeModules/Half.cmake" )
 
+IF(WIN32)
+    INCLUDE( "../../CMakeModules/OpenMP.cmake" )
+ENDIF(WIN32)
+
 set( SOURCE_FILES ${SOURCE_FILES} CMakeLists.txt )
 add_component( "./" "LightBeam")
 add_component( "./DataStructure" "LightBeam/DataStructure")

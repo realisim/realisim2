@@ -4,13 +4,14 @@
 #pragma once
 
 #include <QMainWindow>
-#include "Raytracer.h"
+#include <QTimerEvent>
 
 namespace Realisim
 {
 namespace LightBeam
 {
     class Broker;
+    class RayTracer;
     class View;
 
     //----------------------------------------------------
@@ -18,7 +19,7 @@ namespace LightBeam
     {
         Q_OBJECT
     public:
-        MainWindow(Broker *ipBroker);
+        MainWindow(Broker *ipBroker, RayTracer *ipRayTracer);
         ~MainWindow() = default;
 
     protected slots:
@@ -26,11 +27,14 @@ namespace LightBeam
         
     protected:
         Broker& getBroker();
+        void handleUserInput();
+        virtual void timerEvent(QTimerEvent *) override;
         void updateUi();
 
+        int mUpdateTimerId;
         Broker &mBrokerRef;
         View *mpView;
-        RayTracer mRayTracer;
+        RayTracer &mRayTracerRef;
     };
 }
 }

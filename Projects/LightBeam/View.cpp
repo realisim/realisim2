@@ -1,5 +1,9 @@
 
 #include "Broker.h"
+#include "Core/Timer.h"
+#include "Geometry/Rectangle.h"
+#include "Interface/Keyboard.h"
+#include "Interface/Mouse.h"
 #include "Math/Vector.h"
 #include <QImage>
 #include <qlayout.h>
@@ -9,6 +13,7 @@
 
 using namespace Realisim;
     using namespace Core;
+    using namespace Geometry;
     using namespace Interface;
     using namespace LightBeam;
     using namespace Math;
@@ -18,6 +23,9 @@ using namespace Realisim;
 View::View(QWidget *ipParent, Broker *ipBroker) : QWidget(ipParent),
     mBrokerRef(*ipBroker)
 {
+    setMouseTracking(true);
+    setFocusPolicy(Qt::StrongFocus);
+
     QHBoxLayout *pLyt = new QHBoxLayout(this);
     pLyt->setMargin(0);
     pLyt->setSpacing(0);
@@ -37,7 +45,7 @@ void View::initialize()
     // resize the projection and viewport of the camera
     Camera &cRef = b.getCamera();
     
-    cRef.set(Vector3(0, 0, 100),
+    cRef.set(Vector3(0, 12, 100),
              Vector3(0, 0, 0),
              Vector3(0, 1, 0));
     
@@ -53,19 +61,44 @@ Broker& View::getBroker()
 { return mBrokerRef; }
 
 //-----------------------------------------------------------------------------
+void View::keyPressEvent(QKeyEvent *ipE)
+{
+    Keyboard &k = getBroker().getKeyboard();
+    k.setKeyPressed( (Key)ipE->key() );
+}
+
+//-----------------------------------------------------------------------------
+void View::keyReleaseEvent(QKeyEvent *ipE)
+{
+    Keyboard &k = getBroker().getKeyboard();
+    k.setKeyReleased( (Key)ipE->key() );
+}
+
+//-----------------------------------------------------------------------------
 void View::mousePressEvent(QMouseEvent *ipE)
 {
-    mMouse.setButtonPressed(Mouse::bLeft);
-    mMouse.setPosition(ipE->x(), ipE->y());
+    Mouse& m = getBroker().getMouse();
     
-    emit viewChanged();
+    m.setButtonPressed(Mouse::bLeft);
+    m.setPosition(ipE->x(), ipE->y());
+    
+// hacky solution since setMouseTracking does not work...
+m.getAndClearDelta();
+}
+
+//-----------------------------------------------------------------------------
+void View::mouseMoveEvent(QMouseEvent *ipE)
+{
+    Mouse& m = getBroker().getMouse();
+    m.setPosition(ipE->x(), ipE->y());
 }
 
 //-----------------------------------------------------------------------------
 void View::mouseReleaseEvent(QMouseEvent *ipE)
 {
-    mMouse.setButtonReleased(Mouse::bLeft);
-    mMouse.setPosition(ipE->x(), ipE->y());
+    Mouse& m = getBroker().getMouse();
+    m.setButtonReleased(Mouse::bLeft);
+    m.setPosition(ipE->x(), ipE->y());
 }
 
 //-----------------------------------------------------------------------------
@@ -77,28 +110,24 @@ void View::resizeEvent(QResizeEvent *ipE)
     
     // resize the projection and viewport of the camera
     Camera &cRef = b.getCamera();
-    Viewport v;
-    v.set(w, h);
-    cRef.setViewport(v);
+    Viewport vp;
+    vp.set(w, h);
+    cRef.setViewport(vp);
     
-    // resize the frame buffer.
-    // -2 to leave a bit of room to down size the widget...
-    //
-    Math::Vector2i s(w - 2, h - 2);
-    b.getFrameBuffer().setSize(s);
+    //init final image
+    Image &im = b.getFinalImage();
+    im.set(vp.getWidth()-2, vp.getHeight()-2, iifRgbaUint8);
     
-    updateUi();
+    viewChanged();
 }
 
 //-----------------------------------------------------------------------------
 void View::updateUi()
 {
     Broker &b = getBroker();
-    FrameBuffer &fRef = b.getFrameBuffer();
-    if(fRef.isValid())
+    Image &im = b.getFinalImage();
+    if(im.isValid())
     {
-        Image im = fRef.getColorBuffer();
-        
         QImage qim((const uint8_t*)im.getImageData().constData(),
             im.getWidth(),
             im.getHeight(),

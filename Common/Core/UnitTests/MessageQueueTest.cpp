@@ -14,6 +14,7 @@ namespace
     // working thread.
     MessageQueue gDoneQueue;
     int gIndexOfProcessedMessage = 0;
+    bool gLifoTest = false;
 }
 
 // Inherit MessageQueue::Message to send a custom message in
@@ -42,7 +43,14 @@ void processDoneQueue(MessageQueue::Message *ipMessage)
     OneToOneMessage *m = dynamic_cast<OneToOneMessage*>(ipMessage);
     
     EXPECT_STREQ(oss.str().c_str(), m->mText.c_str());
-    gIndexOfProcessedMessage++;
+
+    if (gLifoTest)
+    {
+        gIndexOfProcessedMessage--;
+    }
+    else
+    { gIndexOfProcessedMessage++; }
+
     
     cout << m->mText << endl;
 }
@@ -122,8 +130,82 @@ TEST(MessageQueue, oneToOneFast_waitForThreadToFinish)
     qThreaded.post(m2);
     qThreaded.post(m3);
     
+    //reset the global variable to validate messages..
+    //
+    gIndexOfProcessedMessage = 0;
+
     qThreaded.waitForThreadToFinish();
     gDoneQueue.processMessages();
     
+    EXPECT_EQ(qThreaded.getNumberOfMessages(), 0);
+}
+
+// this test checks that setting a maximum size to the
+// message queue works.
+//
+TEST(MessageQueue, sizeLimitedQueue)
+{
+    MessageQueue qThreaded;
+    qThreaded.setMaximumSize(3);
+
+    using placeholders::_1;
+    gDoneQueue.setProcessingFunction(bind(processDoneQueue, _1));
+
+    qThreaded.setProcessingFunction(std::bind(processOneToOne, _1));
+    qThreaded.startInThread();
+
+    OneToOneMessage *m0 = new OneToOneMessage; m0->mText = "message0";
+    OneToOneMessage *m1 = new OneToOneMessage; m1->mText = "message1";
+    OneToOneMessage *m2 = new OneToOneMessage; m2->mText = "message2";
+    OneToOneMessage *m3 = new OneToOneMessage; m3->mText = "message3";
+
+    qThreaded.post(m0);
+    qThreaded.post(m1);
+    qThreaded.post(m2);
+    qThreaded.post(m3);
+
+    // reset the global variable to validate messages..
+    // reset to one, since the size of the queue is 3 and we sent 4 
+    // message... we expect message0 to be gone...
+    //
+    gIndexOfProcessedMessage = 1;
+
+    qThreaded.waitForThreadToFinish();
+    gDoneQueue.processMessages();
+
+    EXPECT_EQ(qThreaded.getNumberOfMessages(), 0);
+}
+
+//
+TEST(MessageQueue, lifoQueue)
+{
+    MessageQueue qThreaded;
+    qThreaded.setBehavior(MessageQueue::bLifo);
+
+    using placeholders::_1;
+    gDoneQueue.setProcessingFunction(bind(processDoneQueue, _1));
+
+    qThreaded.setProcessingFunction(std::bind(processOneToOne, _1));
+    qThreaded.startInThread();
+
+    OneToOneMessage *m0 = new OneToOneMessage; m0->mText = "message0";
+    OneToOneMessage *m1 = new OneToOneMessage; m1->mText = "message1";
+    OneToOneMessage *m2 = new OneToOneMessage; m2->mText = "message2";
+    OneToOneMessage *m3 = new OneToOneMessage; m3->mText = "message3";
+
+    qThreaded.post(m0);
+    qThreaded.post(m1);
+    qThreaded.post(m2);
+    qThreaded.post(m3);
+
+    // reset the global variable to validate messages..
+    // reset to 3 since a lifo queue will treat last in first
+    //
+    gLifoTest = true;
+    gIndexOfProcessedMessage = 3;
+
+    qThreaded.waitForThreadToFinish();
+    gDoneQueue.processMessages();
+
     EXPECT_EQ(qThreaded.getNumberOfMessages(), 0);
 }

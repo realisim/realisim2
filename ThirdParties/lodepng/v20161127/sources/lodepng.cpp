@@ -1,8 +1,9 @@
 
 // Since Realisim code base uses very high warnings, we deactivate them for
 // this non propritary file
-//
-//#pragma warning(push, 0)
+#ifdef  _WIN32
+    #pragma warning(push, 0)
+#endif //  _WIN32
 
 /*
 LodePNG version 20161127
@@ -6236,4 +6237,7 @@ unsigned encode(const std::string& filename,
 #endif /*LODEPNG_COMPILE_CPP*/
 
 
-//#pragma warning(pop)
+#ifdef  _WIN32
+    #pragma warning(pop)
+#endif //  _WIN32
+

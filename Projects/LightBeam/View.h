@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Interface/Mouse.h"
+#include "DataStructure/ImageCells.h"
 #include <qlabel.h>
 class QResizeEvent;
 #include <QWidget>
@@ -26,7 +26,10 @@ namespace LightBeam
         
     protected:
         Broker& getBroker();
+        virtual void keyPressEvent(QKeyEvent *) override;
+        virtual void keyReleaseEvent(QKeyEvent *) override;
         virtual void mousePressEvent(QMouseEvent *) override;
+        virtual void mouseMoveEvent(QMouseEvent *) override;
         virtual void mouseReleaseEvent(QMouseEvent *) override;
         virtual void resizeEvent(QResizeEvent *) override;
 
@@ -35,7 +38,6 @@ namespace LightBeam
         
         //--- data
         Broker &mBrokerRef;
-        Interface::Mouse mMouse;
     };
 }
 }

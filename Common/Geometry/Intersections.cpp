@@ -1,13 +1,16 @@
 
 
+#include <cmath>
 #include "Intersections.h"
 #include "Math/IsEqual.h"
+#include <vector>
 
 namespace Realisim
 {
 namespace Geometry
 {
     using namespace Math;
+    using namespace std;
 
     //-------------------------------------------------------------------------
     //--- Line
@@ -73,6 +76,75 @@ namespace Geometry
                                Math::Vector3* oP,
                                Math::Vector3* oNormal)
     { return intersect(iL, iP, oP, oNormal); }
+
+    //-------------------------------------------------------------------------
+    //--- Sphere
+    //-------------------------------------------------------------------------
+    bool intersects(const Line& iL,
+        const Sphere& iS, IntersectionType* ipIt/*= nullptr*/)
+    {
+        bool r = false;
+        IntersectionType t = intersect(iL, iS, nullptr, nullptr);
+        
+        if(ipIt)
+        { *ipIt = t; }
+        return r;
+    }
+    
+    // return the contact(s) point(s) and normalize normal for
+    // line/sphere intersection.
+    //
+    // https://en.wikipedia.org/wiki/Line%E2%80%93sphere_intersection
+    //
+    IntersectionType intersect(const Line& iL,
+        const Sphere& iS,
+        vector<Vector3> *oPoints,
+        vector<Vector3> *oNormals)
+    {
+        IntersectionType result = itNone;
+        vector<Vector3> points = { Vector3(), Vector3() };
+        vector<Vector3> normals = { Vector3(), Vector3() };
+        
+        const Vector3 o = iL.getOrigin();
+        const Vector3 l = iL.getDirection();
+        const Vector3 c = iS.getCenter();
+        const double r = iS.getRadius();
+        
+        const Vector3 oMinusC = o - c;
+        const double t0 = l*oMinusC;
+        const double oMinusCNorm = oMinusC.norm();
+        const double sqrtValue = (t0*t0) - oMinusCNorm*oMinusCNorm + r*r;
+        
+        if( sqrtValue < 0 )
+        {
+            result = itNone;
+        }
+        else if ( isEqual(sqrtValue, 1e-5) )
+        {
+            result = itPoint;
+        }
+        else
+        {
+            const double d0 = -t0 - sqrt(sqrtValue);
+            const double d1 = -t0 + sqrt(sqrtValue);
+            
+            points[0] = o + d0*l;
+            points[1] = o + d1*l;
+            
+            normals[0] = (points[0] - c).normalize();
+            normals[1] = (points[1] - c).normalize();
+            
+            result = itPoints;
+        }
+        
+        if(oPoints)
+        { *oPoints = points; }
+        
+        if(oNormals)
+        { *oNormals = normals; }
+        
+        return result;
+    }
 
 }
 }
