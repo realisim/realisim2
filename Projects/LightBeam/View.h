@@ -19,7 +19,6 @@ namespace LightBeam
         ~View() = default;
 
         void initialize();
-        void reconstructImage();
         void updateUi();
         
     signals:

@@ -19,7 +19,7 @@ namespace LightBeam
 
         void clear();
         Core::Color getCellColor(const Math::Vector2i& iCell) const;
-        Geometry::Rectangle getCellCoverage(const Math::Vector2i& iCellIndex);
+        Geometry::Rectangle getCellCoverage(const Math::Vector2i& iCellIndex) const;
         const Geometry::Rectangle& getCoverage() const;
         double getCellDepth(const Math::Vector2i& iCell) const;
         int getHeightInCells() const;

@@ -119,7 +119,6 @@ void MainWindow::timerEvent(QTimerEvent *ipE)
     
         if(mRayTracerRef.hasNewFrameAvailable())
         {
-            mpView->reconstructImage();
             mpView->updateUi();
         }
     }

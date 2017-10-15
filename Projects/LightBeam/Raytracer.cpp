@@ -60,8 +60,8 @@ void RayTracer::processReply(Core::MessageQueue::Message* ipM)
     if(m)
     {
         Broker &b = getBroker();
-        ImageCells &ic = b.getImageCells();
-        ic = m->mCells;
+        Core::Image &finalIm = b.getFinalImage();
+        finalIm = m->mImage;
     }
 }
 
@@ -85,10 +85,11 @@ Core::Timer _t;
         cells.setCoverage(coverage);
         
         render(cells);
+        Core::Image im = reconstructImage(cells);
         
         // post the computed cells
         Reply *done = new Reply();
-        done->mCells = cells;
+        done->mImage = im;
         mReplyQueue.post(done);
         
         if(mMessageQueue.isEmpty() && m->mDivideBy > 1)
@@ -164,6 +165,38 @@ void RayTracer::rayCast(ImageCells& iCells,
 }
 
 //-----------------------------------------------------------------------------
+Core::Image RayTracer::reconstructImage(const ImageCells& iCells)
+{
+    Core::Timer _t;
+    
+    // init final image
+    Core::Image im;
+    Geometry::Rectangle coverage = iCells.getCoverage();
+    im.set(coverage.getWidth(), coverage.getHeight(), iifRgbaUint8);
+    
+    // reconstruct image from cells
+    for(int cellY = 0; cellY < iCells.getHeightInCells(); ++cellY)
+        for(int cellX = 0; cellX < iCells.getWidthInCells(); ++cellX)
+        {
+            const Vector2i cellIndex(cellX, cellY);
+            Rectangle r = iCells.getCellCoverage(cellIndex);
+            const Vector2 bl = r.getBottomLeft();
+            const Vector2 tr = r.getTopRight();
+            
+            Color c;
+            for(int y = bl.y(); y < tr.y(); ++y)
+                for(int x = bl.x(); x < tr.x(); ++x)
+                {
+                    c = iCells.getCellColor(cellIndex);
+                    im.setPixelColor(Vector2i(x,y), c);
+                }
+        }
+    
+    //printf("reconstructImage %f(s)\n", _t.elapsed());
+    return im;
+}
+
+//-----------------------------------------------------------------------------
 void RayTracer::render()
 {
     Message *m = new Message();
@@ -195,6 +228,13 @@ void RayTracer::render(ImageCells& iCells)
             
             rayCast(iCells, cell, frustum);
         }
+        
+        // exits the rendering if a message is in the queue...
+        // using an atomic int would be better here... no
+        // mutex acquiring needed...
+        //
+        if(!mMessageQueue.isEmpty())
+        {return;}
     }
 }
 
@@ -210,6 +250,6 @@ RayTracer::Message::Message(void *ipSender) :
 //-----------------------------------------------------------------------------
 RayTracer::Reply::Reply(void *ipSender) :
     Core::MessageQueue::Message(ipSender),
-    mCells()
+    mImage()
 {}
 

@@ -27,7 +27,7 @@ Color ImageCells::getCellColor(const Math::Vector2i& iCell) const
 { return mRgba.getPixelColor(iCell); }
 
 //-----------------------------------------------------------------------------
-Geometry::Rectangle ImageCells::getCellCoverage(const Math::Vector2i& iCellIndex)
+Geometry::Rectangle ImageCells::getCellCoverage(const Math::Vector2i& iCellIndex) const
 {
     const Rectangle& r = getCoverage();
     const double w = r.getWidth() / getWidthInCells();

@@ -102,38 +102,6 @@ void View::mouseReleaseEvent(QMouseEvent *ipE)
 }
 
 //-----------------------------------------------------------------------------
-void View::reconstructImage()
-{
-Core::Timer _t;
-
-    Broker &b = getBroker();
-    ImageCells &cells = b.getImageCells();
-    
-    // init final image
-    Image &im = b.getFinalImage();
-    
-    // reconstruct image from cells
-    for(int cellY = 0; cellY < cells.getHeightInCells(); ++cellY)
-        for(int cellX = 0; cellX < cells.getWidthInCells(); ++cellX)
-        {
-            const Vector2i cellIndex(cellX, cellY);
-            Rectangle r = cells.getCellCoverage(cellIndex);
-            const Vector2 bl = r.getBottomLeft();
-            const Vector2 tr = r.getTopRight();
-            
-            Color c;
-            for(int y = bl.y(); y < tr.y(); ++y)
-                for(int x = bl.x(); x < tr.x(); ++x)
-                {
-                    c = cells.getCellColor(cellIndex);
-                    im.setPixelColor(Vector2i(x,y), c);
-                }
-        }
-        
-//printf("reconstructImage %f(s)\n", _t.elapsed());
-}
-
-//-----------------------------------------------------------------------------
 void View::resizeEvent(QResizeEvent *ipE)
 {
     const int w = ipE->size().width();

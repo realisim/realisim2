@@ -1,4 +1,5 @@
 #pragma once
+#include "Core/Image.h"
 #include "Core/MessageQueue.h"
 #include "DataStructure/ImageCells.h"
 #include "Geometry/Frustum.h"
@@ -36,12 +37,13 @@ namespace LightBeam
         {
         public:
             explicit Reply(void* ipSender = nullptr);
-            ImageCells mCells;
+            Core::Image mImage;
         };
     
         void processReply(Core::MessageQueue::Message*);
         void processMessage(Core::MessageQueue::Message*);
         void rayCast(ImageCells& iCells, const Math::Vector2i& iCell, const Geometry::Frustum& iFrustum);
+        Core::Image reconstructImage(const ImageCells&);
         void render(ImageCells& iCells);
         
         Broker &mBrokerRef;
