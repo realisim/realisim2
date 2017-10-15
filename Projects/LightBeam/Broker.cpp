@@ -20,6 +20,14 @@ Core::Image& Broker::getFinalImage()
 { return mFinalImage; }
 
 //-----------------------------------------------------------------------------
+Interface::Keyboard& Broker::getKeyboard()
+{return mKeyboard; }
+
+//-----------------------------------------------------------------------------
+Interface::Mouse& Broker::getMouse()
+{ return mMouse; }
+
+//-----------------------------------------------------------------------------
 ImageCells& Broker::getImageCells()
 { return mImageCells; }
 

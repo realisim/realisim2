@@ -2,7 +2,8 @@
 #include "Broker.h"
 #include "Core/Timer.h"
 #include "Geometry/Rectangle.h"
-#include "Math/CommonMath.h"
+#include "Interface/Keyboard.h"
+#include "Interface/Mouse.h"
 #include "Math/Vector.h"
 #include <QImage>
 #include <qlayout.h>
@@ -22,6 +23,9 @@ using namespace Realisim;
 View::View(QWidget *ipParent, Broker *ipBroker) : QWidget(ipParent),
     mBrokerRef(*ipBroker)
 {
+    setMouseTracking(true);
+    setFocusPolicy(Qt::StrongFocus);
+
     QHBoxLayout *pLyt = new QHBoxLayout(this);
     pLyt->setMargin(0);
     pLyt->setSpacing(0);
@@ -57,48 +61,44 @@ Broker& View::getBroker()
 { return mBrokerRef; }
 
 //-----------------------------------------------------------------------------
+void View::keyPressEvent(QKeyEvent *ipE)
+{
+    Keyboard &k = getBroker().getKeyboard();
+    k.setKeyPressed( (Key)ipE->key() );
+}
+
+//-----------------------------------------------------------------------------
+void View::keyReleaseEvent(QKeyEvent *ipE)
+{
+    Keyboard &k = getBroker().getKeyboard();
+    k.setKeyReleased( (Key)ipE->key() );
+}
+
+//-----------------------------------------------------------------------------
 void View::mousePressEvent(QMouseEvent *ipE)
 {
-    mMouse.setButtonPressed(Mouse::bLeft);
-    mMouse.setPosition(ipE->x(), ipE->y());
+    Mouse& m = getBroker().getMouse();
     
-    emit viewChanged();
+    m.setButtonPressed(Mouse::bLeft);
+    m.setPosition(ipE->x(), ipE->y());
     
-    updateUi();
+// hacky solution since setMouseTracking does not work...
+m.getAndClearDelta();
 }
 
 //-----------------------------------------------------------------------------
 void View::mouseMoveEvent(QMouseEvent *ipE)
 {
-    mMouse.setPosition(ipE->x(), ipE->y());
-    
-    if(mMouse.isButtonPressed(Mouse::bLeft))
-    {
-        Broker &b = getBroker();
-        Camera &c = b.getCamera();
-        
-        const double f = degreesToRadians(1.0);
-        const Vector2 d = mMouse.getAndClearDelta();
-        
-        c.rotate(f * d.x(),
-                 Vector3(0.0, 1.0, 0.0),
-                 c.getPosition());
-        
-        c.rotate(f * d.y(),
-            c.getLateralVector(),
-            c.getPosition() );
-    }
-    
-    emit viewChanged();
-    
-    updateUi();
+    Mouse& m = getBroker().getMouse();
+    m.setPosition(ipE->x(), ipE->y());
 }
 
 //-----------------------------------------------------------------------------
 void View::mouseReleaseEvent(QMouseEvent *ipE)
 {
-    mMouse.setButtonReleased(Mouse::bLeft);
-    mMouse.setPosition(ipE->x(), ipE->y());
+    Mouse& m = getBroker().getMouse();
+    m.setButtonReleased(Mouse::bLeft);
+    m.setPosition(ipE->x(), ipE->y());
 }
 
 //-----------------------------------------------------------------------------
@@ -130,7 +130,7 @@ Core::Timer _t;
                 }
         }
         
-printf("reconstructImage %f(s)\n", _t.elapsed());
+//printf("reconstructImage %f(s)\n", _t.elapsed());
 }
 
 //-----------------------------------------------------------------------------

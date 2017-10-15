@@ -32,6 +32,7 @@ namespace Interface
             Math::Vector2i getDelta() const;
             Math::Vector2i getDragDelta() const;
             Math::Vector2i getPosition() const;
+            Math::Vector2i getPositionWhenClicked() const;
             State getState() const;
             bool isButtonPressed(Button iButton) const;
             void setButtonPressed(Button iButton);
@@ -42,7 +43,6 @@ namespace Interface
 
         protected:
             void updateState();
-            Math::Vector2i getPositionWhenClicked() const;
 
             Math::Vector2i mPosition;
             Math::Vector2i mPositionWhenClicked;

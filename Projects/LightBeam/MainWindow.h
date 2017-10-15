@@ -27,6 +27,7 @@ namespace LightBeam
         
     protected:
         Broker& getBroker();
+        void handleUserInput();
         virtual void timerEvent(QTimerEvent *) override;
         void updateUi();
 

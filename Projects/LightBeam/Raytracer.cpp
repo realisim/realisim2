@@ -120,28 +120,44 @@ void RayTracer::rayCast(ImageCells& iCells,
              cRef.pixelToWorld(pixelPos,
                                camPos + cRef.getDirection().normalize()));
     
+    Vector3 LightDir(1.0, 1.0, 1.0);
+    LightDir.normalize();
+    
     //--- default color
     Color c(0.0, 0.0, 0.0, 1.0);
     
     //--- intersects with scene.
     Plane plane(Vector3(0.0, -12, 0.0), Vector3(1.0, 1.0, 0.0));
     Sphere sphere(Vector3(6.0, 0.0, 0.0), 16);
+    Sphere sphere1(Vector3(15.0, 8.0, -30.0), 22);
     
     Vector3 p, n;
     IntersectionType pType = intersect(ray, plane, &p, &n);
     if(pType != itNone &&
        iFrustum.contains(p))
     {
-        c.set(1.0, 0.0, 0.0, 1.0);
+        double v = 0.2;
+        const double nDotL = n*LightDir;
+        if(nDotL > 0) { v += 1.0 * nDotL; }
+        v = min(max(0.0, v), 1.0);
+        c.set(v, 0.0, 0.0, 1.0);
     }
     
-    vector<Vector3> points, normals;
-    pType = intersect(ray, sphere, &points, &normals);
-    p = points[0];
-    if(pType != itNone &&
-       iFrustum.contains(p))
+    //sphere 0
     {
-        c.set(0.0, 1.0, 0.0, 1.0);
+        vector<Vector3> points, normals;
+        pType = intersect(ray, sphere, &points, &normals);
+        p = points[0];
+        n = normals[0];
+        if(pType != itNone &&
+           iFrustum.contains(p))
+        {
+            double v = 0.2;
+            const double nDotL = n*LightDir;
+            if(nDotL > 0) { v += 1.0 * nDotL; }
+            v = min(max(0.0, v), 1.0);
+            c.set(0, v, 0.0, 1.0);
+        }
     }
     
     iCells.setCellValue(iCell, c, (p - camPos).norm());
