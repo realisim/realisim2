@@ -107,13 +107,14 @@ namespace Core
         MessageQueue& operator=(const MessageQueue&) = delete;
         virtual ~MessageQueue();
         
+        enum Behavior{bFifo, bLifo};
         enum state{sIdle, sRunning, sStopping};
         
         class Message
         {
         public:
-            Message() = delete;
-            explicit Message(void* ipSender = nullptr);
+            Message();
+            explicit Message(void* ipSender);
             Message(const Message&) = default;
             Message& operator=(const Message&) = default;
             virtual ~Message() = default;
@@ -122,16 +123,21 @@ namespace Core
         };
         
         void clear();
+        Behavior getBehavior() const;
+        int getMaximumSize() const;
         int getNumberOfMessages() const;
         state getState() const;
+        bool hasLimitedSize() const;
         bool isEmpty() const;
-        void post( Message* );
-        void processNextMessage();
-        void processMessages();
+        virtual void post( Message* );
+        virtual void processNextMessage();
+        virtual void processMessages();
+        void setBehavior(Behavior);
+        void setMaximumSize(int);
         void setProcessingFunction(std::function<void(Message*)>);
         void startInThread();
-        void waitForThreadToFinish();
         void stopThread();
+        void waitForThreadToFinish();
 
     protected:
         void dummyProcessingFunction(Message*);
@@ -145,6 +151,8 @@ namespace Core
         std::condition_variable mQueueWaitCondition;
         state mState;
         std::function<void(Message*)> mProcessingFunction;
+        int mMaximumSize;
+        Behavior mBehavior;
     };
 
 }

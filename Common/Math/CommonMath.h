@@ -16,7 +16,7 @@
     // remove warning if function not used
     #define SUPPRESS_WARNING(a) (void)a
 
-#endif _WIN32
+#endif //_WIN32
 
 static inline const double radiansToDegrees(const double& d )
 {

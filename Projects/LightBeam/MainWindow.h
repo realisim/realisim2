@@ -5,13 +5,13 @@
 
 #include <QMainWindow>
 #include <QTimerEvent>
-#include "Raytracer.h"
 
 namespace Realisim
 {
 namespace LightBeam
 {
     class Broker;
+    class RayTracer;
     class View;
 
     //----------------------------------------------------
@@ -19,7 +19,7 @@ namespace LightBeam
     {
         Q_OBJECT
     public:
-        MainWindow(Broker *ipBroker);
+        MainWindow(Broker *ipBroker, RayTracer *ipRayTracer);
         ~MainWindow() = default;
 
     protected slots:
@@ -33,7 +33,7 @@ namespace LightBeam
         int mUpdateTimerId;
         Broker &mBrokerRef;
         View *mpView;
-        RayTracer mRayTracer;
+        RayTracer &mRayTracerRef;
     };
 }
 }

@@ -10,7 +10,9 @@ FIND_PACKAGE(Qt5OpenGL)
 #------------------------------------------------------------------------------
 # remove some anonying warning created by QT
 #------------------------------------------------------------------------------
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4127")
+if(MSVC)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -wd4127")
+endif(MSVC)
 
 #--------------------------------
 # Fonctions

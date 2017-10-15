@@ -6,6 +6,8 @@ namespace Realisim
 {
 namespace Geometry
 {
+    //
+    // direction is always a unit vector;
     class Line
     {
     public:

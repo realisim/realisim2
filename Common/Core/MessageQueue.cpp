@@ -2,7 +2,6 @@
 #include <cassert>
 #include "MessageQueue.h"
 
-
 using namespace Realisim;
     using namespace Core;
 using namespace std;
@@ -12,7 +11,10 @@ MessageQueue::MessageQueue() :
 mThread(),
 mQueue(),
 mMutex(),
-mState(sIdle)
+mState(sIdle),
+mMaximumSize(-1),
+mBehavior(bFifo)
+
 {
     using std::placeholders::_1;
     mProcessingFunction = std::bind(&MessageQueue::dummyProcessingFunction, this, _1);
@@ -21,6 +23,12 @@ mState(sIdle)
 //------------------------------------------------------------------------------
 MessageQueue::~MessageQueue()
 {
+    // clear the queue prior to calling stop thread in case the queue
+    // is not threaded...
+    // Stop thread will also clear the queue but only if it was launch as a
+    // thread
+    //
+    clear();
     stopThread();
     assert(mQueue.empty());
 }
@@ -39,6 +47,9 @@ void MessageQueue::clear()
     }
 
     mQueue.clear();
+
+    mQueue.resize(0);
+
     mMutex.unlock();
 }
 
@@ -48,6 +59,14 @@ void MessageQueue::dummyProcessingFunction(Message* iM)
     (void)iM; //suppress warning
     printf("dummy processing function\n");
 }
+
+//------------------------------------------------------------------------------
+MessageQueue::Behavior MessageQueue::getBehavior() const
+{ return mBehavior; }
+
+//------------------------------------------------------------------------------
+int MessageQueue::getMaximumSize() const
+{ return mMaximumSize; }
 
 //------------------------------------------------------------------------------
 int MessageQueue::getNumberOfMessages() const
@@ -64,6 +83,10 @@ MessageQueue::state MessageQueue::getState() const
 {
     return mState;
 }
+
+//------------------------------------------------------------------------------
+bool MessageQueue::hasLimitedSize() const
+{ return getMaximumSize() != -1; }
 
 //------------------------------------------------------------------------------
 bool MessageQueue::isEmpty() const
@@ -84,9 +107,25 @@ void MessageQueue::post( Message* iM )
     if(getState() != sStopping)
     {
         mMutex.lock();
+
+        if (hasLimitedSize() && mQueue.size() == getMaximumSize())
+        {
+            Message *m = mQueue.front();
+            delete m;
+            mQueue.pop_front();
+        }
+
         mQueue.push_back(iM);
         mMutex.unlock();
         mQueueWaitCondition.notify_one();
+    }
+    else
+    {
+        // while stopping message are not accepted
+        // delete right away
+        //
+        delete iM;
+        iM = nullptr;
     }
 }
 
@@ -106,14 +145,57 @@ void MessageQueue::processNextMessage()
     if( getNumberOfMessages() > 0 )
     {
         mMutex.lock();
-        Message *m = mQueue.front();
-        mQueue.pop_front();
+
+        Message *m = nullptr;
+        switch (getBehavior())
+        {
+        case bFifo:
+            m = mQueue.front();
+            mQueue.pop_front();
+            break;
+        case bLifo:
+            m = mQueue.back();
+            mQueue.pop_back();
+            break;
+        default: assert(0); break;
+        }
+
         mMutex.unlock();
 
         mProcessingFunction(m);
 
         delete m;
     }
+}
+
+//------------------------------------------------------------------------------
+// Sets the behavior of the queue
+//
+// NOTE: Calling this function will delete the content of the queue, it is meant
+//      to be called as an initialized not at runtime...
+//
+void MessageQueue::setBehavior(Behavior iB)
+{
+    clear();
+    mBehavior = iB;
+}
+
+//------------------------------------------------------------------------------
+// Sets the maximal size of the queue. 
+// One the queue as reach the size limit, any new message comming in will cause
+// the last message to be deleted (the last message depends on the behavior 
+// fifo/lifo)
+
+// A value of -1 will indicate that the queue is infinite, thus messages are never
+// lost.
+//
+// NOTE: Calling this function will delete the content of the queue, it is meant
+//      to be called as an initialized not at runtime...
+//
+void MessageQueue::setMaximumSize(int iSize)
+{
+    clear();
+    mMaximumSize = iSize;
 }
 
 //------------------------------------------------------------------------------
@@ -224,6 +306,10 @@ void MessageQueue::waitForThreadToFinish()
 //------------------------------------------------------------------------------
 //--- MessageQueue::Message
 //------------------------------------------------------------------------------
+MessageQueue::Message::Message():
+mpSender(nullptr)
+{}
+
 MessageQueue::Message::Message(void *ipSender):
 mpSender(ipSender)
 {}

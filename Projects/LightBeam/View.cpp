@@ -1,6 +1,8 @@
 
 #include "Broker.h"
+#include "Core/Timer.h"
 #include "Geometry/Rectangle.h"
+#include "Math/CommonMath.h"
 #include "Math/Vector.h"
 #include <QImage>
 #include <qlayout.h>
@@ -66,6 +68,33 @@ void View::mousePressEvent(QMouseEvent *ipE)
 }
 
 //-----------------------------------------------------------------------------
+void View::mouseMoveEvent(QMouseEvent *ipE)
+{
+    mMouse.setPosition(ipE->x(), ipE->y());
+    
+    if(mMouse.isButtonPressed(Mouse::bLeft))
+    {
+        Broker &b = getBroker();
+        Camera &c = b.getCamera();
+        
+        const double f = degreesToRadians(1.0);
+        const Vector2 d = mMouse.getAndClearDelta();
+        
+        c.rotate(f * d.x(),
+                 Vector3(0.0, 1.0, 0.0),
+                 c.getPosition());
+        
+        c.rotate(f * d.y(),
+            c.getLateralVector(),
+            c.getPosition() );
+    }
+    
+    emit viewChanged();
+    
+    updateUi();
+}
+
+//-----------------------------------------------------------------------------
 void View::mouseReleaseEvent(QMouseEvent *ipE)
 {
     mMouse.setButtonReleased(Mouse::bLeft);
@@ -75,20 +104,13 @@ void View::mouseReleaseEvent(QMouseEvent *ipE)
 //-----------------------------------------------------------------------------
 void View::reconstructImage()
 {
+Core::Timer _t;
+
     Broker &b = getBroker();
-    RenderStack &rs = b.getRenderStack();
-    
-    //early out
-    if(rs.mStack.empty()){ return; }
-    
-    ImageCells &cells = rs.mStack.back();
-    
-    Camera &cRef = b.getCamera();
-    const Viewport &vp = cRef.getViewport();
+    ImageCells &cells = b.getImageCells();
     
     // init final image
     Image &im = b.getFinalImage();
-    im.set(vp.getWidth() - 2, vp.getHeight() - 2, iifRgbaUint8);
     
     // reconstruct image from cells
     for(int cellY = 0; cellY < cells.getHeightInCells(); ++cellY)
@@ -99,12 +121,16 @@ void View::reconstructImage()
             const Vector2 bl = r.getBottomLeft();
             const Vector2 tr = r.getTopRight();
             
+            Color c;
             for(int y = bl.y(); y < tr.y(); ++y)
                 for(int x = bl.x(); x < tr.x(); ++x)
                 {
-                    im.setPixelColor(Vector2i(x,y), cells.getCellColor(cellIndex));
+                    c = cells.getCellColor(cellIndex);
+                    im.setPixelColor(Vector2i(x,y), c);
                 }
         }
+        
+printf("reconstructImage %f(s)\n", _t.elapsed());
 }
 
 //-----------------------------------------------------------------------------
@@ -116,9 +142,13 @@ void View::resizeEvent(QResizeEvent *ipE)
     
     // resize the projection and viewport of the camera
     Camera &cRef = b.getCamera();
-    Viewport v;
-    v.set(w, h);
-    cRef.setViewport(v);
+    Viewport vp;
+    vp.set(w, h);
+    cRef.setViewport(vp);
+    
+    //init final image
+    Image &im = b.getFinalImage();
+    im.set(vp.getWidth()-2, vp.getHeight()-2, iifRgbaUint8);
     
     viewChanged();
 }
@@ -126,8 +156,6 @@ void View::resizeEvent(QResizeEvent *ipE)
 //-----------------------------------------------------------------------------
 void View::updateUi()
 {
-    reconstructImage();
-
     Broker &b = getBroker();
     Image &im = b.getFinalImage();
     if(im.isValid())

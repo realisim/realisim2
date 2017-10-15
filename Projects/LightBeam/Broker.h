@@ -2,6 +2,7 @@
 
 #include "DataStructure/ImageCells.h"
 #include "DataStructure/Scene.h"
+#include "Raytracer.h"
 #include "Rendering/Camera.h"
 
 namespace Realisim
@@ -17,11 +18,11 @@ namespace LightBeam
         Rendering::Camera& getCamera();
         Core::Image& getFinalImage();
         Scene& getScene();
-        RenderStack& getRenderStack();
+        ImageCells& getImageCells();
         
     protected:
         Core::Image mFinalImage;
-        RenderStack mRenderStack;
+        ImageCells mImageCells;
         Rendering::Camera mCamera;
         Scene mScene;
     };

@@ -20,8 +20,8 @@ Core::Image& Broker::getFinalImage()
 { return mFinalImage; }
 
 //-----------------------------------------------------------------------------
-RenderStack& Broker::getRenderStack()
-{ return mRenderStack; }
+ImageCells& Broker::getImageCells()
+{ return mImageCells; }
 
 //-----------------------------------------------------------------------------
 Scene& Broker::getScene()

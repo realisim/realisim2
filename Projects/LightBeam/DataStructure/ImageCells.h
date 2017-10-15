@@ -36,23 +36,5 @@ namespace LightBeam
         Core::Image mRgba;
         Core::Image mDepth;
     };
-    
-    
-    class RenderStack
-    {
-    public:
-        RenderStack() = default;
-        RenderStack(const RenderStack&) = delete;
-        RenderStack& operator=(const RenderStack&) = delete;
-        ~RenderStack() = default;
-
-    //protected:
-        // This is really a piece of shit...
-        // we grab reference of ImagesCells in the viewer...
-        // Since the raytracer pushes back into the vector, the
-        // address gets invalidated...
-        //
-        std::vector<ImageCells> mStack;
-    };
 }
 }

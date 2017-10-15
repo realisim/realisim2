@@ -13,11 +13,11 @@ using namespace std;
 //-----------------------------------------------------------------------------
 //--- MainWindow
 //-----------------------------------------------------------------------------
-MainWindow::MainWindow(Broker *ipBroker) : QMainWindow(),
+MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow(),
     mBrokerRef(*ipBroker),
-    mRayTracer(ipBroker)
+    mRayTracerRef(*ipRayTracer)
 {
-    resize(800, 600);
+    resize(400, 300);
 
     QWidget *pCentralWidget = new QWidget(this);
     setCentralWidget(pCentralWidget);
@@ -45,8 +45,9 @@ void MainWindow::timerEvent(QTimerEvent *ipE)
 {
     if(ipE->timerId() == mUpdateTimerId)
     {
-        if(mRayTracer.hasNewFrameAvailable())
+        if(mRayTracerRef.hasNewFrameAvailable())
         {
+            mpView->reconstructImage();
             mpView->updateUi();
         }
     }
@@ -55,7 +56,7 @@ void MainWindow::timerEvent(QTimerEvent *ipE)
 //-----------------------------------------------------------------------------
 void MainWindow::viewChanged()
 {
-    mRayTracer.render();
+    mRayTracerRef.render();
     updateUi();
 }
 

@@ -20,6 +20,7 @@ namespace LightBeam
         ~View() = default;
 
         void initialize();
+        void reconstructImage();
         void updateUi();
         
     signals:
@@ -28,8 +29,8 @@ namespace LightBeam
     protected:
         Broker& getBroker();
         virtual void mousePressEvent(QMouseEvent *) override;
+        virtual void mouseMoveEvent(QMouseEvent *) override;
         virtual void mouseReleaseEvent(QMouseEvent *) override;
-        void reconstructImage();
         virtual void resizeEvent(QResizeEvent *) override;
 
         //--- ui

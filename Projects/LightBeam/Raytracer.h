@@ -2,6 +2,7 @@
 #include "Core/MessageQueue.h"
 #include "DataStructure/ImageCells.h"
 #include "Geometry/Frustum.h"
+#include "Math/Vector.h"
 
 namespace Realisim
 {
@@ -27,19 +28,25 @@ namespace LightBeam
         {
         public:
             explicit Message(void* ipSender = nullptr);
-            
-            enum Action{aNone, aStopRendering, aRender, aFrameDone};
-            Action mAction;
+            Math::Vector2i mSize;
+            int mDivideBy;
+        };
+        
+        class Reply : public Core::MessageQueue::Message
+        {
+        public:
+            explicit Reply(void* ipSender = nullptr);
+            ImageCells mCells;
         };
     
-        Message* makeMessage(Message::Action);
-        void processRenderMessage(Core::MessageQueue::Message*);
+        void processReply(Core::MessageQueue::Message*);
+        void processMessage(Core::MessageQueue::Message*);
         void rayCast(ImageCells& iCells, const Math::Vector2i& iCell, const Geometry::Frustum& iFrustum);
         void render(ImageCells& iCells);
         
         Broker &mBrokerRef;
-        Core::MessageQueue mRenderQueue;
-        mutable Core::MessageQueue mDoneQueue;
+        Core::MessageQueue mMessageQueue;
+        mutable Core::MessageQueue mReplyQueue;
     };
 }
 }
