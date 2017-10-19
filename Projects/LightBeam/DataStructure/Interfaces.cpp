@@ -1,6 +1,7 @@
 
 #include "Interfaces.h"
 #include "IntersectionResult.h"
+#include "Math/CommonMath.h"
 
 using namespace Realisim;
     using namespace LightBeam;
@@ -50,11 +51,18 @@ const std::shared_ptr<Material> IRenderable::getMaterial() const
 
 //-----------------------------------------------------------------------------
 bool IRenderable::intersects(const Geometry::Line& iRay) const
-{ return false; }
+{ 
+    SUPPRESS_WARNING(iRay);
+    return false;
+}
 
 //-----------------------------------------------------------------------------
 bool IRenderable::intersect(const Geometry::Line& iRay, IntersectionResult* opResult) const
-{ return false; }
+{ 
+    SUPPRESS_WARNING(iRay);
+    SUPPRESS_WARNING(opResult);
+    return false;
+}
 
 //-----------------------------------------------------------------------------
 void IRenderable::setMaterial(std::shared_ptr<Material> ipMaterial)

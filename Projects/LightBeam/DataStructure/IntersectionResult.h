@@ -2,6 +2,7 @@
 
 #include "Material.h"
 #include "Math/Vector.h"
+#include <memory>
 
 namespace Realisim
 {

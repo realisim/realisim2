@@ -107,8 +107,7 @@ Core::Timer _t;
 
 //-----------------------------------------------------------------------------
 void RayTracer::rayCast(ImageCells& iCells,
-    const Vector2i& iCell,
-    const Frustum& iFrustum)
+    const Vector2i& iCell)
 {
     Broker &b = getBroker();
     Camera &camera = b.getCamera();
@@ -190,11 +189,7 @@ void RayTracer::render()
 
 //-----------------------------------------------------------------------------
 void RayTracer::render(ImageCells& iCells)
-{
-    Broker &b = getBroker();
-    Camera &cRef = b.getCamera();
-    const Frustum frustum = cRef.getFrustum();
-    
+{   
     const int w = iCells.getWidthInCells();
     const int h = iCells.getHeightInCells();
     
@@ -205,15 +200,15 @@ void RayTracer::render(ImageCells& iCells)
         {
             const Vector2i cell(x, y);
             
-            rayCast(iCells, cell, frustum);
+            rayCast(iCells, cell);
         }
         
         // exits the rendering if a message is in the queue...
         // using an atomic int would be better here... no
         // mutex acquiring needed...
         //
-        /*if(!mMessageQueue.isEmpty())
-        {return;}*/
+        if(!mMessageQueue.isEmpty())
+        {return;}
     }
 }
 

@@ -43,7 +43,7 @@ namespace LightBeam
     
         void processReply(Core::MessageQueue::Message*);
         void processMessage(Core::MessageQueue::Message*);
-        void rayCast(ImageCells& iCells, const Math::Vector2i& iCell, const Geometry::Frustum& iFrustum);
+        void rayCast(ImageCells& iCells, const Math::Vector2i& iCell);
         Core::Image reconstructImage(const ImageCells&);
         void render(ImageCells& iCells);
         
