@@ -25,6 +25,7 @@ namespace Math
         bool isEqual(const Vector2&, double iEpsilon = std::numeric_limits<double>::epsilon() ) const;
         double norm() const;
         Vector2& normalize();
+        double normSquare() const;
 
 		Vector2	multiplyComponents(const Vector2& v) const;
 
@@ -72,6 +73,7 @@ namespace Math
         const double* dataPointer() const;
         bool isEqual(const Vector3&, double iEpsilon = std::numeric_limits<double>::epsilon() ) const;
         double norm() const;
+        double normSquare() const;
         Vector3& normalize();
 
 		Vector3	multiplyComponents(const Vector3&) const;
@@ -126,6 +128,7 @@ namespace Math
         
         double norm() const;
         Vector4& normalize();
+        double normSquare() const;
 
 		Vector4	multiplyComponents(const Vector4& v) const;
 

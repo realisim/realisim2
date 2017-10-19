@@ -42,6 +42,12 @@ double Vector3::norm() const
 }
 
 //---------------------------------------------------------------------------
+double Vector3::normSquare() const
+{
+    return mData[0]*mData[0] + mData[1]*mData[1] + mData[2]*mData[2];
+}
+
+//---------------------------------------------------------------------------
 Vector3& Vector3::normalize()
 {
     double n = norm();
