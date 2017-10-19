@@ -77,8 +77,7 @@ double SimpleIntegrator::computeLi(const Line &iLine,
         lightDir.normalize();
         
         const double nDotL = ir.mNormal * lightDir;
-        // should we return fabs(nDotL)???
-        spectrum += nDotL > 0.0 ? nDotL : 0.0;
+        spectrum += fabs(nDotL);
      
         //fill the results.
         if(opResult)
