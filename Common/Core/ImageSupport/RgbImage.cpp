@@ -344,7 +344,7 @@ bool RgbImage::parseAsRle(std::ifstream &ifs)
     //vector<unsigned char*> channels(numChannels);
     unsigned char* scanline = nullptr;
     int channelIndex = 0;
-    #pragma omp parallel for num_threads(numChannels) private(channelIndex, scanline) shared(ok)
+    //#pragma omp parallel for num_threads(numChannels) private(channelIndex, scanline) shared(ok)
     for(channelIndex = 0; channelIndex < numChannels; ++channelIndex)
     {
         scanline = new unsigned char[sx];

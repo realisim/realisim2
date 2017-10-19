@@ -45,7 +45,6 @@ bool RayTracer::hasNewFrameAvailable() const
     //the queue as only one element by construction...
     //
     mReplyQueue.processNextMessage();
-    mReplyQueue.clear();
     return r;
 }
 
@@ -74,13 +73,13 @@ Core::Timer _t;
     {
         const double vw = m->mSize.x();
         const double vh = m->mSize.y();
-        int numberOfCells = vw * vh / (double)m->mDivideBy;
+        int numberOfCells = (int)(vw * vh / (double)m->mDivideBy);
     
         ImageCells cells;
         Rectangle coverage(Vector2i(0, 0),
                            vw, vh);
-        const double cellHeight = sqrt(numberOfCells*vh/vw);
-        const double cellWidth = numberOfCells/cellHeight;
+        const int cellHeight = (int)sqrt(numberOfCells*vh/vw);
+        const int cellWidth = (int)numberOfCells/cellHeight;
         cells.setSize(Vector2i(cellWidth, cellHeight));
         cells.setCoverage(coverage);
         
@@ -172,7 +171,7 @@ Core::Image RayTracer::reconstructImage(const ImageCells& iCells)
     // init final image
     Core::Image im;
     Geometry::Rectangle coverage = iCells.getCoverage();
-    im.set(coverage.getWidth(), coverage.getHeight(), iifRgbaUint8);
+    im.set((int)coverage.getWidth(), (int)coverage.getHeight(), iifRgbaUint8);
     
     // reconstruct image from cells
     for(int cellY = 0; cellY < iCells.getHeightInCells(); ++cellY)
@@ -184,8 +183,8 @@ Core::Image RayTracer::reconstructImage(const ImageCells& iCells)
             const Vector2 tr = r.getTopRight();
             
             Color c;
-            for(int y = bl.y(); y < tr.y(); ++y)
-                for(int x = bl.x(); x < tr.x(); ++x)
+            for(int y = (int)bl.y(); y < (int)tr.y(); ++y)
+                for(int x = (int)bl.x(); x < (int)tr.x(); ++x)
                 {
                     c = iCells.getCellColor(cellIndex);
                     im.setPixelColor(Vector2i(x,y), c);
@@ -233,8 +232,8 @@ void RayTracer::render(ImageCells& iCells)
         // using an atomic int would be better here... no
         // mutex acquiring needed...
         //
-        if(!mMessageQueue.isEmpty())
-        {return;}
+        /*if(!mMessageQueue.isEmpty())
+        {return;}*/
     }
 }
 
