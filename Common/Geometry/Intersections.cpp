@@ -31,7 +31,8 @@ namespace Geometry
     IntersectionType intersect(const Line& iL,
                                const Plane& iP,
                                Math::Vector3 *oP,
-                               Math::Vector3 *oNormal)
+                               Math::Vector3 *oNormal,
+                               double *oD)
     {
         Vector3 p;
         IntersectionType t;
@@ -41,6 +42,7 @@ namespace Geometry
         const Vector3 l0 = iL.getOrigin();
         const Vector3 p0 = iP.getPoint();
 
+        double d = 0.0;
         // check if parallel
         if( isEqual(l*n, 0.0, 1e-5) )
         {
@@ -54,12 +56,13 @@ namespace Geometry
         {
             t = itPoint;
             // compute the point of intersection d
-            const double d = (p0-l0)*n / (l*n);
+            d = (p0-l0)*n / (l*n);
             p = l*d + l0;
         }
 
         if(oP != nullptr) { *oP = p; }
         if(oNormal != nullptr) { *oNormal = iP.getNormal(); }
+        if(oD != nullptr) { *oD = d; }
         return t;
     }
 
@@ -99,11 +102,13 @@ namespace Geometry
     IntersectionType intersect(const Line& iL,
         const Sphere& iS,
         vector<Vector3> *oPoints,
-        vector<Vector3> *oNormals)
+        vector<Vector3> *oNormals,
+        vector<double> *oDs)
     {
         IntersectionType result = itNone;
         vector<Vector3> points = { Vector3(), Vector3() };
         vector<Vector3> normals = { Vector3(), Vector3() };
+        vector<double> ds = { 0.0, 0.0 };
         
         const Vector3 o = iL.getOrigin();
         const Vector3 l = iL.getDirection();
@@ -134,14 +139,14 @@ namespace Geometry
             normals[0] = (points[0] - c).normalize();
             normals[1] = (points[1] - c).normalize();
             
+            ds[0] = d0;
+            ds[1] = d1;
             result = itPoints;
         }
         
-        if(oPoints)
-        { *oPoints = points; }
-        
-        if(oNormals)
-        { *oNormals = normals; }
+        if(oPoints) { *oPoints = points; }
+        if(oNormals) { *oNormals = normals; }
+        if(oDs) { *oDs = ds; }
         
         return result;
     }

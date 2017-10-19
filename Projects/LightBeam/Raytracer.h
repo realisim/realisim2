@@ -4,6 +4,7 @@
 #include "DataStructure/ImageCells.h"
 #include "Geometry/Frustum.h"
 #include "Math/Vector.h"
+#include "SimpleIntegrator.h"
 
 namespace Realisim
 {
@@ -49,6 +50,8 @@ namespace LightBeam
         Broker &mBrokerRef;
         Core::MessageQueue mMessageQueue;
         mutable Core::MessageQueue mReplyQueue;
+        
+        SimpleIntegrator mIntegrator;
     };
 }
 }

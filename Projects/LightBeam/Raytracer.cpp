@@ -3,9 +3,11 @@
 #include <cassert>
 #include "Core/Timer.h"
 #include "Geometry/Intersections.h"
+#include "IntersectionResult.h"
 #include "Math/Vector.h"
 #include "Math/VectorI.h"
 #include "RayTracer.h"
+#include "VisibilityTester.h"
 
 using namespace Realisim;
     using namespace Core;
@@ -45,7 +47,6 @@ bool RayTracer::hasNewFrameAvailable() const
     //the queue as only one element by construction...
     //
     mReplyQueue.processNextMessage();
-    mReplyQueue.clear();
     return r;
 }
 
@@ -110,58 +111,36 @@ void RayTracer::rayCast(ImageCells& iCells,
     const Frustum& iFrustum)
 {
     Broker &b = getBroker();
-    Camera &cRef = b.getCamera();
+    Camera &camera = b.getCamera();
+    const Scene &scene = b.getScene();
     
     // make ray for given pixel
     const Rectangle& r = iCells.getCellCoverage(iCell);
     const Vector2 pixelPos = r.getCenter();
     
-    const Vector3 camPos = cRef.getPosition();
+    const Vector3 camPos = camera.getPosition();
     Line ray(camPos,
-             cRef.pixelToWorld(pixelPos,
-                               camPos + cRef.getDirection().normalize()));
+             camera.pixelToWorld(pixelPos,
+                               camPos + camera.getDirection().normalize()));
     
-    Vector3 LightDir(1.0, 1.0, 1.0);
-    LightDir.normalize();
     
     //--- default color
-    Color c(0.0, 0.0, 0.0, 1.0);
     
     //--- intersects with scene.
-    Plane plane(Vector3(0.0, -12, 0.0), Vector3(1.0, 1.0, 0.0));
-    Sphere sphere(Vector3(6.0, 0.0, 0.0), 16);
-    Sphere sphere1(Vector3(15.0, 8.0, -30.0), 22);
+    IntersectionResult ir;
+    VisibilityTester vt;
+
+    double f = mIntegrator.computeLi(ray, scene, camera, &ir, &vt);
+    if(vt.isOccluded())
+    { f = 0.0; }
     
-    Vector3 p, n;
-    IntersectionType pType = intersect(ray, plane, &p, &n);
-    if(pType != itNone &&
-       iFrustum.contains(p))
-    {
-        double v = 0.2;
-        const double nDotL = n*LightDir;
-        if(nDotL > 0) { v += 1.0 * nDotL; }
-        v = min(max(0.0, v), 1.0);
-        c.set(v, 0.0, 0.0, 1.0);
-    }
+    Color c = ir.mpMaterial->mColor;
+    c.set( c.getRed() * f,
+          c.getGreen() * f,
+          c.getBlue() * f,
+          c.getAlpha() );
     
-    //sphere 0
-    {
-        vector<Vector3> points, normals;
-        pType = intersect(ray, sphere, &points, &normals);
-        p = points[0];
-        n = normals[0];
-        if(pType != itNone &&
-           iFrustum.contains(p))
-        {
-            double v = 0.2;
-            const double nDotL = n*LightDir;
-            if(nDotL > 0) { v += 1.0 * nDotL; }
-            v = min(max(0.0, v), 1.0);
-            c.set(0, v, 0.0, 1.0);
-        }
-    }
-    
-    iCells.setCellValue(iCell, c, (p - camPos).norm());
+    iCells.setCellValue(iCell, c, (ir.mPointInWorldSpace - camPos).norm());
 }
 
 //-----------------------------------------------------------------------------

@@ -14,7 +14,7 @@ namespace Geometry
 
     //--- Line
     bool intersects(const Line&, const Plane&, IntersectionType* = nullptr);
-    IntersectionType intersect(const Line&, const Plane&, Math::Vector3 *oP = nullptr, Math::Vector3 *oNormal = nullptr);
+    IntersectionType intersect(const Line&, const Plane&, Math::Vector3 *oP = nullptr, Math::Vector3 *oNormal = nullptr, double *oD = nullptr);
 
     //--- Plane
     bool intersects(const Plane&, const Line&, IntersectionType* = nullptr);
@@ -22,6 +22,6 @@ namespace Geometry
 
     //--- Sphere
     bool intersects(const Line&, const Sphere&, IntersectionType* = nullptr);
-    IntersectionType intersect(const Line&, const Sphere&, std::vector<Math::Vector3> *oPoints = nullptr, std::vector<Math::Vector3> *oNormals = nullptr);
+    IntersectionType intersect(const Line&, const Sphere&, std::vector<Math::Vector3> *oPoints = nullptr, std::vector<Math::Vector3> *oNormals = nullptr, std::vector<double> *oDs = nullptr);
 }
 }

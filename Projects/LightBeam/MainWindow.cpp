@@ -7,6 +7,10 @@
 #include <QHBoxLayout>
 #include "View.h"
 
+
+// temporary until we can read scene from files...
+#include "DataStructure/GeometryNodes.h"
+
 using namespace Realisim;
     using namespace Core;
     using namespace LightBeam;
@@ -36,6 +40,40 @@ MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow()
     
     mpView->initialize();
     
+    //------------------------------------
+    // add some crap to the scene...
+    Broker &b = getBroker();
+    Scene &scene = b.getScene();
+    
+    // add a plane
+    Geometry::Plane p(Vector3(-40.0, -12, 0.0), Vector3(1.0, 1.0, 0.0));
+    shared_ptr<PlaneNode> pn = make_shared<PlaneNode>();
+    pn->setPlane(p);
+    shared_ptr<Material> mat0 = make_shared<Material>();
+    mat0->mColor = Color(1.0, 0.0, 0.0, 1.0);
+    pn->setMaterial(mat0);
+    
+    // add a sphere
+    Geometry::Sphere sphere(Vector3(6.0, 0.0, 0.0), 16);
+    shared_ptr<SphereNode> sn = make_shared<SphereNode>();
+    sn->setSphere(sphere);
+    shared_ptr<Material> mat1 = make_shared<Material>();
+    mat1->mColor = Color(0.0, 1.0, 0.0, 1.0);
+    sn->setMaterial(mat1);
+    
+    sphere.setCenter(Vector3(6, 0.0, -100));
+    sphere.setRadius(35);
+    shared_ptr<SphereNode> sn2 = make_shared<SphereNode>();
+    sn2->setSphere(sphere);
+    shared_ptr<Material> mat2 = make_shared<Material>();
+    mat2->mColor = Color(0.0, 0.0, 1.0, 1.0);
+    sn2->setMaterial(mat2);
+    
+    scene.addNode(pn);
+    scene.addNode(sn);
+    scene.addNode(sn2);
+    //------------------------------------
+    
     mUpdateTimerId = startTimer(30);
 }
 
@@ -54,7 +92,8 @@ void MainWindow::handleUserInput()
     
     //--- Mouse
     Mouse &mouse = b.getMouse();
-    if(mouse.isButtonPressed(Mouse::bLeft))
+    if(mouse.isButtonPressed(Mouse::bLeft) &&
+       mouse.getDelta().normSquare() > 0 )
     {
         const double f = degreesToRadians(1.0);
         const Vector2i d = mouse.getAndClearDelta();
