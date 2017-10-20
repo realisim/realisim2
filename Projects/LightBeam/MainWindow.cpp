@@ -46,7 +46,7 @@ MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow()
     Scene &scene = b.getScene();
     
     // add a plane
-    Geometry::Plane p(Vector3(-40.0, -12, 0.0), Vector3(1.0, 1.0, 0.0));
+    Geometry::Plane p(Vector3(0.0, -30, 0.0), Vector3(0.0, 1.0, 0.0));
     shared_ptr<PlaneNode> pn = make_shared<PlaneNode>();
     pn->setPlane(p);
     shared_ptr<Material> mat0 = make_shared<Material>();

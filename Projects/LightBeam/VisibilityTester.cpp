@@ -47,7 +47,7 @@ bool VisibilityTester::isOccluded()
                 // if so, then there is occlusion
                 //
                 
-                r = ir.mD > 1e-5 &&
+                r = ir.mD > 0 &&
                     ir.mD < (mLightPosition - mShadedPoint).norm();
             }
         }

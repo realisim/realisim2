@@ -41,7 +41,6 @@ namespace LightBeam
         IRenderable& operator=(const IRenderable&) = default;
         virtual ~IRenderable() = 0;
 
-#pragma message("all intersects methods with line should also return the d: distance to origin. As it would be used as a distance to camera...")
         virtual bool intersects(const Geometry::Line& iRay) const = 0;
         virtual bool intersect(const Geometry::Line& iRay, IntersectionResult* opResult) const = 0;
 

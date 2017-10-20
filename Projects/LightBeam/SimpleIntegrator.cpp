@@ -36,25 +36,23 @@ double SimpleIntegrator::computeLi(const Line &iLine,
     
     // collect all intersections from ray with scene
     IntersectionResult ir;
-    vector<IntersectionResult> vIr;
+    vector<IntersectionResult> results;
     
-    Frustum frustum = iCamera.getFrustum();
     const vector<shared_ptr<IRenderable>>& vr = iScene.getRenderables();
-    for( auto r : vr )
+    for( auto renderable : vr )
     {
-        if(r->intersect(iLine, &ir) && frustum.contains(ir.mPointInWorldSpace))
-        { vIr.push_back(ir); }
+        if(renderable->intersect(iLine, &ir) && ir.mD >= 0 )
+        { results.push_back(ir); }
     }
-    
     
     // sort and keep closest to camera result.
     int closestIndex = -1;
     double distance = std::numeric_limits<double>::max();
     
     int i = 0;
-    for(auto irIt : vIr)
+    for(auto result : results)
     {
-        const Vector3 cp = iCamera.getPosition() - irIt.mPointInWorldSpace;
+        const Vector3 cp = iCamera.getPosition() - result.mPointInWorldSpace;
         const double d = cp.norm();
         if( d < distance)
         {
@@ -67,10 +65,10 @@ double SimpleIntegrator::computeLi(const Line &iLine,
     // compute light contribution
     if(closestIndex != -1)
     {
-        ir = vIr[closestIndex];
+        ir = results[closestIndex];
         ir.mW0 = iCamera.getPosition() - ir.mPointInWorldSpace;
         ir.mW0.normalize();
-        vIr.clear();
+        results.clear();
         
         // comput lights contribution
         Vector3 lightDir(1.0, 1.0, 1.0);
@@ -88,7 +86,22 @@ double SimpleIntegrator::computeLi(const Line &iLine,
         // fill the visibility tester if necessary
         if(opVisibilityTester)
         {
-            opVisibilityTester->set(ir.mPointInWorldSpace, Vector3(1e8), &iScene);
+            // using the intersection point as starting point for the visiblily
+            // tester is not a good idea, since that point lies on the surface
+            // and will be the first point of intersection for the shadowray.
+            // for that reason, we add a little offset to the intersection
+            // point.
+            //
+            // Furthermore, since this hardcoded light is directional, the
+            // light position is equal to the point of intersection + offset in
+            // the light direction.
+            //
+            Vector3 wi = lightDir;
+            wi.normalize();
+            const Vector3 lightPos = ir.mPointInWorldSpace + 100 * wi;
+            
+            const Vector3 p = ir.mPointInWorldSpace + (1e-5 * wi);
+            opVisibilityTester->set(p, lightPos, &iScene);
         }
     }
     
