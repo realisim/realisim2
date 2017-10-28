@@ -36,7 +36,6 @@ bool PlaneNode::intersect(const Line& iRay, IntersectionResult* opResult) const
     
     if(opResult && it != itNone)
     {
-        (*opResult).mPointInWorldSpace = p;
         (*opResult).mNormal = n;
         (*opResult).mD = d;
         (*opResult).mpMaterial = getMaterial();
@@ -88,7 +87,6 @@ bool SphereNode::intersect(const Line& iRay, IntersectionResult* opResult) const
         else
         { index = 0 ;}
         
-        (*opResult).mPointInWorldSpace = p[index];
         (*opResult).mNormal = n[index];
         (*opResult).mD = d[index];
         (*opResult).mpMaterial = getMaterial();

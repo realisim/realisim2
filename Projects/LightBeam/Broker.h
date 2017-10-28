@@ -1,6 +1,6 @@
 #pragma once
 
-#include "DataStructure/Scene.h"
+#include "DataStructure/Scene/Scene.h"
 #include "Interface/Keyboard.h"
 #include "Interface/Mouse.h"
 #include "Raytracer.h"

@@ -68,3 +68,25 @@ bool IRenderable::intersect(const Geometry::Line& iRay, IntersectionResult* opRe
 void IRenderable::setMaterial(std::shared_ptr<Material> ipMaterial)
 { mpMaterial = ipMaterial; }
 
+//-----------------------------------------------------------------------------
+//---ILight
+//-----------------------------------------------------------------------------
+ILightNode::ILightNode()
+{}
+
+//-----------------------------------------------------------------------------
+ILightNode::~ILightNode()
+{}
+
+//-----------------------------------------------------------------------------
+double ILightNode::computeLi() const
+{ return 1.0; }
+
+//----------------------------------------------------------------------
+const Light& ILightNode::getLight() const
+{ return mLight; }
+
+//----------------------------------------------------------------------
+void ILightNode::setLight(const Light& iL)
+{ mLight = iL; }
+

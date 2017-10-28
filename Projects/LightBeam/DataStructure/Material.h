@@ -9,15 +9,23 @@ namespace LightBeam
     class Material
     {
     public:
-        Material() = default;
+        Material();
         Material(const Material&) = default;
         Material& operator=(const Material&) = default;
         ~Material() = default;
 
-        Core::Color mColor;
-
+        const Core::Color& getColor() const;
+        double getGlossFactor() const;
+        double getSpecularFactor() const;
+        
+        void setColor(const Core::Color&);
+        void setGlossFactor(double);
+        void setSpecularFactor(double);
+        
     protected:
-
+        double mSpecular;
+        double mGloss;
+        Core::Color mColor;
     };
 }
 }

@@ -9,7 +9,9 @@
 
 
 // temporary until we can read scene from files...
-#include "DataStructure/GeometryNodes.h"
+#include "DataStructure/Scene/GeometryNodes.h"
+#include "DataStructure/Scene/LightNode.h"
+
 
 using namespace Realisim;
     using namespace Core;
@@ -50,7 +52,7 @@ MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow()
     shared_ptr<PlaneNode> pn = make_shared<PlaneNode>();
     pn->setPlane(p);
     shared_ptr<Material> mat0 = make_shared<Material>();
-    mat0->mColor = Color(1.0, 0.0, 0.0, 1.0);
+    mat0->setColor(Color(1.0, 0.0, 0.0, 1.0));
     pn->setMaterial(mat0);
     
     // add a sphere
@@ -58,20 +60,38 @@ MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow()
     shared_ptr<SphereNode> sn = make_shared<SphereNode>();
     sn->setSphere(sphere);
     shared_ptr<Material> mat1 = make_shared<Material>();
-    mat1->mColor = Color(0.0, 1.0, 0.0, 1.0);
+    mat1->setColor( Color(0.0, 1.0, 0.0, 1.0) );
     sn->setMaterial(mat1);
     
+    // add another sphere
     sphere.setCenter(Vector3(6, 0.0, -100));
     sphere.setRadius(35);
     shared_ptr<SphereNode> sn2 = make_shared<SphereNode>();
     sn2->setSphere(sphere);
     shared_ptr<Material> mat2 = make_shared<Material>();
-    mat2->mColor = Color(0.0, 0.0, 1.0, 1.0);
+    mat2->setColor( Color(0.0, 0.0, 1.0, 1.0) );
     sn2->setMaterial(mat2);
+    
+    // add another sphere
+    sphere.setCenter(Vector3(100, 100.0, -80));
+    sphere.setRadius(50);
+    shared_ptr<SphereNode> sn3 = make_shared<SphereNode>();
+    sn3->setSphere(sphere);
+    shared_ptr<Material> mat3 = make_shared<Material>();
+    mat3->setColor( Color(0.0, 1.0, 1.0, 1.0) );
+    sn3->setMaterial(mat3);
+    
+    // add a light
+    Light l;
+    l.setType(Light::tDirectionnal);
+    shared_ptr<LightNode> lightNode = make_shared<LightNode>();
+    lightNode->setLight(l);
     
     scene.addNode(pn);
     scene.addNode(sn);
     scene.addNode(sn2);
+    scene.addNode(sn3);
+    scene.addNode(lightNode);
     //------------------------------------
     
     mUpdateTimerId = startTimer(30);

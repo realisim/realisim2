@@ -130,16 +130,17 @@ void RayTracer::rayCast(ImageCells& iCells,
     VisibilityTester vt;
 
     double f = mIntegrator.computeLi(ray, scene, camera, &ir, &vt);
+    
     if(vt.isOccluded())
     { f = 0.0; }
     
-    Color c = ir.mpMaterial->mColor;
+    Color c = ir.mpMaterial->getColor();
     c.set( c.getRed() * f,
           c.getGreen() * f,
           c.getBlue() * f,
           c.getAlpha() );
     
-    iCells.setCellValue(iCell, c, (ir.mPointInWorldSpace - camPos).norm());
+    iCells.setCellValue(iCell, c, ir.mD);
 }
 
 //-----------------------------------------------------------------------------

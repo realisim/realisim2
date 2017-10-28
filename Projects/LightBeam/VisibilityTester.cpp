@@ -1,6 +1,6 @@
 
 #include "DataStructure/IntersectionResult.h"
-#include "DataStructure/Scene.h"
+#include "DataStructure/Scene/Scene.h"
 #include "Geometry/Line.h"
 #include "VisibilityTester.h"
 

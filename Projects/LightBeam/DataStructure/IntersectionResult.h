@@ -21,9 +21,8 @@ namespace LightBeam
         IntersectionResult& operator=(const IntersectionResult&) = default;
         ~IntersectionResult() = default;
 
-        Math::Vector3 mPointInWorldSpace;
         Math::Vector3 mNormal;
-        double mD;
+        double mD; //parametric distance along the ray
         Math::Vector3 mW0;
         std::shared_ptr<Material> mpMaterial;
     };

@@ -1,4 +1,5 @@
 #pragma once
+#include "DataStructure/Light.h"
 #include "Material.h"
 #include <memory>
 #include <stdint.h>
@@ -15,7 +16,7 @@ namespace LightBeam
     class ISceneNode
     {
     public:
-        enum NodeType{ntSceneNode, ntRenderable, ntLights};
+        enum NodeType{ntSceneNode, ntRenderable, ntLight};
     
         ISceneNode();
         explicit ISceneNode(NodeType);
@@ -30,6 +31,9 @@ namespace LightBeam
         static uint32_t mIdCounter;
         uint32_t mId;
         NodeType mType;
+        //boundingbox
+        //Matrix4 mParentTransform
+        //Matrix4 mWorldTransform
     };
 
     //-------------------------------------------------------------------------
@@ -48,10 +52,27 @@ namespace LightBeam
         void setMaterial(std::shared_ptr<Material>);
         
     protected:
-        //boundingbox
-        //Matrix4 mParentTransform
-        //Matrix4 mWorldTransform
         std::shared_ptr<Material> mpMaterial;
+    };
+    
+    //-------------------------------------------------------------------------
+    class ILightNode
+    {
+    public:
+        ILightNode();
+        ILightNode(const ILightNode&) = default;
+        ILightNode& operator=(const ILightNode&) = default;
+        virtual ~ILightNode() = 0;
+
+        virtual double computeLi() const;
+        const Light& getLight() const;
+        void setLight(const Light&);
+//        const std::shared_ptr<Core::Image> getCutout() const;
+//        void setCutout(std::shared_ptr<Core::Image>);
+        
+    protected:
+        //std::shared_ptr<Core::Image> mpCutout;
+        Light mLight;
     };
 
 }

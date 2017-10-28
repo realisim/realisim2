@@ -19,15 +19,13 @@ namespace LightBeam
         ~Scene();
 
         void addNode(std::shared_ptr<ISceneNode>);
-        //const std::vector< std::shared_ptr<ILight> >& getLights() const;
+        const std::vector< std::shared_ptr<ILightNode> >& getLights() const;
         const std::vector< std::shared_ptr<IRenderable> >& getRenderables() const;
-        //virtual bool intersects(const Geometry::Line& iRay) const override;
-        //virtual bool intersect(const Geometry::Line& iRay, IntersectionResult* opResult) const override;
 
     protected:
         std::vector< std::shared_ptr<ISceneNode> > mNodes;
         std::vector< std::shared_ptr<IRenderable> > mRenderables;
-        //std::vector< std::shared_ptr<Lights> > mLights;
+        std::vector< std::shared_ptr<ILightNode> > mLights;
     };
 }
 }
