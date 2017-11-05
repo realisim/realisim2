@@ -4,6 +4,7 @@
 #include "DataStructure/ImageCells.h"
 #include "Geometry/Frustum.h"
 #include "Math/Vector.h"
+#include "SimpleIntegrator.h"
 
 namespace Realisim
 {
@@ -30,7 +31,7 @@ namespace LightBeam
         public:
             explicit Message(void* ipSender = nullptr);
             Math::Vector2i mSize;
-            int mDivideBy;
+            double mDivideBy;
         };
         
         class Reply : public Core::MessageQueue::Message
@@ -40,15 +41,21 @@ namespace LightBeam
             Core::Image mImage;
         };
     
+        int fillPixels(Core::Image *opImage, const ImageCells& iCells, const Math::Vector2i& iCellIndex, const Geometry::Rectangle& iCellCoverage);
+        int fillPixel(Core::Image *opImage, const ImageCells& iCells, const Math::Vector2i& iCellIndex, const Geometry::Rectangle& iCellCoverage);
         void processReply(Core::MessageQueue::Message*);
         void processMessage(Core::MessageQueue::Message*);
-        void rayCast(ImageCells& iCells, const Math::Vector2i& iCell, const Geometry::Frustum& iFrustum);
+        Math::Vector3 reflect(const Math::Vector3& iIncident, const Math::Vector3 &iNormal);
+        void rayCast(ImageCells& iCells, const Math::Vector2i& iCell);
+        void rayCast(int iDepth, const Geometry::Line& iRay, const Scene& iScene, const Rendering::Camera& iCamera, Core::Color *opColor, double *opDistanceToCamera);
         Core::Image reconstructImage(const ImageCells&);
         void render(ImageCells& iCells);
         
         Broker &mBrokerRef;
         Core::MessageQueue mMessageQueue;
         mutable Core::MessageQueue mReplyQueue;
+        
+        SimpleIntegrator mIntegrator;
     };
 }
 }

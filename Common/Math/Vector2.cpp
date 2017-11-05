@@ -56,6 +56,12 @@ Vector2& Vector2::normalize()
     return (*this);
 }
 
+//---------------------------------------------------------------------------
+double Vector2::normSquare() const
+{
+    return mData[0]*mData[0] + mData[1]*mData[1];
+}
+
 Vector2	Vector2::multiplyComponents(const Vector2& v) const
 {
 	return Vector2(this->x()*v.x(), this->y()*v.y());

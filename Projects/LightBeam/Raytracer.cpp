@@ -3,9 +3,11 @@
 #include <cassert>
 #include "Core/Timer.h"
 #include "Geometry/Intersections.h"
+#include "IntersectionResult.h"
 #include "Math/Vector.h"
 #include "Math/VectorI.h"
 #include "RayTracer.h"
+#include "VisibilityTester.h"
 
 using namespace Realisim;
     using namespace Core;
@@ -14,6 +16,11 @@ using namespace Realisim;
     using namespace Math;
     using namespace Rendering;
 using namespace std;
+
+namespace  {
+    const int kMaxRecursionDepth = 5;
+    const int kMultisamplingFactor = 4;
+}
 
 //-----------------------------------------------------------------------------
 RayTracer::RayTracer(Broker *ipBroker) :
@@ -38,6 +45,51 @@ RayTracer::~RayTracer()
 }
 
 //-----------------------------------------------------------------------------
+int RayTracer::fillPixels(Core::Image *opImage,
+                           const ImageCells& iCells,
+                           const Math::Vector2i& iCellIndex,
+                           const Geometry::Rectangle& iCellCoverage)
+{
+    const Vector2 bl = iCellCoverage.getBottomLeft();
+    const Vector2 tr = iCellCoverage.getTopRight();
+    
+    Color c;
+    for(int y = (int)bl.y(); y < (int)tr.y(); ++y)
+    {
+        for(int x = (int)bl.x(); x < (int)tr.x(); ++x)
+        {
+            c = iCells.getCellColor(iCellIndex);
+            opImage->setPixelColor(Vector2i(x,y), c);
+        }
+    }
+    
+    return 1;
+}
+
+//-----------------------------------------------------------------------------
+int RayTracer::fillPixel(Core::Image *opImage,
+                          const ImageCells& iCells,
+                          const Math::Vector2i& iCellIndex,
+                          const Geometry::Rectangle& iCellCoverage)
+{
+    const int increment = round(1.0 / iCellCoverage.getWidth());
+    
+//printf("fillPixel: increment = %d\n", increment);
+    
+    Color c;
+    for(int y = 0; y < increment; ++y)
+        for(int x = 0; x < increment; ++x)
+        {
+            c += iCells.getCellColor(iCellIndex + Vector2i(x, y));
+        }
+    
+    c /= (double)(increment*increment);
+    opImage->setPixelColor(iCellIndex/increment, c);
+
+    return increment;
+}
+
+//-----------------------------------------------------------------------------
 bool RayTracer::hasNewFrameAvailable() const
 {
     bool r = !mReplyQueue.isEmpty();
@@ -45,7 +97,6 @@ bool RayTracer::hasNewFrameAvailable() const
     //the queue as only one element by construction...
     //
     mReplyQueue.processNextMessage();
-    mReplyQueue.clear();
     return r;
 }
 
@@ -74,13 +125,13 @@ Core::Timer _t;
     {
         const double vw = m->mSize.x();
         const double vh = m->mSize.y();
-        int numberOfCells = vw * vh / (double)m->mDivideBy;
+        int numberOfCells = (int)(vw * vh / (double)m->mDivideBy);
     
         ImageCells cells;
         Rectangle coverage(Vector2i(0, 0),
                            vw, vh);
-        const double cellHeight = sqrt(numberOfCells*vh/vw);
-        const double cellWidth = numberOfCells/cellHeight;
+        const int cellHeight = (int)sqrt(numberOfCells*vh/vw);
+        const int cellWidth = (int)numberOfCells/cellHeight;
         cells.setSize(Vector2i(cellWidth, cellHeight));
         cells.setCoverage(coverage);
         
@@ -92,11 +143,15 @@ Core::Timer _t;
         done->mImage = im;
         mReplyQueue.post(done);
         
-        if(mMessageQueue.isEmpty() && m->mDivideBy > 1)
+        if(mMessageQueue.isEmpty() && m->mDivideBy > 1/(2*kMultisamplingFactor))
         {
             Message *m2 = new Message();
             m2->mSize = m->mSize;
-            m2->mDivideBy = m->mDivideBy / 2;
+            
+            // divide by 4 each time to effectively
+            // grow the image by 2 in each dimension
+            //
+            m2->mDivideBy = 0.25 * m->mDivideBy;
             mMessageQueue.post(m2);
         }
         
@@ -106,62 +161,80 @@ Core::Timer _t;
 
 //-----------------------------------------------------------------------------
 void RayTracer::rayCast(ImageCells& iCells,
-    const Vector2i& iCell,
-    const Frustum& iFrustum)
+    const Vector2i& iCell)
 {
     Broker &b = getBroker();
-    Camera &cRef = b.getCamera();
+    Camera &camera = b.getCamera();
+    const Scene &scene = b.getScene();
     
     // make ray for given pixel
     const Rectangle& r = iCells.getCellCoverage(iCell);
     const Vector2 pixelPos = r.getCenter();
     
-    const Vector3 camPos = cRef.getPosition();
+    const Vector3 camPos = camera.getPosition();
     Line ray(camPos,
-             cRef.pixelToWorld(pixelPos,
-                               camPos + cRef.getDirection().normalize()));
+             camera.pixelToWorld(pixelPos,
+                               camPos + camera.getDirection()));
     
-    Vector3 LightDir(1.0, 1.0, 1.0);
-    LightDir.normalize();
+    Color color;
+    double distanceToCamera;
+    rayCast(0, ray, scene, camera, &color, &distanceToCamera);
     
-    //--- default color
-    Color c(0.0, 0.0, 0.0, 1.0);
+    //clamp color
+    color.set( min(color.getRed(), 1.0),
+              min(color.getGreen(), 1.0),
+              min(color.getBlue(), 1.0),
+              min(color.getAlpha(), 1.0) );
     
+    iCells.setCellValue(iCell, color, distanceToCamera);
+}
+
+//-----------------------------------------------------------------------------
+void RayTracer::rayCast( int iDepth,
+                        const Line& iRay,
+                    const Scene& iScene,
+                    const Camera& iCamera,
+                    Color *opColor,
+                    double *opDistanceToCamera)
+{
     //--- intersects with scene.
-    Plane plane(Vector3(0.0, -12, 0.0), Vector3(1.0, 1.0, 0.0));
-    Sphere sphere(Vector3(6.0, 0.0, 0.0), 16);
-    Sphere sphere1(Vector3(15.0, 8.0, -30.0), 22);
+    IntersectionResult ir;
+    VisibilityTester vt;
     
-    Vector3 p, n;
-    IntersectionType pType = intersect(ray, plane, &p, &n);
-    if(pType != itNone &&
-       iFrustum.contains(p))
+    double f = mIntegrator.computeLi(iRay, iScene, iCamera, &ir, &vt);
+    
+    if(vt.isOccluded())
+    { f = 0.0; }
+    
+    const double specularFactor = ir.mpMaterial->getSpecularFactor();
+    const double oneMinusSpec = 1.0 - specularFactor;
+    
+    Color diffuse = ir.mpMaterial->getColor();
+    diffuse.set( diffuse.getRed() * f * oneMinusSpec,
+          diffuse.getGreen() * f * oneMinusSpec,
+          diffuse.getBlue() * f * oneMinusSpec,
+          diffuse.getAlpha() );
+    
+    *opColor += diffuse;
+
+    if( iDepth < kMaxRecursionDepth &&
+       ir.mpMaterial->getSpecularFactor() > 0.0)
     {
-        double v = 0.2;
-        const double nDotL = n*LightDir;
-        if(nDotL > 0) { v += 1.0 * nDotL; }
-        v = min(max(0.0, v), 1.0);
-        c.set(v, 0.0, 0.0, 1.0);
+        // reflect the ray and call raycast again.
+        Vector3 reflectedDirection = reflect(iRay.getDirection(), ir.mNormal);
+        
+        const Vector3 intersectionPoint = iRay.getOrigin() +
+            ir.mD * iRay.getDirection();
+        
+        //
+        Line reflectedRay;
+        reflectedRay.setOrigin(intersectionPoint + reflectedDirection);
+        reflectedRay.setDirection(reflectedDirection);
+        
+        rayCast(++iDepth, reflectedRay, iScene, iCamera, opColor, opDistanceToCamera);
     }
     
-    //sphere 0
-    {
-        vector<Vector3> points, normals;
-        pType = intersect(ray, sphere, &points, &normals);
-        p = points[0];
-        n = normals[0];
-        if(pType != itNone &&
-           iFrustum.contains(p))
-        {
-            double v = 0.2;
-            const double nDotL = n*LightDir;
-            if(nDotL > 0) { v += 1.0 * nDotL; }
-            v = min(max(0.0, v), 1.0);
-            c.set(0, v, 0.0, 1.0);
-        }
-    }
-    
-    iCells.setCellValue(iCell, c, (p - camPos).norm());
+    *opDistanceToCamera = ir.mD;
 }
 
 //-----------------------------------------------------------------------------
@@ -172,29 +245,39 @@ Core::Image RayTracer::reconstructImage(const ImageCells& iCells)
     // init final image
     Core::Image im;
     Geometry::Rectangle coverage = iCells.getCoverage();
-    im.set(coverage.getWidth(), coverage.getHeight(), iifRgbaUint8);
+    im.set((int)coverage.getWidth(), (int)coverage.getHeight(), iifRgbaUint8);
     
     // reconstruct image from cells
-    for(int cellY = 0; cellY < iCells.getHeightInCells(); ++cellY)
-        for(int cellX = 0; cellX < iCells.getWidthInCells(); ++cellX)
+    int cellIncrement = 1;
+    for(int cellY = 0; cellY < iCells.getHeightInCells(); cellY += cellIncrement)
+        for(int cellX = 0; cellX < iCells.getWidthInCells(); cellX += cellIncrement)
         {
             const Vector2i cellIndex(cellX, cellY);
-            Rectangle r = iCells.getCellCoverage(cellIndex);
-            const Vector2 bl = r.getBottomLeft();
-            const Vector2 tr = r.getTopRight();
+            const Rectangle cellCoverage = iCells.getCellCoverage(cellIndex);
             
-            Color c;
-            for(int y = bl.y(); y < tr.y(); ++y)
-                for(int x = bl.x(); x < tr.x(); ++x)
-                {
-                    c = iCells.getCellColor(cellIndex);
-                    im.setPixelColor(Vector2i(x,y), c);
-                }
+            if(cellCoverage.getWidth() >= 1) // more than 1 cell per pixels, supersampling
+            { cellIncrement = fillPixels(&im, iCells, cellIndex, cellCoverage); }
+            else
+            { cellIncrement = fillPixel(&im, iCells, cellIndex, cellCoverage); }
         }
     
     //printf("reconstructImage %f(s)\n", _t.elapsed());
     return im;
 }
+
+//-----------------------------------------------------------------------------
+// returns the reflected ray.
+//
+// iIncident and iNormal must be normalized
+//
+// http://paulbourke.net/geometry/reflected/
+//
+Vector3 RayTracer::reflect(const Math::Vector3& iIncident,
+    const Math::Vector3 &iNormal)
+{
+    return (2.0*iNormal*(-iIncident * iNormal) + iIncident).normalize();
+}
+
 
 //-----------------------------------------------------------------------------
 void RayTracer::render()
@@ -211,11 +294,7 @@ void RayTracer::render()
 
 //-----------------------------------------------------------------------------
 void RayTracer::render(ImageCells& iCells)
-{
-    Broker &b = getBroker();
-    Camera &cRef = b.getCamera();
-    const Frustum frustum = cRef.getFrustum();
-    
+{   
     const int w = iCells.getWidthInCells();
     const int h = iCells.getHeightInCells();
     
@@ -226,7 +305,7 @@ void RayTracer::render(ImageCells& iCells)
         {
             const Vector2i cell(x, y);
             
-            rayCast(iCells, cell, frustum);
+            rayCast(iCells, cell);
         }
         
         // exits the rendering if a message is in the queue...

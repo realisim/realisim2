@@ -7,6 +7,12 @@
 #include <QHBoxLayout>
 #include "View.h"
 
+
+// temporary until we can read scene from files...
+#include "DataStructure/Scene/GeometryNodes.h"
+#include "DataStructure/Scene/LightNode.h"
+
+
 using namespace Realisim;
     using namespace Core;
     using namespace LightBeam;
@@ -36,6 +42,62 @@ MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow()
     
     mpView->initialize();
     
+    //------------------------------------
+    // add some crap to the scene...
+    Broker &b = getBroker();
+    Scene &scene = b.getScene();
+    
+    // add a plane
+    Geometry::Plane p(Vector3(0.0, -30, 0.0), Vector3(0.0, 1.0, 0.0));
+    shared_ptr<PlaneNode> pn = make_shared<PlaneNode>();
+    pn->setPlane(p);
+    shared_ptr<Material> mat0 = make_shared<Material>();
+    mat0->setColor(Color(1.0, 0.0, 0.0, 1.0));
+    pn->setMaterial(mat0);
+    
+    // add a sphere
+    Geometry::Sphere sphere(Vector3(6.0, 0.0, 0.0), 16);
+    shared_ptr<SphereNode> sn = make_shared<SphereNode>();
+    sn->setSphere(sphere);
+    shared_ptr<Material> mat1 = make_shared<Material>();
+    mat1->setColor( Color(0.0, 1.0, 0.0, 1.0) );
+    sn->setMaterial(mat1);
+    
+    // add another sphere
+    sphere.setCenter(Vector3(6, 0.0, -100));
+    sphere.setRadius(35);
+    shared_ptr<SphereNode> sn2 = make_shared<SphereNode>();
+    sn2->setSphere(sphere);
+    shared_ptr<Material> mat2 = make_shared<Material>();
+    mat2->setColor( Color(0.0, 0.0, 1.0, 1.0) );
+    mat2->setSpecularFactor(0.0);
+    mat2->setGlossFactor(1.0);
+    sn2->setMaterial(mat2);
+    
+    // add another sphere
+    sphere.setCenter(Vector3(100, 0, -50));
+    sphere.setRadius(50);
+    shared_ptr<SphereNode> sn3 = make_shared<SphereNode>();
+    sn3->setSphere(sphere);
+    shared_ptr<Material> mat3 = make_shared<Material>();
+    mat3->setColor( Color(1.0, 1.0, 1.0, 1.0) );
+    mat3->setSpecularFactor(0.7);
+    mat3->setGlossFactor(1.0);
+    sn3->setMaterial(mat3);
+    
+    // add a light
+    Light l;
+    l.setType(Light::tDirectionnal);
+    shared_ptr<LightNode> lightNode = make_shared<LightNode>();
+    lightNode->setLight(l);
+    
+    scene.addNode(pn);
+    scene.addNode(sn);
+    scene.addNode(sn2);
+    scene.addNode(sn3);
+    scene.addNode(lightNode);
+    //------------------------------------
+    
     mUpdateTimerId = startTimer(30);
 }
 
@@ -54,7 +116,8 @@ void MainWindow::handleUserInput()
     
     //--- Mouse
     Mouse &mouse = b.getMouse();
-    if(mouse.isButtonPressed(Mouse::bLeft))
+    if(mouse.isButtonPressed(Mouse::bLeft) &&
+       mouse.getDelta().normSquare() > 0 )
     {
         const double f = degreesToRadians(1.0);
         const Vector2i d = mouse.getAndClearDelta();

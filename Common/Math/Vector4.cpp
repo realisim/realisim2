@@ -58,6 +58,12 @@ Vector4& Vector4::normalize()
 
 }
 
+//---------------------------------------------------------------------------
+double Vector4::normSquare() const
+{
+    return mData[0]*mData[0] + mData[1]*mData[1] + mData[2]*mData[2] + mData[3]*mData[3];
+}
+
 Vector4	Vector4::multiplyComponents(const Vector4& v) const
 {
 	return Vector4(this->x()*v.x(), this->y()*v.y(), this->z()*v.z(), this->w()*v.w());

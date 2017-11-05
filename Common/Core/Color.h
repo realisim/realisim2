@@ -322,6 +322,15 @@ namespace Core
         Color(const Color&) = default;
         Color& operator=(const Color&) = default;
         virtual ~Color() = default;
+        
+        Color operator+(const Color&);
+        Color& operator+=(const Color&);
+        Color operator-(const Color&);
+        Color& operator-=(const Color&);
+        Color operator*(double);
+        Color& operator*=(double);
+        Color operator/(double);
+        Color& operator/=(double);
 
         uint8_t getAlphaUint8() const;
         int8_t getAlphaInt8() const;

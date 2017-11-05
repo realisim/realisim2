@@ -164,11 +164,16 @@ char* ByteArray::data()
 //-------------------------------------------------------
 void ByteArray::deleteGuts()
 {    
-    if( mpGuts && atomic_fetch_sub( &(mpGuts->mRefCount), 1 ) == 1 )
+    if(!mpGuts) {return;}
+    // delete gust when the refcount reach 0.
+    // In this case, it means that refCount value was 1 prior
+    // to the call to atomic_fetch_sub.
+    //
+    if( atomic_fetch_sub( &(mpGuts->mRefCount), 1 ) == 1 )
     {
         delete mpGuts;
+        mpGuts = nullptr;
     }
-    mpGuts = nullptr;
 }
 
 //-------------------------------------------------------
