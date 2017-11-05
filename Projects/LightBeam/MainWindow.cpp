@@ -70,15 +70,19 @@ MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow()
     sn2->setSphere(sphere);
     shared_ptr<Material> mat2 = make_shared<Material>();
     mat2->setColor( Color(0.0, 0.0, 1.0, 1.0) );
+    mat2->setSpecularFactor(0.0);
+    mat2->setGlossFactor(1.0);
     sn2->setMaterial(mat2);
     
     // add another sphere
-    sphere.setCenter(Vector3(100, 100.0, -80));
+    sphere.setCenter(Vector3(100, 0, -50));
     sphere.setRadius(50);
     shared_ptr<SphereNode> sn3 = make_shared<SphereNode>();
     sn3->setSphere(sphere);
     shared_ptr<Material> mat3 = make_shared<Material>();
-    mat3->setColor( Color(0.0, 1.0, 1.0, 1.0) );
+    mat3->setColor( Color(1.0, 1.0, 1.0, 1.0) );
+    mat3->setSpecularFactor(0.7);
+    mat3->setGlossFactor(1.0);
     sn3->setMaterial(mat3);
     
     // add a light

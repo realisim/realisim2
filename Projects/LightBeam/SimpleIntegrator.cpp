@@ -33,7 +33,7 @@ double SimpleIntegrator::computeLi(const Line &iLine,
     IntersectionResult *opResult,
     VisibilityTester *opVisibilityTester)
 {
-    double spectrum = 0.0;
+    double spectrum = 0.0; // mal nommé...
     
     // collect all intersections from ray with scene
     IntersectionResult ir;
@@ -42,8 +42,12 @@ double SimpleIntegrator::computeLi(const Line &iLine,
     const vector<shared_ptr<IRenderable>>& vr = iScene.getRenderables();
     for( auto renderable : vr )
     {
-        // ir.mD >= 0 for intersection in from of the ray origin...
-        if(renderable->intersect(iLine, &ir) && ir.mD >= 0 )
+        // ir.mD >= 1e-5 for intersection in front of the ray origin...
+        // also to prevent intersection with the origin, we compare
+        // with 1e-5... somehow a cheap error progation work around.
+        // 
+        //
+        if(renderable->intersect(iLine, &ir) && ir.mD >= 1e-5 )
         { results.push_back(ir); }
     }
     
@@ -84,11 +88,8 @@ double SimpleIntegrator::computeLi(const Line &iLine,
             // fill the visibility tester if necessary
             if(opVisibilityTester)
             {
-                // using the intersection point as starting point for the visiblily
-                // tester is not a good idea, since that point lies on the surface
-                // and will be the first point of intersection for the shadowray.
-                // for that reason, we add a little offset to the intersection
-                // point.
+                // using the intersection point as starting point for the
+                // visibility tester.
                 //
                 // Furthermore, since this hardcoded light is directional, the
                 // light position is equal to the point of intersection + offset in
@@ -98,7 +99,7 @@ double SimpleIntegrator::computeLi(const Line &iLine,
                 wi.normalize();
                 const Vector3 lightPos = intersectionInWorldSpace + 1e8 * wi;
                 
-                const Vector3 p = intersectionInWorldSpace + (1e-5 * wi);
+                const Vector3 p = intersectionInWorldSpace + wi;
                 opVisibilityTester->set(p, lightPos, &iScene);
             }
         }

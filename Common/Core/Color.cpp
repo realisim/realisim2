@@ -112,6 +112,83 @@ Color::Color(double r, double g, double b, double a) :
 {}
 
 //------------------------------------------------------------------------------
+Color Color::operator+(const Color& iRhs)
+{
+    return Color(mRed + iRhs.getRed(),
+                 mGreen + iRhs.getGreen(),
+                 mBlue + iRhs.getBlue(),
+                 mAlpha + iRhs.getAlpha());
+}
+
+//------------------------------------------------------------------------------
+Color& Color::operator+=(const Color& iRhs)
+{
+    mRed += iRhs.getRed();
+    mGreen += iRhs.getGreen();
+    mBlue += iRhs.getBlue();
+    mAlpha += iRhs.getAlpha();
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+Color Color::operator-(const Color& iRhs)
+{
+    return Color(mRed - iRhs.getRed(),
+                 mGreen - iRhs.getGreen(),
+                 mBlue - iRhs.getBlue(),
+                 mAlpha - iRhs.getAlpha());
+}
+
+//------------------------------------------------------------------------------
+Color& Color::operator-=(const Color& iRhs)
+{
+    mRed -= iRhs.getRed();
+    mGreen -= iRhs.getGreen();
+    mBlue -= iRhs.getBlue();
+    mAlpha -= iRhs.getAlpha();
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+Color Color::operator*(double iV)
+{
+    return Color(mRed * iV,
+                 mGreen * iV,
+                 mBlue * iV,
+                 mAlpha * iV);
+}
+
+//------------------------------------------------------------------------------
+Color& Color::operator*=(double iV)
+{
+    mRed *= iV;
+    mGreen *= iV;
+    mBlue *= iV;
+    mAlpha *= iV;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+Color Color::operator/(double iV)
+{
+    return Color(mRed / iV,
+                 mGreen / iV,
+                 mBlue / iV,
+                 mAlpha / iV);
+
+}
+
+//------------------------------------------------------------------------------
+Color& Color::operator/=(double iV)
+{
+    mRed /= iV;
+    mGreen /= iV;
+    mBlue /= iV;
+    mAlpha /= iV;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
 uint8_t Color::getAlphaUint8() const
 { return unnormalize<uint8_t>(getAlpha()); }
 

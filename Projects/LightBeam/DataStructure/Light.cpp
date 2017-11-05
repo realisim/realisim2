@@ -20,6 +20,10 @@ Light::AttenuationType Light::getAttenuationType() const
 { return mAttenuationType; }
 
 //-----------------------------------------------------------------------------
+Core::Color Light::getColor() const
+{ return mColor; }
+
+//-----------------------------------------------------------------------------
 Math::Vector3 Light::getDirection() const
 { return mDirection; }
 
@@ -34,6 +38,10 @@ Light::Type Light::getType() const
 //-----------------------------------------------------------------------------
 void Light::setAttenuationType(AttenuationType iType)
 { mAttenuationType = iType; }
+
+//-----------------------------------------------------------------------------
+void Light::setColor(const Core::Color& iC)
+{ mColor = iC; }
 
 //-----------------------------------------------------------------------------
 void Light::setDirection(const Math::Vector3& iD)

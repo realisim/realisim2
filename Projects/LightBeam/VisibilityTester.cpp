@@ -28,15 +28,15 @@ bool VisibilityTester::isOccluded()
 {
     bool r = false;
     
-    // make a ray from the intersection point ( the point to be shaded ) with
-    // the light position.
-    // We will cast that ray(shadowray) in the scene. If an intersection exists
-    // between the shadedPoint and the light, then the shaded point is occluded.
-    //
-    Geometry::Line shadowRay(mShadedPoint, mLightPosition);
-    
     if(mpScene)
     {
+        // make a ray from the intersection point ( the point to be shaded ) with
+        // the light position.
+        // We will cast that ray(shadowray) in the scene. If an intersection exists
+        // between the shadedPoint and the light, then the shaded point is occluded.
+        //
+        Geometry::Line shadowRay(mShadedPoint, mLightPosition);
+        
         IntersectionResult ir;
         const vector<shared_ptr<IRenderable>>& vr = mpScene->getRenderables();
         for( size_t i = 0; i < vr.size() && !r; ++i )
