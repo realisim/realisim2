@@ -10,21 +10,12 @@ using namespace std;
 
 Statistics::Statistics() :
   mKeepSamples(false),
+  mSamples(),
   mNumberOfSamples(0),
   mSum(0.0),
   mSumSquared(0.0),
   mMin(std::numeric_limits<double>::max()),
   mMax(-std::numeric_limits<double>::max())
-{}
-
-//-------------------------------------------------------------------------
-Statistics::Statistics(const Statistics& iRhs) :
-mKeepSamples(iRhs.isKeepingSamples()),
-mNumberOfSamples(iRhs.numberOfSamples()),
-mSum(iRhs.mSum),
-mSumSquared(iRhs.mSumSquared),
-mMin(iRhs.mMin),
-mMax(iRhs.mMax)
 {}
 
 //-------------------------------------------------------------------------

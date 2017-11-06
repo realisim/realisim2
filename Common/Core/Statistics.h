@@ -26,8 +26,8 @@ namespace Core
   {
   public:
     Statistics();
-    Statistics(const Statistics&);
-    Statistics& operator=(const Statistics&)=delete;
+    Statistics(const Statistics&) = default;
+    Statistics& operator=(const Statistics&) = default;
     ~Statistics();
     
     void add(double);
