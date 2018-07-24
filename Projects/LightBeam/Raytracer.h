@@ -45,7 +45,6 @@ namespace LightBeam
         int fillPixel(Core::Image *opImage, const ImageCells& iCells, const Math::Vector2i& iCellIndex, const Geometry::Rectangle& iCellCoverage);
         void processReply(Core::MessageQueue::Message*);
         void processMessage(Core::MessageQueue::Message*);
-        Math::Vector3 reflect(const Math::Vector3& iIncident, const Math::Vector3 &iNormal);
         void rayCast(ImageCells& iCells, const Math::Vector2i& iCell);
         void rayCast(int iDepth, const Geometry::Line& iRay, const Scene& iScene, const Rendering::Camera& iCamera, Core::Color *opColor, double *opDistanceToCamera);
         Core::Image reconstructImage(const ImageCells&);

@@ -11,6 +11,7 @@
 #include "SimpleIntegrator.h"
 #include <vector>
 #include "VisibilityTester.h"
+#include "Utilities.h"
 
 using namespace Realisim;
     using namespace Geometry;
@@ -76,8 +77,15 @@ double SimpleIntegrator::computeLi(const Line &iLine,
         {
             const Light &light = lightNode->getLight();
             
+            // compute the shading or diffuse
             const double nDotL = ir.mNormal * light.getDirection();
             spectrum += fabs(nDotL);
+            
+            // compute the specular factor
+            Vector3 reflectRay = reflect(light.getDirection(), ir.mNormal);
+            Vector3 viewVector = (iCamera.getPosition() - intersectionInWorldSpace).normalize();
+            double specularFactor = pow(reflectRay * viewVector, 12.0);
+            spectrum += specularFactor;
             
             //fill the results.
             if(opResult)

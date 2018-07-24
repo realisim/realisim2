@@ -272,9 +272,10 @@ void MessageQueue::threadLoop()
         // and waitForThreadTofinish to be able to join() this thread
         // event if the queue is empty.
         //
-        std::unique_lock<std::mutex> lk(mWaitConditionMutex);
+        std::unique_lock<std::recursive_mutex> lk(mMutex);
         mQueueWaitCondition.wait(lk, [this]()
             {return !mQueue.empty() || getState() == sStopping;}) ;
+        lk.unlock();
         
         processNextMessage();
         

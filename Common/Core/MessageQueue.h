@@ -147,8 +147,7 @@ namespace Core
         std::thread mThread;
         std::deque<Message*> mQueue;
         mutable std::recursive_mutex mMutex;
-        std::mutex mWaitConditionMutex;
-        std::condition_variable mQueueWaitCondition;
+        std::condition_variable_any mQueueWaitCondition;
         state mState;
         std::function<void(Message*)> mProcessingFunction;
         int mMaximumSize;

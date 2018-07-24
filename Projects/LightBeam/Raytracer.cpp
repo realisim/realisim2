@@ -7,6 +7,7 @@
 #include "Math/Vector.h"
 #include "Math/VectorI.h"
 #include "RayTracer.h"
+#include "Utilities.h"
 #include "VisibilityTester.h"
 
 using namespace Realisim;
@@ -264,20 +265,6 @@ Core::Image RayTracer::reconstructImage(const ImageCells& iCells)
     //printf("reconstructImage %f(s)\n", _t.elapsed());
     return im;
 }
-
-//-----------------------------------------------------------------------------
-// returns the reflected ray.
-//
-// iIncident and iNormal must be normalized
-//
-// http://paulbourke.net/geometry/reflected/
-//
-Vector3 RayTracer::reflect(const Math::Vector3& iIncident,
-    const Math::Vector3 &iNormal)
-{
-    return (2.0*iNormal*(-iIncident * iNormal) + iIncident).normalize();
-}
-
 
 //-----------------------------------------------------------------------------
 void RayTracer::render()
