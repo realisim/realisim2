@@ -15,61 +15,61 @@ namespace
     MessageQueue gDoneQueue;
     int gIndexOfProcessedMessage = 0;
     bool gLifoTest = false;
-}
-
-// Inherit MessageQueue::Message to send a custom message in
-// the queue.
-//
-class OneToOneMessage : public MessageQueue::Message
-{
-public:
-    OneToOneMessage(void *ipSender = nullptr) :
-        MessageQueue::Message(ipSender)
-    {}
     
-    ~OneToOneMessage() = default;
-    
-    std::string mText;
-};
-
-// this processing function is on the main thread side and receives
-// notification of work done from the working thread.
-//
-void processDoneQueue(MessageQueue::Message *ipMessage)
-{
-    ostringstream oss;
-    oss << "message" << gIndexOfProcessedMessage << " processed";
-
-    OneToOneMessage *m = dynamic_cast<OneToOneMessage*>(ipMessage);
-    
-    EXPECT_STREQ(oss.str().c_str(), m->mText.c_str());
-
-    if (gLifoTest)
+    // Inherit MessageQueue::Message to send a custom message in
+    // the queue.
+    //
+    class OneToOneMessage : public MessageQueue::Message
     {
-        gIndexOfProcessedMessage--;
+    public:
+        OneToOneMessage(void *ipSender = nullptr) :
+        MessageQueue::Message(ipSender)
+        {}
+        
+        ~OneToOneMessage() = default;
+        
+        std::string mText;
+    };
+    
+    // this processing function is on the main thread side and receives
+    // notification of work done from the working thread.
+    //
+    void processDoneQueue(MessageQueue::Message *ipMessage)
+    {
+        ostringstream oss;
+        oss << "message" << gIndexOfProcessedMessage << " processed";
+        
+        OneToOneMessage *m = dynamic_cast<OneToOneMessage*>(ipMessage);
+        
+        EXPECT_STREQ(oss.str().c_str(), m->mText.c_str());
+        
+        if (gLifoTest)
+        {
+            gIndexOfProcessedMessage--;
+        }
+        else
+        { gIndexOfProcessedMessage++; }
+        
+        
+        cout << m->mText << endl;
     }
-    else
-    { gIndexOfProcessedMessage++; }
-
     
-    cout << m->mText << endl;
-}
-
-// this processing function is on the work thread and
-// simulates an heavy computation.
-//
-void processOneToOne(MessageQueue::Message *ipMessage)
-{
-    // simulate heavy work load
-    this_thread::sleep_for(chrono::seconds(1));
-    
-    OneToOneMessage *m = dynamic_cast<OneToOneMessage*>(ipMessage);
-    printf("%s\n", m->mText.c_str());
-    
-    //reply in the done queue
-    OneToOneMessage *reply = new OneToOneMessage();
-    reply->mText = m->mText + " processed";
-    gDoneQueue.post(reply);
+    // this processing function is on the work thread and
+    // simulates an heavy computation.
+    //
+    void processOneToOne(MessageQueue::Message *ipMessage)
+    {
+        // simulate heavy work load
+        this_thread::sleep_for(chrono::seconds(1));
+        
+        OneToOneMessage *m = dynamic_cast<OneToOneMessage*>(ipMessage);
+        printf("%s\n", m->mText.c_str());
+        
+        //reply in the done queue
+        OneToOneMessage *reply = new OneToOneMessage();
+        reply->mText = m->mText + " processed";
+        gDoneQueue.post(reply);
+    }
 }
 
 // This test will post 4 messages with 1 sec processing time
