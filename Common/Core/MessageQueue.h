@@ -105,7 +105,7 @@ namespace Core
         MessageQueue();
         MessageQueue(const MessageQueue&) = delete;
         MessageQueue& operator=(const MessageQueue&) = delete;
-        virtual ~MessageQueue();
+        ~MessageQueue();
         
         enum Behavior{bFifo, bLifo};
         enum state{sIdle, sRunning, sStopping};
@@ -129,9 +129,9 @@ namespace Core
         state getState() const;
         bool hasLimitedSize() const;
         bool isEmpty() const;
-        virtual void post( Message* );
-        virtual void processNextMessage();
-        virtual void processMessages();
+        void post( Message* );
+        void processNextMessage();
+        void processMessages();
         void setBehavior(Behavior);
         void setMaximumSize(int);
         void setProcessingFunction(std::function<void(Message*)>);

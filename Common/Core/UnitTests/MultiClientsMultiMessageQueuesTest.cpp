@@ -1,6 +1,6 @@
 
 #include <chrono>
-#include "Core/MultiClientsMessageQueue.h"
+#include "Core/MultiClientsMultiMessageQueues.h"
 #include "gtest/gtest.h"
 #include <thread>
 
@@ -155,9 +155,10 @@ namespace
 // messages in the queue. It checks that the queue is empty at the
 // end, because stopThread is suppose to delete all messages.
 //
-TEST(MultiClientsMessageQueue, firstTest)
+TEST(MultiClientsMultiMessageQueues, firstTest)
 {
-    MultiClientsMessageQueue qThreaded;
+    MultiClientsMultiMessageQueues qThreaded;
+    qThreaded.setNumberOfQueues(3);
     Client0 c0;
     Client1 c1;
     Client2 c2;
@@ -189,6 +190,6 @@ TEST(MultiClientsMessageQueue, firstTest)
     qThreaded.post( c1.makeMessage("c1 m2") );
     qThreaded.post( c2.makeMessage("c2 m2") );
     
-    qThreaded.waitForThreadToFinish();
+    qThreaded.waitForThreadsToFinish();
     gDoneQueue.processMessages();
 }
