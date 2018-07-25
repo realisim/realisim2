@@ -9,16 +9,21 @@ namespace Realisim
 namespace Core
 {
     //-------------------------------------------------------------------------
-    // This class is used to post request/task to be executed in a separated
-    // thread. The difference with messageQueue is that multiple clients can
-    // use the same thread. The typical usage would be to share a common
-    // service/resource between multiple clients. 
+    // This class is used to post request/task to be executed in separated
+    // threads. The difference with messageQueue is that multiple clients can
+    // use a pool of threads. The idea, is to have a pool of threads to execute
+    // task that are triggered by a message.
     //
-    // For example, we have multiple clients that wants to load data from the disk.
-    // Having multiple thread reading from the disk is not particularly a good idea.
-    // MultiClientsMultiMessageQueues will permit those multiple clients to send messages
-    // to the messageQueue (threaded) and ease the management related to such
-    // use case.
+    // Prior to calling start, it is advised to set the number of threads in the
+    // pool with a call to setNumberOfQueues(int iN);
+    //
+    // after calling start, all threads will be ready to use.
+    //
+    // simply register to via registerAsSender(...) to hook your callback.
+    // then post to the next available queue via post(Core::MessageQueue::Message*)
+    // result from the thread should be posted back to the main thread via another
+    // MessageQueue in your sender's class (see examples or unit tests.)
+    //
     //
     // It is possible to set a maximum number of message to the queues, refer to
     // messageQueue class for more info on that behavior.
