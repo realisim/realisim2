@@ -75,17 +75,24 @@ bool MultiClientsMultiMessageQueues::isStarted() const
 //-----------------------------------------------------------------------------
 void MultiClientsMultiMessageQueues::post(Core::MessageQueue::Message* ipM)
 {
-    //post in the queue with the least amount of messages (use priority queue?)
+    //post in the queue with the least amount of messages
     int r = -1;
     int minMessage = std::numeric_limits<int>::max();
-    for(size_t i = 0; i < mRequestQueues.size(); ++i)
+    bool stop = false;
+    for(size_t i = 0; i < mRequestQueues.size() && !stop; ++i)
     {
         const int n = mRequestQueues[i]->getNumberOfMessages();
-        if(n < minMessage)
+        if(n == 0)
+        {
+            r = i;
+            stop = true;
+        }
+        else if(n < minMessage)
         {
             minMessage = n;
             r = i;
         }
+        else{}
     }
 
     if(r != -1)
