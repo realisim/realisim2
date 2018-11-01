@@ -79,7 +79,7 @@ void MultiClientsMultiMessageQueues::post(Core::MessageQueue::Message* ipM)
     int r = -1;
     int minMessage = std::numeric_limits<int>::max();
     bool stop = false;
-    for(size_t i = 0; i < mRequestQueues.size() && !stop; ++i)
+    for(int i = 0; i < (int)mRequestQueues.size() && !stop; ++i)
     {
         const int n = mRequestQueues[i]->getNumberOfMessages();
         if(n == 0)

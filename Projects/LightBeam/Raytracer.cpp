@@ -73,7 +73,7 @@ int RayTracer::fillPixel(Core::Image *opImage,
                           const Math::Vector2i& iCellIndex,
                           const Geometry::Rectangle& iCellCoverage)
 {
-    const int increment = round(1.0 / iCellCoverage.getWidth());
+    const int increment = (int)round(1.0 / iCellCoverage.getWidth());
     
 //printf("fillPixel: increment = %d\n", increment);
     

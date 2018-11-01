@@ -71,8 +71,8 @@ StatisticsTree::Node* StatisticsTree::addKey(const string& iKey)
             unique_ptr<Node> child(new Node);
             child->mKey = key;
             child->mStats.keepSamples(isKeepingSamples());
-            auto it = n->mChilds.insert(make_pair(key, std::move(child)));
-            n = it.first->second.get();
+            auto it2 = n->mChilds.insert(make_pair(key, std::move(child)));
+            n = it2.first->second.get();
         }
     }
     
