@@ -1,5 +1,4 @@
 #include "gtest/gtest.h"
-#include "Geometry/BoundingSphere.h"
 #include "Geometry/Sphere.h"
 #include "Math/IsEqual.h"
 
@@ -32,36 +31,4 @@ TEST(Sphere, functions)
 
     EXPECT_TRUE(s.contains(Vector3(8.0, 9.0, 10.0)));
     EXPECT_FALSE(s.contains(Vector3(-3, 0.0, 0.0)));
-}
-
-TEST(BoundingSphere, validation)
-{
-
-    {
-        BoundingSphere bs;
-
-        bs.addPoint(Vector3(0));
-
-        EXPECT_FALSE(bs.isValid());
-
-        bs.addPoint(Vector3(5, 0, 0));
-
-        EXPECT_EQ(bs.getRadius(), 2.5);
-        EXPECT_EQ(bs.getCenter(), Vector3(2.5, 0.0, 0.0));
-    }
-
-    {
-        BoundingSphere bs;
-        bs.addPoint(Vector3(0));
-        bs.addPoint(Vector3(1));
-        bs.addPoint(Vector3(-1));
-
-        EXPECT_EQ(bs.getRadius(), sqrt(3.0));
-        EXPECT_EQ(bs.getCenter(), Vector3(0, 0.0, 0.0));
-
-        bs.addPoint(Vector3(2));
-        EXPECT_EQ(bs.getRadius(), sqrt(1.5*1.5 +  1.5*1.5 + 1.5*1.5 ));
-        EXPECT_EQ(bs.getCenter(), Vector3(0.5, 0.5, 0.5));
-    }
-    
 }

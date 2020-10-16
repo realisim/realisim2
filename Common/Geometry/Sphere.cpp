@@ -1,5 +1,4 @@
 #include <cassert>
-#include <cmath>
 #include "Sphere.h"
 #include <vector>
 
@@ -71,79 +70,140 @@ bool Sphere::isValid() const
 { return mRadius >= 0.0; }
 
 //-----------------------------------------------------------------------------
+void Sphere::makeFaces(Mesh *ipMesh, int iN, int iVertexOffset, bool iReverseOrder) const
+{
+    for(int j = 0; j < iN - 1; ++j)
+        for (int i = 0; i < iN - 1; ++i)
+        {
+            const int llIndex = iVertexOffset + (j*iN + i);
+            const int lrIndex = llIndex + 1;
+
+            const int ulIndex = iVertexOffset + ((j+1)*iN + i);
+            const int urIndex = ulIndex + 1;
+
+            if (!iReverseOrder)
+            {
+                ipMesh->makeFace( {(uint16_t)llIndex, (uint16_t)lrIndex, (uint16_t)urIndex} );
+                ipMesh->makeFace( {(uint16_t)llIndex, (uint16_t)urIndex, (uint16_t)ulIndex} );
+            }
+            else
+            {
+                ipMesh->makeFace( {(uint16_t)llIndex, (uint16_t)ulIndex, (uint16_t)urIndex} );
+                ipMesh->makeFace( {(uint16_t)llIndex, (uint16_t)urIndex, (uint16_t)lrIndex} );
+            }
+            
+        }
+}
+
+//-----------------------------------------------------------------------------
+// Here, we make a 6 face box and normalize it, so it becomes a sphere
+//
+//
 Mesh Sphere::makeMesh() const
 {
     Mesh mesh;
     mesh.setNumberOfVerticesPerFace(3);
 
     //-- grab references to guts of mesh
-    vector<Vector3>& vertices = mesh.getVertices();
-//    vector<Mesh::Face>& faces = mesh.getFaces();
-//    vector<int>& triangulatedFaceIndices = mesh.getFaceIndices();
+    vector<Mesh::VertexData>& vertices = mesh.getVerticesRef();
 
-    const int n = 5;
+    const int gridSize = 5; // must be odd
+    const int n = gridSize / 2;
+    const int numVerticesPerPlane = gridSize*gridSize;
+    int vertexOffsetForFaces = 0;
 
     //add all vertices
-
+    Mesh::VertexData vd;
     //top y
-    for(int j = 0; j < n; ++j)
-        for (int i = 0; i < n; ++i)
+    for(int j = -n; j <= n; ++j)
+        for (int i = -n; i <= n; ++i)
         { 
-            Vector3 v(i, 1, j);
+            Vector3 v(i, n, j);
             v.normalize();
-            v *= getRadius();
-            vertices.push_back(v); 
+            v *= mRadius;
+            v += mCenter;
+            vd.mVertex = v;
+            vertices.push_back(vd); 
         }
+
+    // make faces
+    makeFaces(&mesh, gridSize, vertexOffsetForFaces, true);
+    vertexOffsetForFaces += numVerticesPerPlane;
 
     //bottom -y
-    for (int j = 0; j < n; ++j)
-        for (int i = 0; i < n; ++i)
+    for(int j = -n; j <= n; ++j)
+        for (int i = -n; i <= n; ++i)
         {
-            Vector3 v(i, -1, j);
+            Vector3 v(i, -n, j);
             v.normalize();
-            v *= getRadius();
-            vertices.push_back(v);
+            v *= mRadius;
+            v += mCenter;
+            vd.mVertex = v;
+            vertices.push_back(vd); 
         }
+    // make faces
+    makeFaces(&mesh, gridSize, vertexOffsetForFaces, false);
+    vertexOffsetForFaces += numVerticesPerPlane;
 
     //left -x
-    for (int j = 0; j < n; ++j)
-        for (int i = 0; i < n; ++i)
+    for(int j = -n; j <= n; ++j)
+        for (int i = -n; i <= n; ++i)
         {
-            Vector3 v(-1, i, j);
+            Vector3 v(-n, i, j);
             v.normalize();
             v *= getRadius();
-            vertices.push_back(v);
+            v += mCenter;
+            vd.mVertex = v;
+            vertices.push_back(vd); 
         }
+    // make faces
+    makeFaces(&mesh, gridSize, vertexOffsetForFaces, true);
+    vertexOffsetForFaces += numVerticesPerPlane;
 
     //right x
-    for (int j = 0; j < n; ++j)
-        for (int i = 0; i < n; ++i)
+    for(int j = -n; j <= n; ++j)
+        for (int i = -n; i <= n; ++i)
         {
-            Vector3 v(1, i, j);
+            Vector3 v(n, i, j);
             v.normalize();
             v *= getRadius();
-            vertices.push_back(v);
+            v += mCenter;
+            vd.mVertex = v;
+            vertices.push_back(vd); 
         }
+    // make faces
+    makeFaces(&mesh, gridSize, vertexOffsetForFaces, false);
+    vertexOffsetForFaces += numVerticesPerPlane;
 
     //back -z
-    for (int j = 0; j < n; ++j)
-        for (int i = 0; i < n; ++i)
+    for(int j = -n; j <= n; ++j)
+        for (int i = -n; i <= n; ++i)
         {
-            Vector3 v(i, j, -1);
+            Vector3 v(i, j, -n);
             v.normalize();
             v *= getRadius();
-            vertices.push_back(v);
+            v += mCenter;
+            vd.mVertex = v;
+            vertices.push_back(vd); 
         }
+    // make faces
+    makeFaces(&mesh, gridSize, vertexOffsetForFaces, true);
+    vertexOffsetForFaces += numVerticesPerPlane;
 
     //front z
-    for (int j = 0; j < n; ++j)
-        for (int i = 0; i < n; ++i)
+    for(int j = -n; j <= n; ++j)
+        for (int i = -n; i <= n; ++i)
         {
-            Vector3 v(i, j, 1);
+            Vector3 v(i, j, n);
             v.normalize();
             v *= getRadius();
-            vertices.push_back(v);
+            v += mCenter;
+            vd.mVertex = v;
+            vertices.push_back(vd); 
         }
+    // make faces
+    makeFaces(&mesh, gridSize, vertexOffsetForFaces, false);
+    vertexOffsetForFaces += numVerticesPerPlane;
 
     return mesh;
 }

@@ -6,12 +6,13 @@
 #include <mutex>
 #include <string>
 #include <thread>
+#include <vector>
 
 namespace Realisim
 {
 namespace Core
 {
-    //-----------------------------------------------------------------
+    //-------------------------------------------------------------------------
     // This class represent a thread safe message queue (FIFO). It also
     // comes with a convenient built in threaded function to
     // process the messages in a different thread.
@@ -19,7 +20,15 @@ namespace Core
     // Message: Messages posted to the queue must inherit
     //      MessageQueue::Message class. Messages posted must
     //      be allocated on the heap and they will be managed by
-    //      MessageQeeue class once posted.
+    //      MessageQueue class once posted.
+    //
+    //      Identical messages can be allowed/disallowed from being 
+    //      inserted in the queue via method allowIdenticalContiguousMessage(bool).
+    //      By default, identical messages are allowed. To prevent them, 
+    //      invoke the method with 'false' as a parameter. Furthermore,
+    //      you will have to override the method MessageQueue::Message::isEqual(const Message&)
+    //      to specify how to determine when messages are identical.
+    //
     //
     //      Messages posted to the message queue will be
     //      owned and deleted by the queue once they have been
@@ -77,9 +86,16 @@ namespace Core
     //          sQueue.processMessages();
     //
     //
-    // Launch the processing function in a thread:
+    // Launch the processing function in a/many thread(s):
     //      The following methods applies only when lauching the
     //      processing function in a thread:
+    //
+    //      setNumberOfThreads(): define how many threads will be consuming
+    //          the messages in the queue. All threads will execute the
+    //          same processing function.
+    //
+    //      getNumberOfThreads(): return how many threads would execute
+    //          when startInThread is called.
     //
     //      startInThread(): will lauch a thread that will invoke
     //          the processing function as fast as possible as long
@@ -118,22 +134,30 @@ namespace Core
             Message(const Message&) = default;
             Message& operator=(const Message&) = default;
             virtual ~Message() = default;
+
+            virtual bool isEqual(const Message&) const {return false;} 
+            bool operator==(const Message& iM) const {return isEqual(iM);}
+            bool operator!=(const Message& iM) const {return !(this->operator==(iM));}
             
             void* mpSender;
         };
         
+        void allowIdenticalContiguousMessage(bool iA);
         void clear();
         Behavior getBehavior() const;
         int getMaximumSize() const;
         int getNumberOfMessages() const;
+        int getNumberOfThreads() const;
         state getState() const;
         bool hasLimitedSize() const;
         bool isEmpty() const;
+        bool isIdenticalContiguousMessageAllowed() const;
         void post( Message* );
         void processNextMessage();
         void processMessages();
         void setBehavior(Behavior);
         void setMaximumSize(int);
+        void setNumberOfThreads(int iN);
         void setProcessingFunction(std::function<void(Message*)>);
         void startInThread();
         void stopThread();
@@ -144,7 +168,7 @@ namespace Core
         void threadLoop();
         void setState(state);
         
-        std::thread mThread;
+        std::vector<std::thread> mThreads;
         std::deque<Message*> mQueue;
         mutable std::recursive_mutex mMutex;
         std::condition_variable_any mQueueWaitCondition;
@@ -152,6 +176,7 @@ namespace Core
         std::function<void(Message*)> mProcessingFunction;
         int mMaximumSize;
         Behavior mBehavior;
+        bool mIsIdenticalContiguousMessageAllowed;
     };
 
 }

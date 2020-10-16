@@ -28,6 +28,19 @@ ISceneNode::~ISceneNode()
 {}
 
 //-----------------------------------------------------------------------------
+const Geometry::AxisAlignedBoundingBox& ISceneNode::getAxisAlignedBoundingBox() const
+{
+    return mAABB;
+}
+
+
+//-----------------------------------------------------------------------------
+void ISceneNode::setAxisAlignedBoundingBox(const Geometry::AxisAlignedBoundingBox& iAABB)
+{
+    mAABB = iAABB;
+}
+
+//-----------------------------------------------------------------------------
 uint32_t ISceneNode::getId() const
 { return mId;}
 

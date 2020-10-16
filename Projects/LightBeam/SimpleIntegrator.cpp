@@ -48,8 +48,11 @@ double SimpleIntegrator::computeLi(const Line &iLine,
         // with 1e-5... somehow a cheap error progation work around.
         // 
         //
-        if(renderable->intersect(iLine, &ir) && ir.mD >= 1e-5 )
-        { results.push_back(ir); }
+        if(renderable->intersects(iLine) &&
+            renderable->intersect(iLine, &ir) && ir.mD >= 1e-5 )
+        {
+            results.push_back(ir);
+        }
     }
     
     // compute light contribution
@@ -79,7 +82,7 @@ double SimpleIntegrator::computeLi(const Line &iLine,
             
             // compute the shading or diffuse
             const double nDotL = ir.mNormal * light.getDirection();
-            spectrum += fabs(nDotL);
+            spectrum += nDotL;
             
             // compute the specular factor
             Vector3 reflectRay = reflect(light.getDirection(), ir.mNormal);
@@ -104,7 +107,6 @@ double SimpleIntegrator::computeLi(const Line &iLine,
                 // the light direction.
                 //
                 Vector3 wi = light.getDirection();
-                wi.normalize();
                 const Vector3 lightPos = intersectionInWorldSpace + 1e8 * wi;
                 
                 const Vector3 p = intersectionInWorldSpace + wi;

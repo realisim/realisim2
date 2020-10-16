@@ -51,13 +51,13 @@ Vector2& Vector2::normalize()
     double n = norm();
     
     //avoid dividing by zéro...
-    if( !isEqual(n, 0.0) )
+    if( !Math::isEqual( n, 0.0) )
     { (*this) /= this->norm(); }
     return (*this);
 }
 
 //---------------------------------------------------------------------------
-double Vector2::normSquare() const
+double Vector2::normSquared() const
 {
     return mData[0]*mData[0] + mData[1]*mData[1];
 }

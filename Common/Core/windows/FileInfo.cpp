@@ -1,9 +1,9 @@
 
 #include <direct.h>
-#include "FileInfo.h"
+#include "Core/FileInfo.h"
 #include <stdio.h>
 #include <Shlwapi.h>
-#include "Path.h"
+#include "Core/Path.h"
 #include <regex>
 #include "Core/StringUtilities.h"
 #include <sys/stat.h>

@@ -11,6 +11,8 @@
 // temporary until we can read scene from files...
 #include "DataStructure/Scene/GeometryNodes.h"
 #include "DataStructure/Scene/LightNode.h"
+#include "Geometry/Loader/ObjLoader.h"
+#include "Geometry/PlatonicSolid.h"
 
 
 using namespace Realisim;
@@ -56,7 +58,7 @@ MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow()
     pn->setMaterial(mat0);
     
     // add a sphere
-    Geometry::Sphere sphere(Vector3(6.0, 0.0, 0.0), 16);
+    Geometry::Sphere sphere(Vector3(6.0, 0.0, 0.0), 4);
     shared_ptr<SphereNode> sn = make_shared<SphereNode>();
     sn->setSphere(sphere);
     shared_ptr<Material> mat1 = make_shared<Material>();
@@ -64,8 +66,8 @@ MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow()
     sn->setMaterial(mat1);
     
     // add another sphere
-    sphere.setCenter(Vector3(6, 0.0, -100));
-    sphere.setRadius(35);
+    sphere.setCenter(Vector3(-6, 0.0, 0));
+    sphere.setRadius(4);
     shared_ptr<SphereNode> sn2 = make_shared<SphereNode>();
     sn2->setSphere(sphere);
     shared_ptr<Material> mat2 = make_shared<Material>();
@@ -75,14 +77,14 @@ MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow()
     sn2->setMaterial(mat2);
     
     // add another sphere
-    sphere.setCenter(Vector3(100, 0, -50));
+    sphere.setCenter(Vector3(70, 0, -50));
     sphere.setRadius(50);
     shared_ptr<SphereNode> sn3 = make_shared<SphereNode>();
     sn3->setSphere(sphere);
     shared_ptr<Material> mat3 = make_shared<Material>();
     mat3->setColor( Color(1.0, 1.0, 1.0, 1.0) );
     mat3->setSpecularFactor(0.7);
-    mat3->setGlossFactor(1.0);
+    mat3->setGlossFactor(0.8);
     sn3->setMaterial(mat3);
     
     // add a light
@@ -91,11 +93,40 @@ MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow()
     shared_ptr<LightNode> lightNode = make_shared<LightNode>();
     lightNode->setLight(l);
     
+    // add a mesh
+    shared_ptr<MeshNode> meshNode = make_shared<MeshNode>();
+    shared_ptr<Material> mat4 = make_shared<Material>();
+    mat4->setColor(Color(0.8, 0.8, 0.8, 1.0));
+    meshNode->setMaterial(mat4);
+
+    Geometry::ObjLoader objLoader;
+    //Geometry::Mesh *pMesh = objLoader.load("C:/Users/Po/code/realisim2/Prototypes/textureUnwrap/assets/monkey.obj");
+    //Geometry::Mesh *pMesh = objLoader.load("C:/Users/Po/code/realisim2/Prototypes/textureUnwrap/assets/happyBuddha.obj");
+    //Geometry::Mesh *pMesh = objLoader.load("C:/Users/Po/code/realisim2/Prototypes/textureUnwrap/assets/horse.obj");
+    //Geometry::Mesh *pMesh = objLoader.load("C:/Users/Po/code/realisim2/Prototypes/textureUnwrap/assets/bunny.obj");
+    //Geometry::Mesh *pMesh = objLoader.load("C:/Users/Po/code/realisim2/Prototypes/textureUnwrap/assets/armadillo.obj");
+    Geometry::Mesh *pMesh = objLoader.load("C:/Users/Po/code/realisim2/Prototypes/textureUnwrap/assets/xyzrgb_dragon.obj");
+    
+    
+    if (!objLoader.hasErrors())
+    {
+        meshNode->setMeshAndTakeOwnership(pMesh);
+    }
+    //Geometry::PlatonicSolid ps;
+    //ps.set(Geometry::PlatonicSolid::tCube);
+    //Geometry::Mesh mesh = ps.getMesh();
+    //Geometry::Mesh *pMesh = new Geometry::Mesh();
+    //pMesh->setNumberOfVerticesPerFace(3);
+    //pMesh->getFacesRef() = mesh.getFaces();
+    //pMesh->getVerticesRef() = mesh.getVertices();
+    //meshNode->setMeshAndTakeOwnership(pMesh);
+
     scene.addNode(pn);
     scene.addNode(sn);
     scene.addNode(sn2);
-    scene.addNode(sn3);
+    //scene.addNode(sn3);
     scene.addNode(lightNode);
+    scene.addNode(meshNode);
     //------------------------------------
     
     mUpdateTimerId = startTimer(30);
@@ -117,7 +148,7 @@ void MainWindow::handleUserInput()
     //--- Mouse
     Mouse &mouse = b.getMouse();
     if(mouse.isButtonPressed(Mouse::bLeft) &&
-       mouse.getDelta().normSquare() > 0 )
+       mouse.getDelta().normSquared() > 0 )
     {
         const double f = degreesToRadians(1.0);
         const Vector2i d = mouse.getAndClearDelta();
@@ -137,7 +168,11 @@ void MainWindow::handleUserInput()
     {
         Keyboard &k = b.getKeyboard();
         Vector3 displacement;
-        const double f = 5.0;
+        double f = 1.0;
+
+        if(k.isKeyPressed(Key_Shift))
+        { f *= 0.1; }
+
         if(k.isKeyPressed(Key_W))
         { displacement += c.getDirection() * f; }
         

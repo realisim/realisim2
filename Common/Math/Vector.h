@@ -14,7 +14,7 @@ namespace Math
     {
     public:
         Vector2();
-        Vector2(double iV);
+        explicit Vector2(double iV);
         Vector2(double iX, double iY);
         Vector2(const Vector2i &iVector2i);
         Vector2(const Vector2 &iVect) = default;
@@ -25,7 +25,7 @@ namespace Math
         bool isEqual(const Vector2&, double iEpsilon = std::numeric_limits<double>::epsilon() ) const;
         double norm() const;
         Vector2& normalize();
-        double normSquare() const;
+        double normSquared() const;
 
 		Vector2	multiplyComponents(const Vector2& v) const;
 
@@ -63,7 +63,7 @@ namespace Math
     {
     public:
         Vector3();
-        Vector3(double iV);
+        explicit Vector3(double iV);
         Vector3(double iX, double iY, double iZ);
         explicit Vector3(const Vector2& iVect2, double iZ);
         Vector3(const Vector3 &iVect) = default;
@@ -73,7 +73,7 @@ namespace Math
         const double* dataPointer() const;
         bool isEqual(const Vector3&, double iEpsilon = std::numeric_limits<double>::epsilon() ) const;
         double norm() const;
-        double normSquare() const;
+        double normSquared() const;
         Vector3& normalize();
 
 		Vector3	multiplyComponents(const Vector3&) const;
@@ -128,7 +128,7 @@ namespace Math
         
         double norm() const;
         Vector4& normalize();
-        double normSquare() const;
+        double normSquared() const;
 
 		Vector4	multiplyComponents(const Vector4& v) const;
 

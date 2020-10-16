@@ -31,6 +31,8 @@ namespace Geometry
         void setRadius(double);
 
     protected:
+        void makeFaces(Mesh *ipMesh, int iN, int iVertexOffset, bool iReverseOrder) const;
+
         Math::Vector3 mCenter;
         double mRadius;
     };

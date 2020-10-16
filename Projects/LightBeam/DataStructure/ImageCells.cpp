@@ -62,7 +62,7 @@ Math::Vector2i ImageCells::getSizeInCells() const
 bool ImageCells::isValid()
 {
     return mCoverage.isValid() &&
-        mRgba.getSizeInPixels().normSquare() > 0.0;
+        mRgba.getSizeInPixels().normSquared() > 0.0;
 }
 
 //-----------------------------------------------------------------------------

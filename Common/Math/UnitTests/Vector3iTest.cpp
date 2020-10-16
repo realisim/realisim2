@@ -60,7 +60,7 @@ TEST(Vector3i, normalization)
     v = Vector3i(1, 2, 3);
     EXPECT_DOUBLE_EQ(v.norm(), std::sqrt(14));
 
-    EXPECT_DOUBLE_EQ(v.normSquare(), 14);
+    EXPECT_DOUBLE_EQ(v.normSquared(), 14);
 }
 
 TEST(Vector3i, operator)

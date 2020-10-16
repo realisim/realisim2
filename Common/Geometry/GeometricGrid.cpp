@@ -25,9 +25,7 @@ void GeometricGrid::bakeMesh()
 	mMesh.setNumberOfVerticesPerFace(3);
 
 	//-- grab references to guts of mesh
-	vector<Vector3>& vertices = mMesh.getVertices();
-	vector<Mesh::Face>& faces = mMesh.getFaces();
-	vector<int>& triangulatedFaceIndices = mMesh.getFaceIndices();
+	vector<Mesh::VertexData>& vertices = mMesh.getVerticesRef();
 
 	const int numLatStacks = getNumberOfLatitudinalStacks();
 	const int numLongStacks = getNumberOfLongitudinalStacks();
@@ -37,7 +35,9 @@ void GeometricGrid::bakeMesh()
 
 	// create all vertices...
 	//add north pole
-	vertices.push_back(Vector3(0, 0, ellipse.z()));
+    Mesh::VertexData vd;
+    vd.mVertex = Vector3(0, 0, ellipse.z());
+	vertices.push_back(vd);
 
 	for (int i = 1; i < numLatStacks; ++i)
 	{
@@ -51,16 +51,18 @@ void GeometricGrid::bakeMesh()
 			const double sinTheta = sin(theta);
 			const double cosTheta = cos(theta);
 
-			vertices.push_back(Vector3(
-				ellipse.x() * cosTheta * sinPhi,
-				ellipse.y() * sinTheta * sinPhi,
-				ellipse.z() * cosPhi));
+            vd.mVertex = Vector3(Vector3(
+                ellipse.x() * cosTheta * sinPhi,
+                ellipse.y() * sinTheta * sinPhi,
+                ellipse.z() * cosPhi));
+            vertices.push_back(vd);
 
 		}
 	}
 		
 	//add south pole
-	vertices.push_back(Vector3(0, 0, -ellipse.z()));
+    vd.mVertex = Vector3(0, 0, -ellipse.z());
+    vertices.push_back(vd);
 
 	//--- mesh vertices together into faces...		
 	//north pole ring
@@ -70,8 +72,7 @@ void GeometricGrid::bakeMesh()
 	{
 		const int vertexIndex = (i % numLongStacks) + 1;
 		const int nextVertexIndex = ((i + 1) % numLongStacks) + 1;
-		Mesh::Face f = makeFace(northPoleIndex, vertexIndex, nextVertexIndex);		
-		faces.push_back(f);
+		mMesh.makeFace((uint16_t)northPoleIndex, (uint16_t)vertexIndex, (uint16_t)nextVertexIndex, true);
 	}
 
 	// all rings in between
@@ -91,11 +92,9 @@ void GeometricGrid::bakeMesh()
 			const int lowerStackVertexIndex = lowerStackIndexOffset + (j % numLongStacks);
 			const int lowerStackNextVertexIndex = lowerStackIndexOffset + ((j + 1) % numLongStacks);
 			
-			Mesh::Face f = makeFace(upperStackVertexIndex, lowerStackVertexIndex, lowerStackNextVertexIndex);			
-			faces.push_back(f);
+			mMesh.makeFace((uint16_t)upperStackVertexIndex, (uint16_t)lowerStackVertexIndex, (uint16_t)lowerStackNextVertexIndex, true);
 
-			f = makeFace(upperStackNextVertexIndex, upperStackVertexIndex, lowerStackNextVertexIndex);
-			faces.push_back(f);	
+			mMesh.makeFace((uint16_t)upperStackNextVertexIndex, (uint16_t)upperStackVertexIndex, (uint16_t)lowerStackNextVertexIndex, true);
 		}
 	}
 
@@ -106,16 +105,8 @@ void GeometricGrid::bakeMesh()
 		const int upperStackVertexIndex = upperStackIndexOffset + (i % numLongStacks);
 		const int upperStackNextVertexIndex = upperStackIndexOffset + ((i + 1) % numLongStacks);
 
-		Mesh::Face f = makeFace(southPoleIndex, upperStackNextVertexIndex, upperStackVertexIndex);
-		faces.push_back(f);
-	}
-
-	//--- create indices..
-	triangulatedFaceIndices.resize(mMesh.getNumberOfFaces() * mMesh.getNumberOfVerticesPerFace());
-	for (size_t i = 0; i < triangulatedFaceIndices.size(); ++i)
-	{
-		triangulatedFaceIndices[i] = (int)i;
-	}
+	    mMesh.makeFace((uint16_t)southPoleIndex, (uint16_t)upperStackNextVertexIndex, (uint16_t)upperStackVertexIndex, true);
+	}	
 }
 
 //--------------------------------------------------------------------------
@@ -149,25 +140,6 @@ int GeometricGrid::getNumberOfLatitudinalStacks() const
 int GeometricGrid::getNumberOfLongitudinalStacks() const
 {
 	return mNumberOfLongitudinalStacks;
-}
-
-//--------------------------------------------------------------------------
-Mesh::Face GeometricGrid::makeFace(int iIndex0, 
-	int iIndex1,
-	int iIndex2)
-{
-	Mesh::Face f;
-	f.mVertexIndices.resize(mMesh.getNumberOfVerticesPerFace());
-	f.mVertexIndices[0] = iIndex0;
-	f.mVertexIndices[1] = iIndex1;
-	f.mVertexIndices[2] = iIndex2;
-
-	const vector<Vector3>& vertices = mMesh.getVertices();
-
-	f.mNormal = (vertices.at(iIndex1) - vertices.at(iIndex0)) ^
-		(vertices.at(iIndex2) - vertices.at(iIndex0)).normalize();
-
-	return f;
 }
 
 //--------------------------------------------------------------------------

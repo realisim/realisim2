@@ -143,7 +143,7 @@ void Mouse::updateState()
     switch (getState())
     {
     case sIdle:
-        if (getDelta().normSquare() > 0)
+        if (getDelta().normSquared() > 0)
         {
             mState = sMoving;
         }
@@ -160,7 +160,7 @@ void Mouse::updateState()
         if (!isButtonPressed(bLeft))
         {
             mState = sMoving;
-            if (getDelta().normSquare() == 0)
+            if (getDelta().normSquared() == 0)
             {
                 mState = sIdle;
             }

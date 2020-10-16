@@ -42,7 +42,7 @@ double Vector3::norm() const
 }
 
 //---------------------------------------------------------------------------
-double Vector3::normSquare() const
+double Vector3::normSquared() const
 {
     return mData[0]*mData[0] + mData[1]*mData[1] + mData[2]*mData[2];
 }
@@ -53,7 +53,7 @@ Vector3& Vector3::normalize()
     double n = norm();
     
     //avoid dividing by zéro...
-    if( !isEqual(n, 0.0) )
+    if( !Math::isEqual( n, 0.0) )
     { (*this) /= this->norm(); }
 
     return (*this);

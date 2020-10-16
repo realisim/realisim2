@@ -1,16 +1,12 @@
 
 #include "Core/StringUtilities.h"
 #include <cstdarg>
-#include "Path.h"
+#include "Core/Path.h"
 #include <regex>
 #include <sstream>
 #include <direct.h>
 #include <Windows.h>
 
-
-
-#include <direct.h>
-#include <Windows.h>
 
 using namespace std;
 using namespace Realisim;

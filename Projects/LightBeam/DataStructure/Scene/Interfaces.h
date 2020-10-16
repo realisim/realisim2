@@ -1,4 +1,5 @@
 #pragma once
+#include "Geometry/AxisAlignedBoundingBox.h"
 #include "DataStructure/Light.h"
 #include "Material.h"
 #include <memory>
@@ -24,14 +25,17 @@ namespace LightBeam
         ISceneNode& operator=(const ISceneNode&) = default;
         virtual ~ISceneNode() = 0;
 
+        const Geometry::AxisAlignedBoundingBox& getAxisAlignedBoundingBox() const;
         uint32_t getId() const;
         NodeType getNodeType() const;
 
     protected:
+        void setAxisAlignedBoundingBox(const Geometry::AxisAlignedBoundingBox&);
+
         static uint32_t mIdCounter;
         uint32_t mId;
         NodeType mType;
-        //boundingbox
+        Geometry::AxisAlignedBoundingBox mAABB;
         //Matrix4 mParentTransform
         //Matrix4 mWorldTransform
     };

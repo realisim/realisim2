@@ -1,4 +1,7 @@
+
+#include "Core/Timer.h"
 #include "GeometryNodes.h"
+#include "Geometry/AxisAlignedBoundingBox.h"
 #include "Geometry/Intersections.h"
 #include "IntersectionResult.h"
 
@@ -6,6 +9,8 @@ using namespace Realisim;
     using namespace Geometry;
     using namespace LightBeam;
     using namespace Math;
+
+using namespace std;
 
 //-------------------------------------------------------------------------
 //--- Plane
@@ -97,3 +102,118 @@ bool SphereNode::intersect(const Line& iRay, IntersectionResult* opResult) const
 //-------------------------------------------------------------------------
 void SphereNode::setSphere(const Sphere& iS)
 { mSphere = iS; }
+
+
+//-------------------------------------------------------------------------
+//--- Mesh
+//-------------------------------------------------------------------------
+MeshNode::MeshNode() : ISceneNode(ntRenderable),
+IRenderable(),
+mpMesh(nullptr)
+{
+}
+
+//-------------------------------------------------------------------------
+MeshNode::~MeshNode()
+{
+    if (mpMesh)
+    {
+        delete mpMesh;
+        mpMesh = nullptr;
+    }
+}
+
+//-------------------------------------------------------------------------
+const Mesh* MeshNode::getMesh() const
+{
+    return mpMesh;
+}
+
+//-------------------------------------------------------------------------
+bool MeshNode::intersects(const Line& iRay) const
+{
+    return Geometry::intersects(iRay, getAxisAlignedBoundingBox());
+}
+
+//-------------------------------------------------------------------------
+bool MeshNode::intersect(const Line& iRay, IntersectionResult* opResult) const
+{
+    //Core::Timer _t;
+
+    IntersectionType iType = itNone;
+
+    std::vector<Vector3> p;
+    std::vector<Vector3> n;
+    std::vector<double> d;
+
+    iType = Geometry::intersect(iRay, mOctree, &p, &n, &d);
+
+    if (opResult && iType != itNone)
+    {
+        double v = std::numeric_limits<double>::max();
+        int index = 0;
+        for (int i = 0; i < d.size(); ++i)
+        {
+            if (d[i] < v)
+            {
+                index = i;
+                v = d[i];
+            }
+        }
+
+        (*opResult).mNormal = n[index];
+        (*opResult).mD = d[index];
+        (*opResult).mpMaterial = getMaterial();
+    }
+
+    
+    //IntersectionType iType = itNone;
+    //const AxisAlignedBoundingBox &aabb = getAxisAlignedBoundingBox();
+    //if (Geometry::intersects(iRay, aabb))
+    //{
+    //    std::vector<Vector3> p;
+    //    std::vector<Vector3> n;
+    //    std::vector<double> d;
+
+    //    iType = Geometry::intersect(iRay, *mpMesh, &p, &n, &d);
+
+    //    if (opResult && iType != itNone)
+    //    {
+    //        double v = std::numeric_limits<double>::max();
+    //        int index = 0;
+    //        for (int i = 0; i < d.size(); ++i)
+    //        {
+    //            if (d[i] < v)
+    //            {
+    //                index = i;
+    //                v = d[i];
+    //            }
+    //        }
+
+    //        (*opResult).mNormal = n[index];
+    //        (*opResult).mD = d[index];
+    //        (*opResult).mpMaterial = getMaterial();
+    //    }
+    //}
+
+    //printf("MeshNode::intersect elapsed (s): %.4f\n", _t.elapsed());
+
+    return iType != itNone;
+}
+
+//-------------------------------------------------------------------------
+void MeshNode::setMeshAndTakeOwnership(Mesh *ipMesh)
+{
+    if (mpMesh)
+    {
+        delete mpMesh;
+        mpMesh = nullptr;
+    }
+    mpMesh = ipMesh;
+    mOctree.generateFromMesh(ipMesh);
+
+    printf("%s\n", mOctree.statsToString().c_str());
+
+    // assign AABB
+    setAxisAlignedBoundingBox(mOctree.getRoot()->mAabb);
+}

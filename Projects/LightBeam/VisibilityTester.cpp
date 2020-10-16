@@ -41,7 +41,8 @@ bool VisibilityTester::isOccluded()
         const vector<shared_ptr<IRenderable>>& vr = mpScene->getRenderables();
         for( size_t i = 0; i < vr.size() && !r; ++i )
         {
-            if(vr[i]->intersect(shadowRay, &ir))
+            if(vr[i]->intersects(shadowRay) &&
+               vr[i]->intersect(shadowRay, &ir) )
             {
                 // check ir is between the light pos and the intersection point.
                 // if so, then there is occlusion

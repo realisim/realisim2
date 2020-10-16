@@ -19,7 +19,7 @@ namespace Math
 
         const int* dataPointer() const;
         double norm() const;
-		double normSquare() const;
+		double normSquared() const;
 
         Vector2i operator+ (const Vector2i &iIndex) const;
         Vector2i& operator+= (const Vector2i &iIndex);
@@ -64,7 +64,7 @@ namespace Math
 
         const int* dataPointer() const;
         double norm() const;
-		double normSquare() const;
+		double normSquared() const;
         
         Vector3i operator+ (const Vector3i &iIndex) const;
         Vector3i& operator+= (const Vector3i &iIndex);

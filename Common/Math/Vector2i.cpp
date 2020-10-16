@@ -34,7 +34,7 @@ double Vector2i::norm() const
 { return sqrt(mX*mX + mY*mY); }
 
 //-----------------------------------------------------------------------------
-double Vector2i::normSquare() const
+double Vector2i::normSquared() const
 { return mX*mX + mY*mY; }
 
 //-----------------------------------------------------------------------------

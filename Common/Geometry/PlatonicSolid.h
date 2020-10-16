@@ -44,7 +44,6 @@ namespace Geometry
         void bakeDodecahedron();
         void bakeTetrahedron();
         void bakeOctahedron();
-		Mesh::Face makeFace(const std::vector<int>& iVertexIndices);
         
         type mType;
 		Mesh mMesh;

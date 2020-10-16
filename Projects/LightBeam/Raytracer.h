@@ -26,18 +26,18 @@ namespace LightBeam
         void render();
         
     protected:
-        class Message : public Core::MessageQueue::Message
+        class RaytraceRequest : public Core::MessageQueue::Message
         {
         public:
-            explicit Message(void* ipSender = nullptr);
+            explicit RaytraceRequest(void* ipSender = nullptr);
             Math::Vector2i mSize;
             double mDivideBy;
         };
         
-        class Reply : public Core::MessageQueue::Message
+        class RaytraceReply : public Core::MessageQueue::Message
         {
         public:
-            explicit Reply(void* ipSender = nullptr);
+            explicit RaytraceReply(void* ipSender = nullptr);
             Core::Image mImage;
         };
     

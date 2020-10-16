@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Math/Vector.h"
-namespace Realisim { namespace Math { class Vector2i; } }
 #include "Mesh.h"
 
 namespace Realisim
@@ -27,10 +26,10 @@ namespace Geometry
         Plane& operator= ( const Plane& ) = default;
         ~Plane();
 
-        double distance(const Math::Vector3& p) const;        
-        Math::Vector3 getNormal() const;
+        double distance(const Math::Vector3& p) const;
+        const Math::Vector3& getNormal() const;
 		//getParametricFrom(double *a, double *b, double *c, double *d) const;
-        Math::Vector3 getPoint() const;
+        const Math::Vector3& getPoint() const;
 		bool isValid() const;
 		Mesh makeMesh(const Math::Vector2& iSizeInMeter) const;
         void set(const Math::Vector3& p, const Math::Vector3& n);

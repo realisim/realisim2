@@ -47,7 +47,7 @@ TEST(Vector2i, normalization)
     v = Vector2i(-1, 4);
     EXPECT_EQ(v.norm(), std::sqrt(17));
 
-    EXPECT_EQ(v.normSquare(), 17);
+    EXPECT_EQ(v.normSquared(), 17);
 }
 
 TEST(Vector2i, operator)

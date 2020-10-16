@@ -12,6 +12,8 @@ add_definitions(-D_USE_MATH_DEFINES)
 INCLUDE( "../../CMakeModules/Qt5.cmake" )
 INCLUDE( "../../CMakeModules/Lodepng.cmake" )
 INCLUDE( "../../CMakeModules/Half.cmake" )
+INCLUDE( "../../CMakeModules/OpenMP.cmake" )
+INCLUDE( "../../CMakeModules/TinyObjLoader.cmake" )
 
 IF(WIN32)
     INCLUDE( "../../CMakeModules/OpenMP.cmake" )
@@ -28,6 +30,11 @@ add_component( "../../Common/Interface" "Interface")
 add_component( "../../Common/Geometry" "Geometry")
 add_component( "../../Common/Math" "Math")
 add_component( "../../Common/Rendering" "Rendering")
+
+set(GeometryLoaders
+    "../../Common/Geometry/Loader/ObjLoader.h"
+    "../../Common/Geometry/Loader/ObjLoader.cpp")
+add_files("${GeometryLoaders}" "Geometry/Loader")
 
 qt_automoc()
 

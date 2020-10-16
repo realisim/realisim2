@@ -18,8 +18,8 @@ namespace Geometry
         ~Line() = default;
 
         //Math::Vector3 distance(const Math::Vector3& p0) const;
-        Math::Vector3 getDirection() const;
-        Math::Vector3 getOrigin() const;
+        const Math::Vector3& getDirection() const;
+        const Math::Vector3& getOrigin() const;
         bool isValid() const;
         void set(const Math::Vector3& p0, const Math::Vector3& p1);
         void setDirection(const Math::Vector3& iD);

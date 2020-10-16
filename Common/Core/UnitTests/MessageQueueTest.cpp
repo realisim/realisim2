@@ -2,9 +2,10 @@
 #include <chrono>
 #include "Core/MessageQueue.h"
 #include "gtest/gtest.h"
+#include <string>
 #include <thread>
 
-using namespace Realisim;
+using namespace Simthetiq;
     using namespace Core;
 using namespace std;
 
@@ -15,7 +16,8 @@ namespace
     MessageQueue gDoneQueue;
     int gIndexOfProcessedMessage = 0;
     bool gLifoTest = false;
-    
+
+
     // Inherit MessageQueue::Message to send a custom message in
     // the queue.
     //
@@ -23,14 +25,14 @@ namespace
     {
     public:
         OneToOneMessage(void *ipSender = nullptr) :
-        MessageQueue::Message(ipSender)
+            MessageQueue::Message(ipSender)
         {}
-        
+
         ~OneToOneMessage() = default;
-        
+
         std::string mText;
     };
-    
+
     // this processing function is on the main thread side and receives
     // notification of work done from the working thread.
     //
@@ -38,22 +40,22 @@ namespace
     {
         ostringstream oss;
         oss << "message" << gIndexOfProcessedMessage << " processed";
-        
+
         OneToOneMessage *m = dynamic_cast<OneToOneMessage*>(ipMessage);
-        
+
         EXPECT_STREQ(oss.str().c_str(), m->mText.c_str());
-        
+
         if (gLifoTest)
         {
             gIndexOfProcessedMessage--;
         }
         else
         { gIndexOfProcessedMessage++; }
-        
-        
+
+
         cout << m->mText << endl;
     }
-    
+
     // this processing function is on the work thread and
     // simulates an heavy computation.
     //
@@ -61,10 +63,10 @@ namespace
     {
         // simulate heavy work load
         this_thread::sleep_for(chrono::seconds(1));
-        
+
         OneToOneMessage *m = dynamic_cast<OneToOneMessage*>(ipMessage);
         printf("%s\n", m->mText.c_str());
-        
+
         //reply in the done queue
         OneToOneMessage *reply = new OneToOneMessage();
         reply->mText = m->mText + " processed";
@@ -206,6 +208,38 @@ TEST(MessageQueue, lifoQueue)
 
     qThreaded.waitForThreadToFinish();
     gDoneQueue.processMessages();
+
+    EXPECT_EQ(qThreaded.getNumberOfMessages(), 0);
+}
+
+//
+TEST(MessageQueue, MultipleConsumers)
+{
+    MessageQueue qThreaded;
+    qThreaded.setBehavior(MessageQueue::bFifo);
+
+    using placeholders::_1;
+    gDoneQueue.setProcessingFunction(bind(processDoneQueue, _1));
+
+    qThreaded.setProcessingFunction(std::bind(processOneToOne, _1));
+    qThreaded.setNumberOfThreads( std::thread::hardware_concurrency());
+    EXPECT_TRUE(qThreaded.getNumberOfThreads() > 1);
+    qThreaded.startInThread();
+
+    printf("number of threads: %d\n", qThreaded.getNumberOfThreads());
+
+    const int kNumMessages = 5;
+    for (int i = 0; i < kNumMessages; ++i)
+    {
+        OneToOneMessage *m0 = new OneToOneMessage; m0->mText = "message_" + to_string(i);
+        qThreaded.post(m0);
+    }
+
+    qThreaded.waitForThreadToFinish();
+    //qThreaded.stopThread();
+
+    EXPECT_EQ(gDoneQueue.getNumberOfMessages(), kNumMessages);
+    gDoneQueue.clear();
 
     EXPECT_EQ(qThreaded.getNumberOfMessages(), 0);
 }

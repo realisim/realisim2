@@ -22,11 +22,11 @@ Line::Line(const Math::Vector3& p0, const Math::Vector3& p1) :
 //-----------------------------------------------------------------------------
 // returns the direction as a unit vector.
 //
-Math::Vector3 Line::getDirection() const
+const Math::Vector3& Line::getDirection() const
 { return mDirection; }
 
 //-----------------------------------------------------------------------------
-Math::Vector3 Line::getOrigin() const
+const Math::Vector3& Line::getOrigin() const
 { return mOrigin; }
 
 //-----------------------------------------------------------------------------

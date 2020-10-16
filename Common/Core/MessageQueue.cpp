@@ -1,4 +1,5 @@
 
+#include <algorithm>
 #include <cassert>
 #include "MessageQueue.h"
 
@@ -8,16 +9,20 @@ using namespace std;
 
 //------------------------------------------------------------------------------
 MessageQueue::MessageQueue() :
-mThread(),
+mThreads(),
 mQueue(),
 mMutex(),
 mState(sIdle),
 mMaximumSize(-1),
-mBehavior(bFifo)
+mBehavior(bFifo),
+mIsIdenticalContiguousMessageAllowed(true)
 
 {
     using std::placeholders::_1;
     mProcessingFunction = std::bind(&MessageQueue::dummyProcessingFunction, this, _1);
+
+    // by default, on thread available, thread is not started...
+    mThreads.resize(1);
 }
 
 //------------------------------------------------------------------------------
@@ -31,6 +36,13 @@ MessageQueue::~MessageQueue()
     clear();
     stopThread();
     assert(mQueue.empty());
+}
+
+
+//------------------------------------------------------------------------------
+void MessageQueue::allowIdenticalContiguousMessage(bool iA)
+{
+    mIsIdenticalContiguousMessageAllowed = iA;
 }
 
 //------------------------------------------------------------------------------
@@ -79,6 +91,12 @@ int MessageQueue::getNumberOfMessages() const
 }
 
 //------------------------------------------------------------------------------
+int MessageQueue::getNumberOfThreads() const
+{
+    return (int)mThreads.size();
+}
+
+//------------------------------------------------------------------------------
 MessageQueue::state MessageQueue::getState() const
 {
     return mState;
@@ -99,6 +117,12 @@ bool MessageQueue::isEmpty() const
 }
 
 //------------------------------------------------------------------------------
+bool MessageQueue::isIdenticalContiguousMessageAllowed() const
+{
+    return mIsIdenticalContiguousMessageAllowed;
+}
+
+//------------------------------------------------------------------------------
 void MessageQueue::post( Message* iM )
 {
     // the queue will not accept messages when a request to stop
@@ -108,14 +132,27 @@ void MessageQueue::post( Message* iM )
     {
         mMutex.lock();
 
+        // When the queue has a limited size and that size has been reached, it
+        // drops the oldest message.
+        // the oldest message in both behavior is at the front of the queue,
+        // since we always push backed...
+        //
         if (hasLimitedSize() && mQueue.size() == getMaximumSize())
         {
-            Message *m = mQueue.front();
-            delete m;
+            Message *m = nullptr;
+            m = mQueue.front();
             mQueue.pop_front();
+            delete m;
         }
 
-        mQueue.push_back(iM);
+        //before inserting the message, let's verify if we enabled contiguous identical message
+        if (isIdenticalContiguousMessageAllowed() || 
+            mQueue.size() == 0 ||
+            *(mQueue.front()) != *iM)
+        {
+            mQueue.push_back(iM);
+        }
+
         mMutex.unlock();
         mQueueWaitCondition.notify_one();
     }
@@ -142,10 +179,9 @@ void MessageQueue::processMessages()
 void MessageQueue::processNextMessage()
 {
     // pop first message and process it!
-    if( getNumberOfMessages() > 0 )
+    mMutex.lock();
+    if( mQueue.size() > 0 )
     {
-        mMutex.lock();
-
         Message *m = nullptr;
         switch (getBehavior())
         {
@@ -159,12 +195,15 @@ void MessageQueue::processNextMessage()
             break;
         default: assert(0); break;
         }
-
         mMutex.unlock();
 
         mProcessingFunction(m);
 
         delete m;
+    }
+    else
+    {
+        mMutex.unlock();
     }
 }
 
@@ -199,6 +238,22 @@ void MessageQueue::setMaximumSize(int iSize)
 }
 
 //------------------------------------------------------------------------------
+void MessageQueue::setNumberOfThreads(int iN)
+{
+    const int n = std::max(iN, 1); // cannot assign less than 1 thread.
+    if (getState() != sIdle)
+    {
+        waitForThreadToFinish();
+        mThreads.resize(n);
+        startInThread();
+    }
+    else
+    {
+        mThreads.resize(n);
+    }
+}
+
+//------------------------------------------------------------------------------
 void MessageQueue::setProcessingFunction(std::function<void(Message*)> iFunction)
 {
     if(iFunction)
@@ -229,11 +284,15 @@ void MessageQueue::startInThread()
 #ifndef MESSAGE_QUEUE_NO_THREADING
     //early out
     if(getState() != sIdle) return;
-
+    
     mMutex.lock();
     setState(sRunning);
-    mThread = std::thread(&MessageQueue::threadLoop, this);
+    for (int i = 0; i < getNumberOfThreads(); ++i)
+    {
+        mThreads[i] = std::thread(&MessageQueue::threadLoop, this);
+    }
     mMutex.unlock();
+    
 #endif // !MESSAGE_QUEUE_NO_THREADING
 }
 
@@ -245,17 +304,24 @@ void MessageQueue::startInThread()
 //
 void MessageQueue::stopThread()
 {
-    if(mThread.joinable())
+    // there is always at least one thread.
+    if (mThreads[0].joinable())
     {
         assert(getState() == sRunning && "If we are not in running state, it means we have a state issue...");
         setState(sStopping);
 
         //delete everything in the queue
         clear();
-        
+
         //wake threadloop whaterver he is doing
-        mQueueWaitCondition.notify_one();
-        mThread.join(); //wait till end of execution
+        mQueueWaitCondition.notify_all();
+
+        //wait till end of execution
+        for (auto &t : mThreads)
+        {
+            if(t.joinable())
+            { t.join(); }
+        }
     }
 }
 
@@ -263,7 +329,7 @@ void MessageQueue::stopThread()
 // This is the function executed in a thread when method start() is called
 void MessageQueue::threadLoop()
 {
-    while( getState() != sIdle )
+    while( getState() != sIdle  )
     {
         // The queue is empty...
         // wait until someonce post a message
@@ -274,7 +340,7 @@ void MessageQueue::threadLoop()
         //
         std::unique_lock<std::recursive_mutex> lk(mMutex);
         mQueueWaitCondition.wait(lk, [this]()
-            {return !mQueue.empty() || getState() == sStopping;}) ;
+            {return mQueue.size() > 0 || getState() != sRunning;}) ;
         lk.unlock();
         
         processNextMessage();
@@ -293,14 +359,24 @@ void MessageQueue::threadLoop()
 //
 void MessageQueue::waitForThreadToFinish()
 {
-    if(mThread.joinable())
+    // there is always at least one thread.
+    if (mThreads[0].joinable())
     {
         assert(getState() == sRunning && "If we are not in running state, it means we have a state issue...");
+
         setState(sStopping);
-        
-        //wake the thread so he can finish
-        mQueueWaitCondition.notify_one();
-        mThread.join(); //wait till end of execution
+
+        //wake threadloop whaterver he is doing
+        mQueueWaitCondition.notify_all();
+
+        //wait till end of execution
+        for(auto &t : mThreads)
+        { 
+            if(t.joinable())
+            { 
+                t.join();
+            }
+        }
     }
 }
 

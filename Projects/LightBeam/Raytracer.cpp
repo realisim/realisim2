@@ -108,7 +108,7 @@ Broker& RayTracer::getBroker()
 //-----------------------------------------------------------------------------
 void RayTracer::processReply(Core::MessageQueue::Message* ipM)
 {
-    Reply *m = dynamic_cast<Reply*>(ipM);
+    RaytraceReply *m = dynamic_cast<RaytraceReply*>(ipM);
     if(m)
     {
         Broker &b = getBroker();
@@ -121,7 +121,7 @@ void RayTracer::processReply(Core::MessageQueue::Message* ipM)
 void RayTracer::processMessage(MessageQueue::Message* ipM)
 {
 Core::Timer _t;
-    Message *m = dynamic_cast<Message*>(ipM);
+    RaytraceRequest *m = dynamic_cast<RaytraceRequest*>(ipM);
     if(m)
     {
         const double vw = m->mSize.x();
@@ -140,13 +140,13 @@ Core::Timer _t;
         Core::Image im = reconstructImage(cells);
         
         // post the computed cells
-        Reply *done = new Reply();
+        RaytraceReply *done = new RaytraceReply();
         done->mImage = im;
         mReplyQueue.post(done);
         
         if(mMessageQueue.isEmpty() && m->mDivideBy > 1/(2*kMultisamplingFactor))
         {
-            Message *m2 = new Message();
+            RaytraceRequest *m2 = new RaytraceRequest();
             m2->mSize = m->mSize;
             
             // divide by 4 each time to effectively
@@ -157,7 +157,7 @@ Core::Timer _t;
         }
         
     }
-//printf("processMessage %d %f(s)\n", m->mDivideBy, _t.elapsed());
+printf("processMessage %.2f %f(s)\n", m->mDivideBy, _t.elapsed());
 }
 
 //-----------------------------------------------------------------------------
@@ -204,7 +204,7 @@ void RayTracer::rayCast( int iDepth,
     
     double f = mIntegrator.computeLi(iRay, iScene, iCamera, &ir, &vt);
     
-    if(vt.isOccluded())
+    if(vt.isOccluded() || f < 0.0)
     { f = 0.0; }
     
     const double specularFactor = ir.mpMaterial->getSpecularFactor();
@@ -269,7 +269,7 @@ Core::Image RayTracer::reconstructImage(const ImageCells& iCells)
 //-----------------------------------------------------------------------------
 void RayTracer::render()
 {
-    Message *m = new Message();
+    RaytraceRequest *m = new RaytraceRequest();
     Image &im = getBroker().getFinalImage();
     
     m->mDivideBy = 256;
@@ -285,36 +285,31 @@ void RayTracer::render(ImageCells& iCells)
     const int w = iCells.getWidthInCells();
     const int h = iCells.getHeightInCells();
     
-//#pragma omp parallel for //not tested
-    for(int y = 0; y < h; ++y)
+    //#pragma omp parallel for //not tested
+    for(int y = 0; y < h && mMessageQueue.isEmpty(); ++y)
     {
-        for(int x = 0; x < w; ++x)
+        // exit the rendering loop if there is a new message
+        // in the queue...
+        for(int x = 0; x < w && mMessageQueue.isEmpty(); ++x)
         {
             const Vector2i cell(x, y);
             
             rayCast(iCells, cell);
         }
-        
-        // exits the rendering if a message is in the queue...
-        // using an atomic int would be better here... no
-        // mutex acquiring needed...
-        //
-        if(!mMessageQueue.isEmpty())
-        {return;}
     }
 }
 
 //-----------------------------------------------------------------------------
 //--- RayTracer::RenderMessage
 //-----------------------------------------------------------------------------
-RayTracer::Message::Message(void *ipSender) :
+RayTracer::RaytraceRequest::RaytraceRequest(void *ipSender) :
     Core::MessageQueue::Message(ipSender),
     mSize(1, 1),
     mDivideBy(1)
 {}
 
 //-----------------------------------------------------------------------------
-RayTracer::Reply::Reply(void *ipSender) :
+RayTracer::RaytraceReply::RaytraceReply(void *ipSender) :
     Core::MessageQueue::Message(ipSender),
     mImage()
 {}

@@ -80,7 +80,7 @@ double Plane::distance(const Math::Vector3& p) const
 }
 
 //------------------------------------------------------------------------------
-Vector3 Plane::getPoint() const
+const Vector3& Plane::getPoint() const
 {
     return mPoint;
 }
@@ -88,7 +88,7 @@ Vector3 Plane::getPoint() const
 //------------------------------------------------------------------------------
 // returns the normalized normal to the plane.
 //
-Vector3 Plane::getNormal() const
+const Vector3& Plane::getNormal() const
 {
     return mNormal;
 }
@@ -99,6 +99,7 @@ bool Plane::isValid() const
     return mIsValid;
 }
 
+#include "Core/Unused.h"
 //------------------------------------------------------------------------------
 Mesh Plane::makeMesh(const Vector2& iSizeInMeter) const
 {
@@ -107,10 +108,6 @@ Mesh Plane::makeMesh(const Vector2& iSizeInMeter) const
     mesh.setNumberOfVerticesPerFace(3);
 
     //-- grab references to guts of mesh
-    vector<Vector3>& vertices = mesh.getVertices();
-    vector<Mesh::Face>& faces = mesh.getFaces();
-    vector<int>& triangulatedFaceIndices = mesh.getFaceIndices();
-
     Vector3 someX = getPerpendicularVector(getNormal());
     Vector3 someY = getNormal() ^ someX;
     someX.normalize();
@@ -119,20 +116,19 @@ Mesh Plane::makeMesh(const Vector2& iSizeInMeter) const
     //4 vertices
     const Vector3& p = getPoint();
     const Vector2 halfSize(iSizeInMeter.x() / 2.0, iSizeInMeter.y() / 2.0);
-    vertices = { p - (someX * halfSize.x()) - (someY * halfSize.y()),
-        p + (someX * halfSize.x()) - (someY * halfSize.y()),
-        p + (someX * halfSize.x()) + (someY * halfSize.y()),
-        p - (someX * halfSize.x()) + (someY * halfSize.y())
-    };
-    
-    Mesh::Face f0, f1;
-    f0.mVertexIndices = { 0, 1, 2 };
-    f0.mNormal = getNormal();
-    f1.mVertexIndices = { 2, 3, 0 };
-    f1.mNormal = getNormal();
-    faces = { f0, f1 };
 
-    triangulatedFaceIndices = { 0, 1, 2, 3, 4, 5 };
+    Mesh::VertexData vd0, vd1, vd2, vd3;
+    vd0.mVertex = p - (someX * halfSize.x()) - (someY * halfSize.y());
+    vd1.mVertex = p + (someX * halfSize.x()) - (someY * halfSize.y());
+    vd2.mVertex = p + (someX * halfSize.x()) + (someY * halfSize.y());
+    vd3.mVertex = p - (someX * halfSize.x()) + (someY * halfSize.y());
+
+    vector<Mesh::VertexData>& vertices = mesh.getVerticesRef();
+    vertices = { vd0, vd1, vd2, vd3 };
+    
+    mesh.makeFace({ 0, 1, 2 });
+    mesh.makeFace({ 2, 3, 0 });
+
     return mesh;
 }
 

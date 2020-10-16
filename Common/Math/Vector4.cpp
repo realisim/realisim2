@@ -59,7 +59,7 @@ Vector4& Vector4::normalize()
 }
 
 //---------------------------------------------------------------------------
-double Vector4::normSquare() const
+double Vector4::normSquared() const
 {
     return mData[0]*mData[0] + mData[1]*mData[1] + mData[2]*mData[2] + mData[3]*mData[3];
 }

@@ -31,7 +31,6 @@ namespace Geometry
         void set(const Math::Vector3& iEllipsoidRadius, int iNumberOfLatitudinalStacks, int iNumberOfLongitudinalStacks);
 
     protected:
-		Mesh::Face makeFace(int iIndex0, int iIndex1, int iIndex2);
 		void bakeMesh();
 
 		Math::Vector3 mEllipsoidRadii; // meters

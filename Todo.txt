@@ -1,0 +1,11 @@
+
+//---------------------------------------
+2020-10-15
+
+- faire l'intersection avec le octree - done
+- LineSegment
+    intersection avec LineSegment
+- faire intersection avec BBox correctement
+- ajouter des stats par frame dans LightBeam
+- Refaire Mesh, vertexData.
+- Faire un logger plus decent...

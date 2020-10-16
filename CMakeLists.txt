@@ -4,15 +4,6 @@ PROJECT( Realisim2 )
 cmake_minimum_required (VERSION 2.8.11)
 
 #------------------------------
-# Compiler flags
-#------------------------------
-if(APPLE)
-    # this is necessary for some c++11 features such as atomic.
-    # MSVC does not require any special flags for c++11
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++0x")
-endif(APPLE)
-
-#------------------------------
 # Global variables to hold source/include files
 #------------------------------
 set( SOURCE_FILES "" )
@@ -29,12 +20,14 @@ IF(WIN32)
 ELSEIF(APPLE)
     SET(PLATFORM_SPECIFIC_FOLDER "mac")
 ENDIF(WIN32)
-
 message("PLATFORM_SPECIFIC_FOLDER " ${PLATFORM_SPECIFIC_FOLDER})
+
+
 #------------------------------------------------------------------------------
 # add supplementary functions to cmake
 #------------------------------------------------------------------------------
 INCLUDE( "CMakeModules/AddComponent.cmake" )
+INCLUDE( "CMakeModules/AddFiles.cmake" )
 
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -64,11 +57,28 @@ if(MSVC)
 
     # add extra secure development lifecycle.
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /WX /sdl")
+
+    # enable M_PI and other math constants
+    add_definitions(-D_USE_MATH_DEFINES)
+
+    # multi processor build
+    add_definitions("/MP")
+
+    #--------------------------
+    # debug flags
+    #--------------------------
+    # enable edit and continue
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /ZI") 
+
 endif(MSVC)
 
 if(APPLE)
     #enable most warning and treat them as error
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -Wno-long-long -pedantic")
+
+     # this is necessary for some c++11 features such as atomic.
+    # MSVC does not require any special flags for c++11
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++0x")
 endif(APPLE)
 
 #------------------------------------------------------------------------------
