@@ -45,7 +45,7 @@ TEST(Triangle, functions)
 
 }
 
-TEST(Triangle, intersection)
+TEST(Triangle, lineIntersection)
 {
     Triangle t;
     t.set(Vector3(0.0, 0.0, 0.0),
@@ -76,4 +76,83 @@ TEST(Triangle, intersection)
     r.setDirection(Vector3(0.0, 0.0, -1.0));
     iType = intersect(r, t, &p, &n);
     UNUSED(iType);
+}
+
+TEST(Triangle, planeIntersection)
+{
+    Triangle t;
+
+    // on xy plane
+    t.set(Vector3(-1.0, -1.0, 0.0),
+        Vector3(1.0, -1.0, 0.0),
+        Vector3(0.0, 1.0, 0.0));
+
+    IntersectionType iType;
+    std::vector<Vector3> points;
+    // z plane, coplanar with tri
+    Plane zp(Vector3(0.0), Vector3(0.0, 0.0, 1.0));
+    bool r = intersects(t, zp, &iType);
+    EXPECT_TRUE(r);
+    EXPECT_EQ(iType, itFullyContained);
+    iType = intersect(t, zp, &points);
+    EXPECT_EQ(iType, itFullyContained);
+
+    // z plane, parallel with tri
+    zp.set(Vector3(0.0, 0.0, 1.0), Vector3(0.0, 0.0, 1.0));
+    r = intersects(t, zp, &iType);
+    EXPECT_FALSE(r);
+    EXPECT_EQ(iType, itNone);
+    iType = intersect(t, zp, &points);
+    EXPECT_EQ(iType, itNone);
+
+    Plane yp(Vector3(0.0), Vector3(0.0, 1.0, 0.0));
+    r = intersects(t, yp, &iType);
+    EXPECT_TRUE(r);
+    EXPECT_EQ(iType, itLineSegment);
+    iType = intersect(t, yp, &points);
+    EXPECT_EQ(iType, itLineSegment);
+    EXPECT_DOUBLE_EQ(points[0].x(), 0.5);
+    EXPECT_DOUBLE_EQ(points[0].y(), 0.0);
+    EXPECT_DOUBLE_EQ(points[0].z(), 0.0);
+
+    EXPECT_DOUBLE_EQ(points[1].x(), -0.5);
+    EXPECT_DOUBLE_EQ(points[1].y(), 0.0);
+    EXPECT_DOUBLE_EQ(points[1].z(), 0.0);
+}
+
+TEST(Triangle, aabbIntersection)
+{
+    Triangle t;
+    // on xy plane
+    t.set(Vector3(-10.0, -10.0, 0.0),
+        Vector3(10.0, -10.0, 0.0),
+        Vector3(0.0, 10.0, 0.0));
+
+    IntersectionType iType = itNone;
+    AxisAlignedBoundingBox aabb;
+
+    // no intersection
+    aabb.set(Vector3(30), Vector3(50));
+    bool r = intersects(t, aabb, &iType);
+    EXPECT_FALSE(r);
+    EXPECT_EQ(iType, itNone);
+
+    // triangle is outside, but AABB is crossed by the triangle plane
+    // no intersection
+    aabb.set(Vector3(30, 0, -10), Vector3(50, 20, 20));
+    r = intersects(t, aabb, &iType);
+    EXPECT_FALSE(r);
+    EXPECT_EQ(iType, itNone);
+
+    // fully contained
+    aabb.set(Vector3(-30), Vector3(30));
+    r = intersects(t, aabb, &iType);
+    EXPECT_TRUE(r);
+    EXPECT_EQ(iType, itFullyContained);
+
+    // contains at least one vertex
+    aabb.set(Vector3(-2), Vector3(30));
+    r = intersects(t, aabb, &iType);
+    EXPECT_TRUE(r);
+    EXPECT_EQ(iType, itLineSegment);
 }

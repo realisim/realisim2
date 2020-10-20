@@ -20,23 +20,30 @@ using namespace std;
 
 namespace  {
     const int kMaxRecursionDepth = 5;
-    const int kMultisamplingFactor = 4;
+    const int kTileSize = 64;
+    int kNumThreads = 1;
 }
 
 //-----------------------------------------------------------------------------
 RayTracer::RayTracer(Broker *ipBroker) :
     mBrokerRef(*ipBroker)
 {
+    // set max number of threads
+    kNumThreads = std::thread::hardware_concurrency();
+
     using placeholders::_1;
     function<void(MessageQueue::Message*)> f =
         bind(&RayTracer::processMessage, this, _1);
     mMessageQueue.setProcessingFunction(f);
-    mMessageQueue.setMaximumSize(1);
+    mMessageQueue.setMaximumSize(-1);
+    mMessageQueue.setNumberOfThreads(kNumThreads);
+    mMessageQueue.setBehavior(MessageQueue::bFifo);
     mMessageQueue.startInThread();
     
     f = bind(&RayTracer::processReply, this, _1);
     mReplyQueue.setProcessingFunction(f);
-    mReplyQueue.setMaximumSize(1);
+    mMessageQueue.setBehavior(MessageQueue::bFifo);
+    mReplyQueue.setMaximumSize(-1);
 }
 
 //-----------------------------------------------------------------------------
@@ -91,13 +98,18 @@ int RayTracer::fillPixel(Core::Image *opImage,
 }
 
 //-----------------------------------------------------------------------------
+const Core::Image& RayTracer::getImage() const
+{
+    return mFinalImage;
+}
+
+//-----------------------------------------------------------------------------
 bool RayTracer::hasNewFrameAvailable() const
 {
     bool r = !mReplyQueue.isEmpty();
     
-    //the queue as only one element by construction...
     //
-    mReplyQueue.processNextMessage();
+    mReplyQueue.processMessages();
     return r;
 }
 
@@ -106,62 +118,72 @@ Broker& RayTracer::getBroker()
 { return mBrokerRef; }
 
 //-----------------------------------------------------------------------------
+void RayTracer::mergeImage(Core::Image *opImage, ImageCells& iCells)
+{
+    //Core::Timer _t;
+
+    Geometry::Rectangle coverage = iCells.getCoverage();
+
+    // reconstruct image from cells and merge into finalImage
+    int cellIncrement = 1;
+    for (int cellY = 0; cellY < iCells.getHeightInCells(); cellY += cellIncrement)
+        for (int cellX = 0; cellX < iCells.getWidthInCells(); cellX += cellIncrement)
+        {
+            const Vector2i cellIndex(cellX, cellY);
+            const Rectangle cellCoverage = iCells.getCellCoverage(cellIndex);
+
+            if (cellCoverage.getWidth() >= 1)  // cell bigger than 1 px, undersampling
+            {
+                cellIncrement = fillPixels(opImage, iCells, cellIndex, cellCoverage);
+            }
+            else // more than 1 cell per pixels, supersampling
+            {
+                cellIncrement = fillPixel(opImage, iCells, cellIndex, cellCoverage);
+            }
+        }
+
+    //printf("reconstructImage %f(s)\n", _t.elapsed());
+}
+
+//-----------------------------------------------------------------------------
+// reply is handled in the MAIN thread
+//
 void RayTracer::processReply(Core::MessageQueue::Message* ipM)
 {
     RaytraceReply *m = dynamic_cast<RaytraceReply*>(ipM);
     if(m)
     {
-        Broker &b = getBroker();
-        Core::Image &finalIm = b.getFinalImage();
-        finalIm = m->mImage;
+        // update final image
+        //
+        mergeImage(&mFinalImage, m->mRenderedCells);
+        //printf("processReply id: %d, level: %d %f(s)\n", m->mId, mDesiredLevelOfDetail, _t.elapsed());
     }
 }
 
 //-----------------------------------------------------------------------------
 void RayTracer::processMessage(MessageQueue::Message* ipM)
 {
-Core::Timer _t;
     RaytraceRequest *m = dynamic_cast<RaytraceRequest*>(ipM);
     if(m)
     {
-        const double vw = m->mSize.x();
-        const double vh = m->mSize.y();
-        int numberOfCells = (int)(vw * vh / (double)m->mDivideBy);
-    
         ImageCells cells;
-        Rectangle coverage(Vector2i(0, 0),
-                           vw, vh);
-        const int cellHeight = (int)sqrt(numberOfCells*vh/vw);
-        const int cellWidth = (int)numberOfCells/cellHeight;
-        cells.setSize(Vector2i(cellWidth, cellHeight));
-        cells.setCoverage(coverage);
-        
-        render(cells);
-        Core::Image im = reconstructImage(cells);
-        
+        cells.setCoverage(m->mCoverage);
+        cells.setSize(m->mTileSizeInPixel / mDesiredLevelOfDetail);
+
+        render(&cells);
+
         // post the computed cells
         RaytraceReply *done = new RaytraceReply();
-        done->mImage = im;
+        done->mCoverage = m->mCoverage;
+        done->mRenderedCells = cells;
+        done->mId = m->mId;
         mReplyQueue.post(done);
         
-        if(mMessageQueue.isEmpty() && m->mDivideBy > 1/(2*kMultisamplingFactor))
-        {
-            RaytraceRequest *m2 = new RaytraceRequest();
-            m2->mSize = m->mSize;
-            
-            // divide by 4 each time to effectively
-            // grow the image by 2 in each dimension
-            //
-            m2->mDivideBy = 0.25 * m->mDivideBy;
-            mMessageQueue.post(m2);
-        }
-        
     }
-printf("processMessage %.2f %f(s)\n", m->mDivideBy, _t.elapsed());
 }
 
 //-----------------------------------------------------------------------------
-void RayTracer::rayCast(ImageCells& iCells,
+void RayTracer::rayCast(ImageCells* iCells,
     const Vector2i& iCell)
 {
     Broker &b = getBroker();
@@ -169,7 +191,7 @@ void RayTracer::rayCast(ImageCells& iCells,
     const Scene &scene = b.getScene();
     
     // make ray for given pixel
-    const Rectangle& r = iCells.getCellCoverage(iCell);
+    const Rectangle& r = iCells->getCellCoverage(iCell);
     const Vector2 pixelPos = r.getCenter();
     
     const Vector3 camPos = camera.getPosition();
@@ -187,7 +209,7 @@ void RayTracer::rayCast(ImageCells& iCells,
               min(color.getBlue(), 1.0),
               min(color.getAlpha(), 1.0) );
     
-    iCells.setCellValue(iCell, color, distanceToCamera);
+    iCells->setCellValue(iCell, color, distanceToCamera);
 }
 
 //-----------------------------------------------------------------------------
@@ -210,13 +232,14 @@ void RayTracer::rayCast( int iDepth,
     const double specularFactor = ir.mpMaterial->getSpecularFactor();
     const double oneMinusSpec = 1.0 - specularFactor;
     
+    Color ambient(0.0, 0.0, 0.0, 0.0);
     Color diffuse = ir.mpMaterial->getColor();
     diffuse.set( diffuse.getRed() * f * oneMinusSpec,
           diffuse.getGreen() * f * oneMinusSpec,
           diffuse.getBlue() * f * oneMinusSpec,
           diffuse.getAlpha() );
     
-    *opColor += diffuse;
+    *opColor += diffuse + ambient;
 
     if( iDepth < kMaxRecursionDepth &&
        ir.mpMaterial->getSpecularFactor() > 0.0)
@@ -229,7 +252,7 @@ void RayTracer::rayCast( int iDepth,
         
         //
         Line reflectedRay;
-        reflectedRay.setOrigin(intersectionPoint + reflectedDirection);
+        reflectedRay.setOrigin(intersectionPoint + 1e-5*reflectedDirection);
         reflectedRay.setDirection(reflectedDirection);
         
         rayCast(++iDepth, reflectedRay, iScene, iCamera, opColor, opDistanceToCamera);
@@ -239,58 +262,69 @@ void RayTracer::rayCast( int iDepth,
 }
 
 //-----------------------------------------------------------------------------
-Core::Image RayTracer::reconstructImage(const ImageCells& iCells)
+void RayTracer::render(int iLevelOfDetail)
 {
-    Core::Timer _t;
-    
-    // init final image
-    Core::Image im;
-    Geometry::Rectangle coverage = iCells.getCoverage();
-    im.set((int)coverage.getWidth(), (int)coverage.getHeight(), iifRgbaUint8);
-    
-    // reconstruct image from cells
-    int cellIncrement = 1;
-    for(int cellY = 0; cellY < iCells.getHeightInCells(); cellY += cellIncrement)
-        for(int cellX = 0; cellX < iCells.getWidthInCells(); cellX += cellIncrement)
-        {
-            const Vector2i cellIndex(cellX, cellY);
-            const Rectangle cellCoverage = iCells.getCellCoverage(cellIndex);
-            
-            if(cellCoverage.getWidth() >= 1) // more than 1 cell per pixels, supersampling
-            { cellIncrement = fillPixels(&im, iCells, cellIndex, cellCoverage); }
-            else
-            { cellIncrement = fillPixel(&im, iCells, cellIndex, cellCoverage); }
-        }
-    
-    //printf("reconstructImage %f(s)\n", _t.elapsed());
-    return im;
-}
+    //mMessageQueue.clear();
+    mDesiredLevelOfDetail = iLevelOfDetail;
 
-//-----------------------------------------------------------------------------
-void RayTracer::render()
-{
-    RaytraceRequest *m = new RaytraceRequest();
     Image &im = getBroker().getFinalImage();
-    
-    m->mDivideBy = 256;
-    m->mSize = im.getSizeInPixels();
-    
-    // send request to compute.
-    mMessageQueue.post(m);
+    if(mFinalImage.getSizeInPixels() != im.getSizeInPixels())
+    {
+        mFinalImage.set(im.getWidth(), im.getHeight(), iifRgbaUint8);
+    }
+
+    const double vw = im.getSizeInPixels().x();
+    const double vh = im.getSizeInPixels().y();
+    int numberOfCellsX = (int)ceil(vw / (double)kTileSize);
+    int numberOfCellsY = (int)ceil(vh / (double)kTileSize);
+
+    // prepare all the rendering tiles
+    //
+    for (int j = 0; j < numberOfCellsY; ++j)
+    {
+        for (int i = 0; i < numberOfCellsX; ++i)
+        {
+            RaytraceRequest *m = new RaytraceRequest();
+
+            Rectangle coverage(Vector2i(i * kTileSize, j * kTileSize),
+                kTileSize, kTileSize);
+
+            m->mCoverage = coverage;
+            m->mTileSizeInPixel = kTileSize;
+            m->mId = i + j*numberOfCellsX;
+            // send request to compute.
+            mMessageQueue.post(m);
+        }
+    }
+
+
+    //----- DEBUG CODE' RENDER ONLY ONE TILE
+    //const double vw = im.getSizeInPixels().x();
+    //int numberOfCellsX = (int)ceil(vw / (double)kTileSize);
+    //RaytraceRequest *m = new RaytraceRequest();
+
+    //Rectangle coverage(Vector2i(3 * kTileSize, 2 * kTileSize),
+    //    kTileSize, kTileSize);
+
+    //m->mCoverage = coverage;
+    //m->mTileSizeInPixel = kTileSize;
+    //m->mId = 3 + 3*numberOfCellsX;
+    //// send request to compute.
+    //mMessageQueue.post(m);
 }
 
 //-----------------------------------------------------------------------------
-void RayTracer::render(ImageCells& iCells)
+void RayTracer::render(ImageCells* iCells)
 {   
-    const int w = iCells.getWidthInCells();
-    const int h = iCells.getHeightInCells();
+    const int w = iCells->getWidthInCells();
+    const int h = iCells->getHeightInCells();
     
     //#pragma omp parallel for //not tested
-    for(int y = 0; y < h && mMessageQueue.isEmpty(); ++y)
+    for(int y = 0; y < h; ++y)
     {
         // exit the rendering loop if there is a new message
         // in the queue...
-        for(int x = 0; x < w && mMessageQueue.isEmpty(); ++x)
+        for(int x = 0; x < w; ++x)
         {
             const Vector2i cell(x, y);
             
@@ -304,13 +338,16 @@ void RayTracer::render(ImageCells& iCells)
 //-----------------------------------------------------------------------------
 RayTracer::RaytraceRequest::RaytraceRequest(void *ipSender) :
     Core::MessageQueue::Message(ipSender),
-    mSize(1, 1),
-    mDivideBy(1)
+    mCoverage(),
+    mTileSizeInPixel(1),
+    mId(0)
 {}
 
 //-----------------------------------------------------------------------------
 RayTracer::RaytraceReply::RaytraceReply(void *ipSender) :
     Core::MessageQueue::Message(ipSender),
-    mImage()
+    mCoverage(),
+    mRenderedCells(),
+    mId(0)
 {}
 

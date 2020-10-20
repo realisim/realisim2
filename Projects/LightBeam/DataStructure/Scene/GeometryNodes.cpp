@@ -154,7 +154,7 @@ bool MeshNode::intersect(const Line& iRay, IntersectionResult* opResult) const
         int index = 0;
         for (int i = 0; i < d.size(); ++i)
         {
-            if (d[i] < v)
+            if (d[i] > 0 && d[i] < v)
             {
                 index = i;
                 v = d[i];
@@ -167,14 +167,9 @@ bool MeshNode::intersect(const Line& iRay, IntersectionResult* opResult) const
     }
 
     
-    //IntersectionType iType = itNone;
     //const AxisAlignedBoundingBox &aabb = getAxisAlignedBoundingBox();
     //if (Geometry::intersects(iRay, aabb))
     //{
-    //    std::vector<Vector3> p;
-    //    std::vector<Vector3> n;
-    //    std::vector<double> d;
-
     //    iType = Geometry::intersect(iRay, *mpMesh, &p, &n, &d);
 
     //    if (opResult && iType != itNone)
@@ -183,7 +178,7 @@ bool MeshNode::intersect(const Line& iRay, IntersectionResult* opResult) const
     //        int index = 0;
     //        for (int i = 0; i < d.size(); ++i)
     //        {
-    //            if (d[i] < v)
+    //            if (d[i] > 0 && d[i] < v)
     //            {
     //                index = i;
     //                v = d[i];

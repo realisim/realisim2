@@ -33,9 +33,8 @@ Geometry::Rectangle ImageCells::getCellCoverage(const Math::Vector2i& iCellIndex
     const double w = r.getWidth() / getWidthInCells();
     const double h = r.getHeight() / getHeightInCells();
     
-    return Rectangle(
-        Vector2(iCellIndex.x() * w, iCellIndex.y() * h),
-                     w, h );
+    const Vector2 bl = r.getBottomLeft() + Vector2(iCellIndex.x() * w, iCellIndex.y() * h);
+    return Rectangle( bl, w, h );
 }
 
 //-----------------------------------------------------------------------------

@@ -113,7 +113,7 @@ namespace Core
         virtual Color getPixelColor(Math::Vector2i iPixel) const;
         virtual Color getPixelColor(Math::Vector2 iPixel) const;
         virtual uint64_t getSizeInBytes() const;
-        virtual Math::Vector2i getSizeInPixels() const;
+        virtual const Math::Vector2i& getSizeInPixels() const;
         virtual int getWidth() const;
         virtual bool hasImageData() const;
         virtual bool isValid() const;

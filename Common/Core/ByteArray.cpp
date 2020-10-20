@@ -389,8 +389,11 @@ void ByteArray::reserve(size_t iSize)
 //-------------------------------------------------------
 void ByteArray::resize(size_t iSize)
 {
-    detachGuts();
-    mpGuts->mData.resize(iSize);
+    if (iSize != mpGuts->mData.size())
+    {
+        detachGuts();
+        mpGuts->mData.resize(iSize);
+    }
 }
 
 //-------------------------------------------------------

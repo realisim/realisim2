@@ -34,6 +34,7 @@ namespace Geometry
             Node *mpParent;
             std::vector<Node*> mChilds;
 
+            uint32_t mId;
             AxisAlignedBoundingBox mAabb;
             std::vector<uint32_t> mFaceIndices;
             std::vector<Triangle> mTriangles; // only leafs have triangles
@@ -53,17 +54,19 @@ namespace Geometry
 
         struct Stats
         {
-            Stats() : mTotalNumberOfNodes(0), mOctreeDepth(1), mTimeToGenerateInSeconds(0.0) {}
+            Stats() : mTotalNumberOfNodes(0), mOctreeDepth(0), mTimeToGenerateInSeconds(0.0) {}
 
             uint32_t mTotalNumberOfNodes;
             int32_t mOctreeDepth;
             double mTimeToGenerateInSeconds;
         };
 
-        void cleanupAfterGenerate(Node *);
-        void generate(Node *n);
+
         void assignPrism(Node *n, int iIndex);
         void assignFaceIndices(Node *n);
+        void cleanupAndAssignLeafTriangles(Node *, int depthCount);
+        void generate(Node *n);
+        void validate(Node *n);
 
         Node *mpRoot; // never null, owned
         Mesh *mpMesh; //not owned

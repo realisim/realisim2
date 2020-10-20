@@ -462,7 +462,7 @@ uint64_t Image::getSizeInBytes() const
 }
 
 //----------------------------------------------------------------------------
-Math::Vector2i Image::getSizeInPixels() const
+const Math::Vector2i& Image::getSizeInPixels() const
 {
     return mSizeInPixel;
 }

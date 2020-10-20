@@ -21,6 +21,8 @@ using namespace Realisim;
     using namespace Math;
 using namespace std;
 
+const int kInitialLod = 16;
+
 //-----------------------------------------------------------------------------
 //--- MainWindow
 //-----------------------------------------------------------------------------
@@ -48,6 +50,10 @@ MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow()
     // add some crap to the scene...
     Broker &b = getBroker();
     Scene &scene = b.getScene();
+    Rendering::Camera &cam  = b.getCamera();
+    cam.set(Vector3(1.0, 2.0, 4.0),
+        Vector3(0.0, 0.0, 0.0),
+        Vector3(0.0, 1.0, 0.0));
     
     // add a plane
     Geometry::Plane p(Vector3(0.0, -30, 0.0), Vector3(0.0, 1.0, 0.0));
@@ -90,36 +96,43 @@ MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow()
     // add a light
     Light l;
     l.setType(Light::tDirectionnal);
+    l.setDirection( Vector3(0.3, 1.0, 2.0) );
     shared_ptr<LightNode> lightNode = make_shared<LightNode>();
     lightNode->setLight(l);
+
+    //Light l;
+    //l.setType(Light::tPoint);
+    //l.setPosition(Vector3(2.0, 2.0, 2.0));
+    //l.setAttenuationType(Light::atQuadratic);
+    //shared_ptr<LightNode> lightNode = make_shared<LightNode>();
+    //lightNode->setLight(l);
     
     // add a mesh
     shared_ptr<MeshNode> meshNode = make_shared<MeshNode>();
     shared_ptr<Material> mat4 = make_shared<Material>();
     mat4->setColor(Color(0.8, 0.8, 0.8, 1.0));
+    mat4->setSpecularFactor(0.0);
+    mat4->setGlossFactor(0.0);
     meshNode->setMaterial(mat4);
 
+    //Geometry::PlatonicSolid ps(Geometry::PlatonicSolid::tCube);
+    //Geometry::Mesh *pMesh = new Geometry::Mesh(ps.getMesh());
+    //meshNode->setMeshAndTakeOwnership(pMesh);
+
     Geometry::ObjLoader objLoader;
-    //Geometry::Mesh *pMesh = objLoader.load("C:/Users/Po/code/realisim2/Prototypes/textureUnwrap/assets/monkey.obj");
-    //Geometry::Mesh *pMesh = objLoader.load("C:/Users/Po/code/realisim2/Prototypes/textureUnwrap/assets/happyBuddha.obj");
-    //Geometry::Mesh *pMesh = objLoader.load("C:/Users/Po/code/realisim2/Prototypes/textureUnwrap/assets/horse.obj");
-    //Geometry::Mesh *pMesh = objLoader.load("C:/Users/Po/code/realisim2/Prototypes/textureUnwrap/assets/bunny.obj");
-    //Geometry::Mesh *pMesh = objLoader.load("C:/Users/Po/code/realisim2/Prototypes/textureUnwrap/assets/armadillo.obj");
-    Geometry::Mesh *pMesh = objLoader.load("C:/Users/Po/code/realisim2/Prototypes/textureUnwrap/assets/xyzrgb_dragon.obj");
-    
-    
+    //Geometry::Mesh *pMesh = objLoader.load("D:/Models/standford models/monkey.obj");
+    //Geometry::Mesh *pMesh = objLoader.load("D:/Models/standford models/happyBuddha.obj");
+    //Geometry::Mesh *pMesh = objLoader.load("D:/Models/untitled.obj");
+    //Geometry::Mesh *pMesh = objLoader.load("D:/Models/standford models/horse.obj");
+    //Geometry::Mesh *pMesh = objLoader.load("D:/Models/standford models/bunny.obj");
+    //Geometry::Mesh *pMesh = objLoader.load("D:/Models/standford models/armadillo.obj");
+    //Geometry::Mesh *pMesh = objLoader.load("D:/Models/standford models/xyzrgb_dragon.obj");
+    Geometry::Mesh *pMesh = objLoader.load("D:/Models/standford models/sponza-master/sponza.obj");
+        
     if (!objLoader.hasErrors())
     {
         meshNode->setMeshAndTakeOwnership(pMesh);
     }
-    //Geometry::PlatonicSolid ps;
-    //ps.set(Geometry::PlatonicSolid::tCube);
-    //Geometry::Mesh mesh = ps.getMesh();
-    //Geometry::Mesh *pMesh = new Geometry::Mesh();
-    //pMesh->setNumberOfVerticesPerFace(3);
-    //pMesh->getFacesRef() = mesh.getFaces();
-    //pMesh->getVerticesRef() = mesh.getVertices();
-    //meshNode->setMeshAndTakeOwnership(pMesh);
 
     scene.addNode(pn);
     scene.addNode(sn);
@@ -173,6 +186,9 @@ void MainWindow::handleUserInput()
         if(k.isKeyPressed(Key_Shift))
         { f *= 0.1; }
 
+        if (k.isKeyPressed(Key_Control))
+        { f *= 10.0; }
+
         if(k.isKeyPressed(Key_W))
         { displacement += c.getDirection() * f; }
         
@@ -203,7 +219,7 @@ void MainWindow::handleUserInput()
     
     if(renderNeeded)
     {
-        mRayTracerRef.render();
+        mRayTracerRef.render(kInitialLod);
     }
            
 }
@@ -217,7 +233,21 @@ void MainWindow::timerEvent(QTimerEvent *ipE)
     
         if(mRayTracerRef.hasNewFrameAvailable())
         {
+            Image &fi = getBroker().getFinalImage();
+            const Image &rendererImage = mRayTracerRef.getImage();
+            fi.setData(rendererImage.getWidth(), rendererImage.getHeight(),
+                rendererImage.getInternalFormat(),
+                rendererImage.getImageData().constData());
             mpView->updateUi();
+        }
+        else
+        {
+            int lod = mRayTracerRef.getLevelOfDetail();
+            lod /= 2;
+            if (lod > 0)
+            {
+                mRayTracerRef.render(lod);
+            }
         }
     }
 }
@@ -225,7 +255,7 @@ void MainWindow::timerEvent(QTimerEvent *ipE)
 //-----------------------------------------------------------------------------
 void MainWindow::viewChanged()
 {
-    mRayTracerRef.render();
+    mRayTracerRef.render(kInitialLod);
 }
 
 //-----------------------------------------------------------------------------

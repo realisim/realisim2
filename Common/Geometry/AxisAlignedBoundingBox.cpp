@@ -143,29 +143,29 @@ Mesh AxisAlignedBoundingBox::makeMesh() const
     //-- grab references to guts of mesh
     vector<Mesh::VertexData>& vertices = mesh.getVerticesRef();
 
-    const Vector3 bl( mMinCorner.x(), mMinCorner.y(), mMaxCorner.z() );
-    const Vector3 tr(mMaxCorner.x(), mMaxCorner.y(), mMinCorner.z());
+    const Vector3 bl( mMinCorner.x(), mMinCorner.y(), mMinCorner.z() );
+    const Vector3 tr(mMaxCorner.x(), mMaxCorner.y(), mMaxCorner.z());
 
     vertices.resize(8, Mesh::VertexData());
     //-Z
-    vertices[0].mVertex = Vector3(bl.x(), bl.y(), tr.z());
-    vertices[1].mVertex = Vector3(tr.x(), bl.y(), tr.z());
-    vertices[2].mVertex = tr;
-    vertices[3].mVertex = Vector3(bl.x(), tr.y(), tr.z());
+    vertices[0].mVertex = Vector3(bl.x(), bl.y(), bl.z());
+    vertices[1].mVertex = Vector3(tr.x(), bl.y(), bl.z());
+    vertices[2].mVertex = Vector3(tr.x(), tr.y(), bl.z());
+    vertices[3].mVertex = Vector3(bl.x(), tr.y(), bl.z());
 
     //+Z
-    vertices[4].mVertex = bl;
-    vertices[5].mVertex = Vector3(tr.x(), bl.y(), bl.z());
-    vertices[6].mVertex = Vector3(tr.x(), tr.y(), bl.z());
-    vertices[7].mVertex = Vector3(bl.x(), tr.y(), bl.z());
+    vertices[4].mVertex = Vector3(bl.x(), bl.y(), tr.z());
+    vertices[5].mVertex = Vector3(tr.x(), bl.y(), tr.z());
+    vertices[6].mVertex = Vector3(tr.x(), tr.y(), tr.z());
+    vertices[7].mVertex = Vector3(bl.x(), tr.y(), tr.z());
 
     // 6 faces with 4 vertex each... so 24 entries
     mesh.makeFace({ 0, 1, 2, 3 }, true); //0, 1, 2, 3
-    mesh.makeFace({ 4, 7, 6, 5 }, true); //4, 5, 6, 7
-    mesh.makeFace({ 5, 6, 2, 1 }, true); //8, 9, 10, 11  
-    mesh.makeFace({ 0, 3, 7, 4 }, true); //12, 13, 14, 15
-    mesh.makeFace({ 6, 7, 3, 2 }, true); //16, 17, 18, 19  
-    mesh.makeFace({ 4, 5, 1, 0 }, true); //20 21 22 23
+    mesh.makeFace({ 4, 5, 6 ,7 }, true); //4, 5, 6, 7
+    mesh.makeFace({ 5, 1, 2, 6 }, true); //8, 9, 10, 11  
+    mesh.makeFace({ 0, 4, 7, 3 }, true); //12, 13, 14, 15
+    mesh.makeFace({ 6, 2, 3, 7 }, true); //16, 17, 18, 19  
+    mesh.makeFace({ 0, 1, 5, 4 }, true); //20 21 22 23
 
     mesh.triangulate();
 

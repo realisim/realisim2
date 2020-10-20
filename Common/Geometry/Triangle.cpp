@@ -24,6 +24,16 @@ Triangle::Triangle(const Math::Vector3& iP0, const Math::Vector3& iP1, const Mat
 Triangle::~Triangle() {}
 
 //-----------------------------------------------------------------------------
+bool Triangle::contains(const Vector3 &iP) const
+{
+    const Vector3 a = (x[1] - x[0]) ^ (iP - x[0]);
+    const Vector3 b = (x[2] - x[1]) ^ (iP - x[1]);
+    const Vector3 c = (x[0] - x[2]) ^ (iP - x[2]);
+
+    return (a*mNormal >= 0 && b*mNormal >= 0 && c*mNormal >= 0);
+}
+
+//-----------------------------------------------------------------------------
 double Triangle::getArea() const
 {
     double r = 0.0;

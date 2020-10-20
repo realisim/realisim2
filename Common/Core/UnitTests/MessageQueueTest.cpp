@@ -5,7 +5,7 @@
 #include <string>
 #include <thread>
 
-using namespace Simthetiq;
+using namespace Realisim;
     using namespace Core;
 using namespace std;
 

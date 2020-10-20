@@ -2,8 +2,8 @@
 #include "Core/Timer.h"
 #include "Geometry/AxisAlignedBoundingBox.h"
 #include <cassert>
+#include "Geometry/Intersections.h"
 #include "Geometry/OctreeOfMeshFaces.h"
-//#include "Geometry/LineSegment.h"
 #include "Math/Vector.h"
 #include <sstream>
 
@@ -125,12 +125,12 @@ void OctreeOfMeshFaces::assignFaceIndices(Node *n)
 
     const vector<Mesh::VertexData> &vds = mpMesh->getVertices();
     const vector<Mesh::Face> &faces = mpMesh->getFaces();
-    // go over all faces and add to current node list if they intersect with the current node prism
+    // go over all faces and add to current node list if they intersect with the current node aabb.
     // to intersect:
     //  at least one vertices is contained
-    //  if no vertices is contained, on of the edge intersects 
+    //  if no vertices is contained, check the triangle plane intersection with
+    //  the current node aabb
 
-    AxisAlignedBoundingBox aabb;
     bool oneVertexIsContained = false;
     for (auto faceIndex : p->mFaceIndices)
     {
@@ -145,31 +145,19 @@ void OctreeOfMeshFaces::assignFaceIndices(Node *n)
             }
         }
 
-        //if (!oneVertexIsContained)
-        //{
-        //    //// try the edges
-        //    //LineSegment e;
-        //    //e.set(vds[f.mVertexIndices[0]].mVertex, vds[f.mVertexIndices[1]].mVertex);
-        //    //if (intersects(e, n->mPrism))
-        //    //{
-        //    //    n->mFaceIndices.push_back(faceIndex);
-        //    //    break;
-        //    //}
-
-        //    //e.set(vds[f.mVertexIndices[1]].mVertex, vds[f.mVertexIndices[2]].mVertex);
-        //    //if (intersects(e, n->mPrism))
-        //    //{
-        //    //    n->mFaceIndices.push_back(faceIndex);
-        //    //    break;
-        //    //}
-
-        //    //e.set(vds[f.mVertexIndices[2]].mVertex, vds[f.mVertexIndices[0]].mVertex);
-        //    //if (intersects(e, n->mPrism))
-        //    //{
-        //    //    n->mFaceIndices.push_back(faceIndex);
-        //    //    break;
-        //    //}
-        //}
+        if (!oneVertexIsContained)
+        {
+            Triangle tri;
+            tri.set(
+                vds[f.mVertexIndices[0]].mVertex,
+                vds[f.mVertexIndices[1]].mVertex,
+                vds[f.mVertexIndices[2]].mVertex);
+            
+            if (intersects(tri, n->mAabb))
+            {
+                n->mFaceIndices.push_back(faceIndex);
+            }
+        }
     }
 }
 
@@ -182,10 +170,11 @@ void OctreeOfMeshFaces::clear()
     mStats = Stats();
 }
 
-
 //---------------------------------------------------------------------------------------------------------------------
-void OctreeOfMeshFaces::cleanupAfterGenerate(Node *n)
+void OctreeOfMeshFaces::cleanupAndAssignLeafTriangles(Node *n, int depthCount)
 {
+    mStats.mOctreeDepth = max(mStats.mOctreeDepth, depthCount);
+
     if (n->hasChilds())
     {
         n->mFaceIndices.clear();
@@ -215,10 +204,11 @@ void OctreeOfMeshFaces::cleanupAfterGenerate(Node *n)
 
     const int numC = n->getNumberOfChilds();
     for (int i = 0; i < numC; ++i) {
-        cleanupAfterGenerate(n->mChilds[i]);
+        cleanupAndAssignLeafTriangles(n->mChilds[i], depthCount++);
     }
 }
 
+#define VALIDATE_GENERATION
 //---------------------------------------------------------------------------------------------------------------------
 void OctreeOfMeshFaces::generate()
 {
@@ -236,6 +226,8 @@ void OctreeOfMeshFaces::generate()
         mpRoot->mAabb.addPoint(vds[i].mVertex);
     }
 
+    mStats.mTotalNumberOfNodes = 1;
+
     //add all face indices to the first root
     const int numFaces = mpMesh->getNumberOfFaces();
     mpRoot->mFaceIndices.resize(numFaces);
@@ -245,8 +237,12 @@ void OctreeOfMeshFaces::generate()
 
     generate(mpRoot);
 
+#ifdef VALIDATE_GENERATION
+    validate(mpRoot);
+#endif
     // cleanup all nodes except leafs...
-    cleanupAfterGenerate(mpRoot);
+    int depthCount = 1;
+    cleanupAndAssignLeafTriangles(mpRoot, depthCount);
 
     mStats.mTimeToGenerateInSeconds = _t.elapsed();
 }
@@ -254,25 +250,31 @@ void OctreeOfMeshFaces::generate()
 //---------------------------------------------------------------------------------------------------------------------
 void OctreeOfMeshFaces::generate(Node *n)
 {
+    // root has id 0
+    static uint32_t idCounter = 1;
     // stop criterion...
     //
     // ~5% of total number of polygons.
     //
-    if (n->mFaceIndices.size() <= 25)
+    if (n->mFaceIndices.size() <= 25 /*(0.05 * mpMesh->getNumberOfFaces())*/)
     {
         return;
     }
 
-    mStats.mOctreeDepth++;
 
-    // split into childs, empty leaf childs will
-    // not be kept
+    // do gepth first
+    // !!!!! NOTE !!!!
+    // This is actually not the best of idea as it might bust the stack...
+    // going breadth first would be a lot better!
+    //
+    // split into childs, empty leaf childs will not be kept
     n->mChilds.reserve(Node::sMaxNumberOfChilds);
     int numChilds = 0;
     for (int i = 0; i < Node::sMaxNumberOfChilds; ++i)
     {
         Node *c = new Node();
         c->mpParent = n;
+        c->mId = idCounter++;
         assignPrism(c, i);
         assignFaceIndices(c);
 
@@ -342,7 +344,43 @@ std::string OctreeOfMeshFaces::statsToString() const
     return oss.str();
 }
 
+//---------------------------------------------------------------------------------------------------------------------
+void OctreeOfMeshFaces::validate(Node *n)
+{
+    // validate that all face in parent have been accounted for in childs...
 
+    map<int, bool> mParentFaceIdToBool;
+    const int numFacesInParent = (int)n->mFaceIndices.size();
+    for (auto &fi : n->mFaceIndices)
+    {
+        mParentFaceIdToBool[fi] = false;
+    }
+
+    // go over childs
+    if (n->hasChilds())
+    {
+        for (auto c : n->mChilds)
+        {
+            for (auto &fi : c->mFaceIndices)
+            {
+                mParentFaceIdToBool[fi] = true;
+            }
+        }
+
+        for (auto &it : mParentFaceIdToBool)
+        {
+            if (it.second == false)
+            {
+                printf("face %d is missing in childs from parent %d\n", it.first, n->mId);
+            }
+        }
+    }
+
+    const int numC = n->getNumberOfChilds();
+    for (int i = 0; i < numC; ++i) {
+        validate(n->mChilds[i]);
+    }
+}
 
 //---------------------------------------------------------------------------------------------------------------------
 //--- OctreeOfMeshFaces::Node
@@ -350,7 +388,8 @@ std::string OctreeOfMeshFaces::statsToString() const
 int OctreeOfMeshFaces::Node::sMaxNumberOfChilds = 8;
 
 OctreeOfMeshFaces::Node::Node() :
-    mpParent(nullptr)
+    mpParent(nullptr),
+    mId(0)
 {}
 
 //---------------------------------------------------------------------------------------------------------------------

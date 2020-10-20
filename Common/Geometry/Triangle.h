@@ -17,6 +17,7 @@ namespace Geometry
         Triangle(const Triangle&) = default;
         Triangle& operator=(const Triangle&) = default;
 
+        bool contains(const Math::Vector3&) const;
         double getArea() const;
         Math::Vector3 getCentroid() const;
         const Math::Vector3& getNormal() const;

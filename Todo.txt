@@ -2,10 +2,19 @@
 //---------------------------------------
 2020-10-15
 
-- faire l'intersection avec le octree - done
-- LineSegment
-    intersection avec LineSegment
-- faire intersection avec BBox correctement
+- faire l'intersection avec le octree -         DONE
+- LineSegment                                   DONE
+    intersection avec LineSegment               DONE
+- faire intersection avec BBox correctement     DONE
 - ajouter des stats par frame dans LightBeam
 - Refaire Mesh, vertexData.
 - Faire un logger plus decent...
+
+- Config
+    - numThread
+    - camera position, focal and up
+    - renderWindow... for ray debugging....
+    - enable/disable shadow
+    - 
+
+    - save/show camera position

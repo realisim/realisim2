@@ -80,16 +80,45 @@ double SimpleIntegrator::computeLi(const Line &iLine,
         {
             const Light &light = lightNode->getLight();
             
+            Vector3 lightDirection; // wi
+            Vector3 lightPosition;
             // compute the shading or diffuse
-            const double nDotL = ir.mNormal * light.getDirection();
+            switch (light.getType())
+            {
+            case Light::tPoint:
+                lightDirection = light.getPosition() - intersectionInWorldSpace;
+                lightPosition = light.getPosition();
+                break;
+            case Light::tSpot: break;
+            case Light::tDirectionnal: 
+                lightDirection = light.getDirection();
+                lightPosition = intersectionInWorldSpace + 1e8*lightDirection; // very far in the light direction...
+                break;
+            case Light::tArea: break;
+            default: break;
+            }
+
+            // light contribution
+            const double lightDistance = (light.getPosition() - intersectionInWorldSpace).norm();
+            double attenuation = 1.0;
+            switch (light.getAttenuationType())
+            {
+            case Light::atNone: break;
+            case Light::atQuadratic: attenuation = 1.0 / (lightDistance*lightDistance); break;
+            case Light::atLinear: attenuation = 1.0 / (lightDistance); break;
+            default: break;
+            }
+
+            const double nDotL = ir.mNormal * lightDirection;
             spectrum += nDotL;
             
             // compute the specular factor
-            Vector3 reflectRay = reflect(light.getDirection(), ir.mNormal);
-            Vector3 viewVector = (iCamera.getPosition() - intersectionInWorldSpace).normalize();
-            double specularFactor = pow(reflectRay * viewVector, 12.0);
+            Vector3 reflectRay = reflect(lightDirection, ir.mNormal);
+            double specularFactor = pow(reflectRay * ir.mW0, 12.0);
             spectrum += specularFactor;
             
+            const double power = 1.0;
+            spectrum *= attenuation * power;
             //fill the results.
             if(opResult)
             {
@@ -102,15 +131,9 @@ double SimpleIntegrator::computeLi(const Line &iLine,
                 // using the intersection point as starting point for the
                 // visibility tester.
                 //
-                // Furthermore, since this hardcoded light is directional, the
-                // light position is equal to the point of intersection + offset in
-                // the light direction.
                 //
-                Vector3 wi = light.getDirection();
-                const Vector3 lightPos = intersectionInWorldSpace + 1e8 * wi;
-                
-                const Vector3 p = intersectionInWorldSpace + wi;
-                opVisibilityTester->set(p, lightPos, &iScene);
+                const Vector3 p = intersectionInWorldSpace + 1e-5 * lightDirection;
+                opVisibilityTester->set(p, lightPosition, &iScene);
             }
         }
         
