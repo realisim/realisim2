@@ -3,6 +3,7 @@
 #include "Core/FileInfo.h"
 #include "Core/Unused.h"
 #include "ObjLoader.h"
+#include <stdint.h>
 
 using namespace Realisim;
     using namespace Geometry;
@@ -24,33 +25,27 @@ void ObjLoader::addError(const std::string& iE) const
 
 //-----------------------------------------------------------------------------
 // this function assumes the input is triangulated
-Mesh* ObjLoader::createMesh(const tinyobj::attrib_t &iAttrib,
+vector<Mesh*> ObjLoader::createMeshes(const tinyobj::attrib_t &iAttrib,
     const std::vector<tinyobj::shape_t>& iShapes)
 {
-    Mesh *pMesh = new Mesh();
-
-    pMesh->setNumberOfVerticesPerFace(3);
-    vector<Mesh::VertexData>& vds = pMesh->getVerticesRef();
-    vector<Mesh::Face>& faces = pMesh->getFacesRef();
-
-    // copy all vertices
-    for (size_t v = 0; v < iAttrib.vertices.size() / 3; v++) {
-        Mesh::VertexData vd;
-        vd.mVertex.set((double)iAttrib.vertices[3 * v + 0],
-            (double)iAttrib.vertices[3 * v + 1],
-            (double)iAttrib.vertices[3 * v + 2]);
-        vds.push_back(vd);
-    }
-
-    assert(iShapes.size() == 1 && "Handle multiple shape not implemented...");
+    vector<Mesh*> meshes;
 
     // For each shape
-    for (size_t i = 0; i < iShapes.size(); i++) {
+    for (size_t i = 0; i < iShapes.size(); i++)
+    {
+        map<uint32_t, uint32_t> mTinyIndexToMyIndex;
+
+        Mesh *pMesh = new Mesh();
+        pMesh->setNumberOfVerticesPerFace(3);
+
+        // get the mesh guts, so we can fill the structures...
+        vector<Mesh::VertexData>& vds = pMesh->getVerticesRef();
+        vector<Mesh::Face>& faces = pMesh->getFacesRef();
 
         size_t index_offset = 0;
         bool generateNormal = true;
         // For each face
-        // get the normal and texture uv
+        // get the vertex, normal and texture uv
         for (size_t f = 0; f < iShapes[i].mesh.num_face_vertices.size(); f++) {
             size_t fnum = iShapes[i].mesh.num_face_vertices[f];
 
@@ -62,12 +57,25 @@ Mesh* ObjLoader::createMesh(const tinyobj::attrib_t &iAttrib,
             for (size_t v = 0; v < fnum; v++) {
                 tinyobj::index_t idx = iShapes[i].mesh.indices[index_offset + v];
 
-                const int vIndex = idx.vertex_index;
-                face.mVertexIndices[v] = vIndex;
+                const int tinyIndex = idx.vertex_index;
+                // get the vertex and add it to the mesh if necessary
+                if (mTinyIndexToMyIndex.find(tinyIndex) == mTinyIndexToMyIndex.end())
+                {
+                    Mesh::VertexData vd;
+                    vd.mVertex.set((double)iAttrib.vertices[3* tinyIndex + 0],
+                        (double)iAttrib.vertices[3* tinyIndex + 1],
+                        (double)iAttrib.vertices[3* tinyIndex + 2]);
+                    vds.push_back(vd);
+                    mTinyIndexToMyIndex[tinyIndex] = (uint32_t)vds.size() - 1;
+                }
+                const int myIndex = mTinyIndexToMyIndex[tinyIndex];
+
+
+                face.mVertexIndices[v] = myIndex;
                 // has a normal
                 if (idx.normal_index >= 0)
                 {
-                    vds[vIndex].mNormal.set(
+                    vds[myIndex].mNormal.set(
                         (double)iAttrib.normals[idx.normal_index + 0],
                         (double)iAttrib.normals[idx.normal_index + 1],
                         (double)iAttrib.normals[idx.normal_index + 2]);
@@ -77,7 +85,7 @@ Mesh* ObjLoader::createMesh(const tinyobj::attrib_t &iAttrib,
                 // has uv
                 if (idx.texcoord_index >= 0)
                 {
-                    vds[vIndex].mLayerIndexToTextureCoordinates[0].set(
+                    vds[myIndex].mLayerIndexToTextureCoordinates[0].set(
                         (double)iAttrib.texcoords[idx.texcoord_index + 0],
                         (double)iAttrib.texcoords[idx.texcoord_index + 1]);
 
@@ -95,9 +103,10 @@ Mesh* ObjLoader::createMesh(const tinyobj::attrib_t &iAttrib,
 
             index_offset += fnum;
         }
+        meshes.push_back(pMesh);
     }
 
-    return pMesh;
+    return meshes;
 }
 //-----------------------------------------------------------------------------
 const string ObjLoader::getAndClearLastErrors() const
@@ -114,7 +123,7 @@ bool ObjLoader::hasErrors() const
 }
 
 //-----------------------------------------------------------------------------
-Mesh* ObjLoader::load(const string& iFilePath)
+vector<Mesh*> ObjLoader::load(const string& iFilePath)
 {
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
@@ -140,11 +149,11 @@ Mesh* ObjLoader::load(const string& iFilePath)
         printf("ObjLoader::load error: %s\n", mErrors.c_str());
     }
 
-    Mesh *pMesh = nullptr;
+    vector<Mesh*> pMeshes;
     if (!hasErrors())
     {
-        pMesh = createMesh(attrib, shapes);
+        pMeshes = createMeshes(attrib, shapes);
     }
 
-    return pMesh;
+    return pMeshes;
 }

@@ -163,7 +163,7 @@ TEST(MultiClientsMessageQueue, firstTest)
     Client2 c2;
     
     using placeholders::_1;
-    gDoneQueue.setProcessingFunction(bind(processDoneQueue, _1));
+    gDoneQueue.setOneByOneProcessingFunction(bind(processDoneQueue, _1));
     
     function<void(MessageQueue::Message*)> f = bind(&Client0::processRequest, &c0, _1);
     qThreaded.registerAsSender(&c0, f);

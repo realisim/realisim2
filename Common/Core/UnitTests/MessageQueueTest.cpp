@@ -85,9 +85,9 @@ TEST(MessageQueue, oneToOneFast_stopThread)
     MessageQueue qThreaded;
     
     using placeholders::_1;
-    gDoneQueue.setProcessingFunction(bind(processDoneQueue, _1));
+    gDoneQueue.setOneByOneProcessingFunction(bind(processDoneQueue, _1));
     
-    qThreaded.setProcessingFunction(std::bind(processOneToOne, _1));
+    qThreaded.setOneByOneProcessingFunction(std::bind(processOneToOne, _1));
     qThreaded.startInThread();
     
     OneToOneMessage *m0 = new OneToOneMessage; m0->mText = "message0";
@@ -117,9 +117,9 @@ TEST(MessageQueue, oneToOneFast_waitForThreadToFinish)
     MessageQueue qThreaded;
     
     using placeholders::_1;
-    gDoneQueue.setProcessingFunction(bind(processDoneQueue, _1));
+    gDoneQueue.setOneByOneProcessingFunction(bind(processDoneQueue, _1));
     
-    qThreaded.setProcessingFunction(std::bind(processOneToOne, _1));
+    qThreaded.setOneByOneProcessingFunction(std::bind(processOneToOne, _1));
     qThreaded.startInThread();
     
     OneToOneMessage *m0 = new OneToOneMessage; m0->mText = "message0";
@@ -151,9 +151,9 @@ TEST(MessageQueue, sizeLimitedQueue)
     qThreaded.setMaximumSize(3);
 
     using placeholders::_1;
-    gDoneQueue.setProcessingFunction(bind(processDoneQueue, _1));
+    gDoneQueue.setOneByOneProcessingFunction(bind(processDoneQueue, _1));
 
-    qThreaded.setProcessingFunction(std::bind(processOneToOne, _1));
+    qThreaded.setOneByOneProcessingFunction(std::bind(processOneToOne, _1));
     qThreaded.startInThread();
 
     OneToOneMessage *m0 = new OneToOneMessage; m0->mText = "message0";
@@ -185,9 +185,9 @@ TEST(MessageQueue, lifoQueue)
     qThreaded.setBehavior(MessageQueue::bLifo);
 
     using placeholders::_1;
-    gDoneQueue.setProcessingFunction(bind(processDoneQueue, _1));
+    gDoneQueue.setOneByOneProcessingFunction(bind(processDoneQueue, _1));
 
-    qThreaded.setProcessingFunction(std::bind(processOneToOne, _1));
+    qThreaded.setOneByOneProcessingFunction(std::bind(processOneToOne, _1));
     qThreaded.startInThread();
 
     OneToOneMessage *m0 = new OneToOneMessage; m0->mText = "message0";
@@ -219,9 +219,9 @@ TEST(MessageQueue, MultipleConsumers)
     qThreaded.setBehavior(MessageQueue::bFifo);
 
     using placeholders::_1;
-    gDoneQueue.setProcessingFunction(bind(processDoneQueue, _1));
+    gDoneQueue.setOneByOneProcessingFunction(bind(processDoneQueue, _1));
 
-    qThreaded.setProcessingFunction(std::bind(processOneToOne, _1));
+    qThreaded.setOneByOneProcessingFunction(std::bind(processOneToOne, _1));
     qThreaded.setNumberOfThreads( std::thread::hardware_concurrency());
     EXPECT_TRUE(qThreaded.getNumberOfThreads() > 1);
     qThreaded.startInThread();

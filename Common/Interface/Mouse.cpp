@@ -90,25 +90,28 @@ bool Mouse::isButtonPressed(Button iButton) const
 }
 
 //-------------------------------------------------------------------------
-void Mouse::setButtonPressed(Button iButton)
+void Mouse::setButtonPressed(int iX, int iY, Button iButton)
 {
     if (iButton >= 0 && iButton < bCount)
     {
+        setPosition(iX, iY);
         mButtonPressed[(int)iButton] = true;
 
-        if (iButton == bLeft)
+        if (mButtonPressed[bLeft])
         {
             mPositionWhenClicked = getPosition();
         }
+
         updateState();
     }
 }
 
 //-------------------------------------------------------------------------
-void Mouse::setButtonReleased(Button iButton)
+void Mouse::setButtonReleased(int iX, int iY, Button iButton)
 {
     if (iButton >= 0 && iButton < bCount)
     {
+        setPosition(iX, iY);
         mButtonPressed[(int)iButton] = false;
         
         if (iButton == bLeft)
@@ -126,7 +129,7 @@ void Mouse::setPosition(const Math::Vector2i& iPos)
     {
         mDelta = iPos - mPosition;
     }
-    
+
     mPosition = iPos;
     updateState();
 }
@@ -150,6 +153,11 @@ void Mouse::updateState()
         break;
 
     case sMoving:
+        if (getDelta().normSquared() == 0)
+        {
+            mState = sIdle;
+        }
+
         if (isButtonPressed(bLeft) && (getPosition() - getPositionWhenClicked()).norm() >= kDraggingDistance)
         {
             mState = sDragging;
@@ -160,7 +168,7 @@ void Mouse::updateState()
         if (!isButtonPressed(bLeft))
         {
             mState = sMoving;
-            if (getDelta().normSquared() == 0)
+            if (getDelta().norm() <= kDraggingDistance)
             {
                 mState = sIdle;
             }

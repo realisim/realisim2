@@ -89,8 +89,8 @@ TEST(Intersections, lineOctreeOfMeshFaces)
     ObjLoader objLoader;
 
     std::string filePath = getAssetsPath() + "/cow.obj";
-    Mesh *pMesh = objLoader.load(filePath);
-    octree.setMesh(pMesh);
+    std::vector<Mesh*> pMeshes = objLoader.load(filePath);
+    octree.setMesh(pMeshes[0]);
     octree.generate();
 
     Line l;

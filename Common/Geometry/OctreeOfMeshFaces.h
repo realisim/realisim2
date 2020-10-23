@@ -71,6 +71,7 @@ namespace Geometry
         Node *mpRoot; // never null, owned
         Mesh *mpMesh; //not owned
         Stats mStats;
+        int mMaxNumberOfPolygonsPerNode;
     };
 }
 }

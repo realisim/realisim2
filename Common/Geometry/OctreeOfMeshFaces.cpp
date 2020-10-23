@@ -16,7 +16,8 @@ using namespace std;
 //--- OctreeOfMeshFaces
 //---------------------------------------------------------------------------------------------------------------------
 OctreeOfMeshFaces::OctreeOfMeshFaces() :
-    mpRoot(new Node())
+    mpRoot(new Node()),
+    mMaxNumberOfPolygonsPerNode(25)
 {}
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -130,10 +131,11 @@ void OctreeOfMeshFaces::assignFaceIndices(Node *n)
     //  at least one vertices is contained
     //  if no vertices is contained, check the triangle plane intersection with
     //  the current node aabb
-
     bool oneVertexIsContained = false;
     for (auto faceIndex : p->mFaceIndices)
     {
+        oneVertexIsContained = false;
+
         const Mesh::Face &f = faces[faceIndex];
         for (auto vertexIndex : f.mVertexIndices)
         {
@@ -256,7 +258,7 @@ void OctreeOfMeshFaces::generate(Node *n)
     //
     // ~5% of total number of polygons.
     //
-    if (n->mFaceIndices.size() <= 25 /*(0.05 * mpMesh->getNumberOfFaces())*/)
+    if (n->mFaceIndices.size() <= mMaxNumberOfPolygonsPerNode)
     {
         return;
     }
@@ -338,6 +340,8 @@ std::string OctreeOfMeshFaces::statsToString() const
     oss << fixed;
     oss << "---OctreeOfMeshFaces Stats---" << endl;
     oss << "time to generate (s): " << mStats.mTimeToGenerateInSeconds << endl;
+    oss << "number of polygons in original mesh: " << (mpMesh ? mpMesh->getNumberOfFaces() : 0) << endl;
+    oss << "max. number of polygons per node: " << mMaxNumberOfPolygonsPerNode  << endl;
     oss << "depth: " << mStats.mOctreeDepth << endl;
     oss << "total number of nodes: " << mStats.mTotalNumberOfNodes;
 

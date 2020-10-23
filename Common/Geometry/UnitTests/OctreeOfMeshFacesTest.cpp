@@ -47,8 +47,8 @@ TEST(OctreeOfMeshFaces, generate)
     ObjLoader objLoader;
 
     std::string filePath = getAssetsPath() + "/cow.obj";
-    Mesh *pMesh = objLoader.load(filePath);
-    octree.setMesh(pMesh);
+    std::vector<Mesh*> pMeshes = objLoader.load(filePath);
+    octree.setMesh(pMeshes[0]);
     octree.generate();
 
     printf("%s\n%s\n", filePath.c_str(), octree.statsToString().c_str());

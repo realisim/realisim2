@@ -1,5 +1,7 @@
 
 #pragma once
+
+#include <array>
 #include "Math/Vector.h"
 #include <vector>
 
@@ -19,6 +21,7 @@ namespace Geometry
 
         bool contains(const Math::Vector3&) const;
         double getArea() const;
+        std::array<double, 3> getBarycentricCoefficients(const Math::Vector3& iP) const;
         Math::Vector3 getCentroid() const;
         const Math::Vector3& getNormal() const;
         const std::vector<Math::Vector3>& getVertices() const;
@@ -26,11 +29,13 @@ namespace Geometry
         const Math::Vector3& getVertex(int iIndex) const;
         bool isValid() const;
         void set(const Math::Vector3& iP0, const Math::Vector3& iP1, const Math::Vector3& iP2);
+        Math::Vector3 toBarycentric(const Math::Vector3& iP) const;
 
     protected:
-        std::vector<Math::Vector3> x;
+        std::vector<Math::Vector3> mX;
         Math::Vector3 mNormal;
         static Math::Vector3 mDummyVertex;
+        double mBarycentricDenominatorInv; //optimization
     };
 }
 }

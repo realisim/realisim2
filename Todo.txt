@@ -2,13 +2,23 @@
 //---------------------------------------
 2020-10-15
 
-- faire l'intersection avec le octree -         DONE
-- LineSegment                                   DONE
-    intersection avec LineSegment               DONE
-- faire intersection avec BBox correctement     DONE
-- ajouter des stats par frame dans LightBeam
-- Refaire Mesh, vertexData.
-- Faire un logger plus decent...
+- faire l'intersection avec le octree -                         DONE
+- LineSegment                                                   DONE
+    intersection avec LineSegment                               DONE
+- faire intersection avec BBox correctement                     DONE
+- ajouter des stats par frame dans LightBeam                
+    - dans le broker, disponible de partout....             
+- Refaire Mesh, vertexData. - pas convaincue...             
+- Faire un logger plus decent...                
+- ajouter un callback dans messageQueue pour                    DONE
+    recevoir tous les messages d<un coup au lieu de 1 a la 
+    fois... trop de mutex...
+- Triangle: coordonnées barycentriques, modifier le             DONE
+- Triangle::contains pour utiliser le barycentrique.
+    a investiguer.
+- Fixed size memory pool (pour les message)
+- Rename OctreeOfMeshFaces to OctreeOfMeshTriangles
+
 
 - Config
     - numThread

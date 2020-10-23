@@ -22,6 +22,7 @@ namespace LightBeam
         RayTracer& operator=(const RayTracer&) = delete;
         ~RayTracer();
         
+        void debugRayCast(const Math::Vector2i &iPixelPosition);
         bool hasNewFrameAvailable() const;
         Broker& getBroker();
         int getLevelOfDetail() const { return mDesiredLevelOfDetail; }
@@ -52,7 +53,7 @@ namespace LightBeam
         int fillPixels(Core::Image *opImage, const ImageCells& iCells, const Math::Vector2i& iCellIndex, const Geometry::Rectangle& iCellCoverage);
         int fillPixel(Core::Image *opImage, const ImageCells& iCells, const Math::Vector2i& iCellIndex, const Geometry::Rectangle& iCellCoverage);
         void mergeImage(Core::Image *opImage, ImageCells&);
-        void processReply(Core::MessageQueue::Message*);
+        void processReplies( const std::vector<Core::MessageQueue::Message*>& );
         void processMessage(Core::MessageQueue::Message*);
         void rayCast(ImageCells* iCells, const Math::Vector2i& iCell);
         void rayCast(int iDepth, const Geometry::Line& iRay, const Scene& iScene, const Rendering::Camera& iCamera, Core::Color *opColor, double *opDistanceToCamera);

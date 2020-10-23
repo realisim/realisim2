@@ -14,7 +14,7 @@ MultiClientsMessageQueue::MultiClientsMessageQueue() :
     using placeholders::_1;
     function<void(Realisim::Core::MessageQueue::Message*)> f =
         bind(&MultiClientsMessageQueue::processRequestMessage, this, _1);
-    mRequestQueue.setProcessingFunction(f);
+    mRequestQueue.setOneByOneProcessingFunction(f);
     mRequestQueue.setBehavior(MessageQueue::bFifo);
 }
 

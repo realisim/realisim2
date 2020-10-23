@@ -79,11 +79,7 @@ void View::mousePressEvent(QMouseEvent *ipE)
 {
     Mouse& m = getBroker().getMouse();
     
-    m.setButtonPressed(Mouse::bLeft);
-    m.setPosition(ipE->x(), ipE->y());
-    
-// hacky solution since setMouseTracking does not work...
-m.getAndClearDelta();
+    m.setButtonPressed(ipE->x(), ipE->y(), Mouse::bLeft);
 }
 
 //-----------------------------------------------------------------------------
@@ -97,8 +93,7 @@ void View::mouseMoveEvent(QMouseEvent *ipE)
 void View::mouseReleaseEvent(QMouseEvent *ipE)
 {
     Mouse& m = getBroker().getMouse();
-    m.setButtonReleased(Mouse::bLeft);
-    m.setPosition(ipE->x(), ipE->y());
+    m.setButtonReleased(ipE->x(), ipE->y(), Mouse::bLeft);
 }
 
 //-----------------------------------------------------------------------------
@@ -116,7 +111,7 @@ void View::resizeEvent(QResizeEvent *ipE)
     
     //init final image
     Image &im = b.getFinalImage();
-    im.set(vp.getWidth()-2, vp.getHeight()-2, iifRgbaUint8);
+    im.set(vp.getWidth(), vp.getHeight(), iifRgbaUint8);
     
     viewChanged();
 }

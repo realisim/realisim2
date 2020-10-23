@@ -19,7 +19,7 @@ mIsIdenticalContiguousMessageAllowed(true)
 
 {
     using std::placeholders::_1;
-    mProcessingFunction = std::bind(&MessageQueue::dummyProcessingFunction, this, _1);
+    mOneByOneProcessingFunction = std::bind(&MessageQueue::dummyOneByOneProcessingFunction, this, _1);
 
     // by default, on thread available, thread is not started...
     mThreads.resize(1);
@@ -66,7 +66,7 @@ void MessageQueue::clear()
 }
 
 //------------------------------------------------------------------------------
-void MessageQueue::dummyProcessingFunction(Message* iM)
+void MessageQueue::dummyOneByOneProcessingFunction(Message* iM)
 {
     (void)iM; //suppress warning
     printf("dummy processing function\n");
@@ -167,11 +167,71 @@ void MessageQueue::post( Message* iM )
 }
 
 //------------------------------------------------------------------------------
+// This method will invoke the OneByOne callback on all messages contained in the
+// queue.
+// See method processMessagesAllAtOnce for a more performant version, which requires
+// a different callback
+//
 void MessageQueue::processMessages()
 {
     while( getNumberOfMessages() > 0 )
     {
         processNextMessage();
+    }
+}
+
+//------------------------------------------------------------------------------
+void MessageQueue::processMessagesAllAtOnce()
+{
+    static std::vector<Message*> allMessages;
+    
+    // pop first message and process it!
+    mMutex.lock();
+    const int numMessages = getNumberOfMessages();
+    allMessages.resize(numMessages);
+    if (mQueue.size() > 0)
+    {
+        int index = 0;
+        Message *m = nullptr;
+        switch (getBehavior())
+        {
+        case bFifo:
+            m = mQueue.front();
+            while (m) // beware of calling front on an empty container... it is undefined
+            {
+                allMessages[index] = m;
+                mQueue.pop_front();
+                index++;
+                m = (index < numMessages) ? mQueue.front() : nullptr;
+            }
+            break;
+        case bLifo:
+            m = mQueue.back();
+            index++;
+            while (m) // beware of calling front on an empty container... it is undefined
+            {
+                allMessages[index] = m;
+                mQueue.pop_back();
+                index++;
+                m = (index < numMessages) ? mQueue.back() : nullptr;
+            }
+            break;
+        default: assert(0); break;
+        }
+        mMutex.unlock();
+
+        mAllAtOnceProcessingFunction(allMessages);
+
+        //delete all
+        
+        for (int i = 0; i < numMessages; ++i)
+        {
+            delete allMessages[i];
+        }
+    }
+    else
+    {
+        mMutex.unlock();
     }
 }
 
@@ -197,7 +257,7 @@ void MessageQueue::processNextMessage()
         }
         mMutex.unlock();
 
-        mProcessingFunction(m);
+        mOneByOneProcessingFunction(m);
 
         delete m;
     }
@@ -206,6 +266,13 @@ void MessageQueue::processNextMessage()
         mMutex.unlock();
     }
 }
+
+//------------------------------------------------------------------------------
+void MessageQueue::setAllAtOnceProcessingFunction(std::function<void(const std::vector<Message*>&)> iFunction)
+{
+    mAllAtOnceProcessingFunction = iFunction;
+}
+
 
 //------------------------------------------------------------------------------
 // Sets the behavior of the queue
@@ -254,16 +321,16 @@ void MessageQueue::setNumberOfThreads(int iN)
 }
 
 //------------------------------------------------------------------------------
-void MessageQueue::setProcessingFunction(std::function<void(Message*)> iFunction)
+void MessageQueue::setOneByOneProcessingFunction(std::function<void(Message*)> iFunction)
 {
-    if(iFunction)
+    if (iFunction)
     {
-        mProcessingFunction = iFunction;
+        mOneByOneProcessingFunction = iFunction;
     }
     else
     {
         using std::placeholders::_1;
-        mProcessingFunction = std::bind(&MessageQueue::dummyProcessingFunction, this, _1);
+        mOneByOneProcessingFunction = std::bind(&MessageQueue::dummyOneByOneProcessingFunction, this, _1);
     }
 }
 

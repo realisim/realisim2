@@ -35,8 +35,8 @@ namespace Interface
             Math::Vector2i getPositionWhenClicked() const;
             State getState() const;
             bool isButtonPressed(Button iButton) const;
-            void setButtonPressed(Button iButton);
-            void setButtonReleased(Button iButton);
+            void setButtonPressed(int iX, int iY, Button iButton);
+            void setButtonReleased(int iX, int iY, Button iButton);
             void setPosition(const Math::Vector2i& iPos);
             void setPosition(int iX, int iY);
             std::string toString() const;

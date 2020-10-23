@@ -1,3 +1,7 @@
 *.bak
 bin/
 cmake/
+
+# LightBeam
+Projects/LightBeam/issues
+Projects/LightBeam/screenshots

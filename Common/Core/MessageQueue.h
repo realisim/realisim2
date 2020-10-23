@@ -155,16 +155,18 @@ namespace Core
         void post( Message* );
         void processNextMessage();
         void processMessages();
+        void processMessagesAllAtOnce();
+        void setAllAtOnceProcessingFunction(std::function<void(const std::vector<Message*>&)>);
         void setBehavior(Behavior);
         void setMaximumSize(int);
         void setNumberOfThreads(int iN);
-        void setProcessingFunction(std::function<void(Message*)>);
+        void setOneByOneProcessingFunction(std::function<void(Message*)>);
         void startInThread();
         void stopThread();
         void waitForThreadToFinish();
 
     protected:
-        void dummyProcessingFunction(Message*);
+        void dummyOneByOneProcessingFunction(Message*);
         void threadLoop();
         void setState(state);
         
@@ -173,7 +175,8 @@ namespace Core
         mutable std::recursive_mutex mMutex;
         std::condition_variable_any mQueueWaitCondition;
         state mState;
-        std::function<void(Message*)> mProcessingFunction;
+        std::function<void(Message*)> mOneByOneProcessingFunction;
+        std::function<void( std::vector<Message*>& )> mAllAtOnceProcessingFunction;
         int mMaximumSize;
         Behavior mBehavior;
         bool mIsIdenticalContiguousMessageAllowed;

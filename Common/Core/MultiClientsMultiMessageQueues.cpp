@@ -150,7 +150,7 @@ void MultiClientsMultiMessageQueues::start()
             using placeholders::_1;
             function<void(Realisim::Core::MessageQueue::Message*)> f =
                bind(&MultiClientsMultiMessageQueues::processRequestMessage, this, _1);
-            mRequestQueues[i]->setProcessingFunction(f);
+            mRequestQueues[i]->setOneByOneProcessingFunction(f);
             mRequestQueues[i]->setBehavior(MessageQueue::bFifo);
 
             mRequestQueues[i]->startInThread();

@@ -52,17 +52,19 @@ namespace Realisim
             Vector3 p;
             IntersectionType t;
 
-            const Vector3 l = iL.getDirection();
+            const Vector3 &l = iL.getDirection();
             const Vector3 &n = iNormalOfPlane;
-            const Vector3 l0 = iL.getOrigin();
-            const Vector3 p0 = iPosOnPlane;
+            const Vector3 &l0 = iL.getOrigin();
+            const Vector3 &p0 = iPosOnPlane;
 
             double d = 0.0;
             // check if parallel
-            if (isEqual(l*n, 0.0, 1e-8))
+            const double lDotn = l*n;
+            const double p0Minusl0Dotn = (p0 - l0)*n;
+            if (isEqual(lDotn, 0.0, 1e-8))
             {
                 // check if line is contained
-                if (isEqual((p0 - l0)*n, 0.0, 1e-8))
+                if (isEqual(p0Minusl0Dotn, 0.0, 1e-8))
                 {
                     t = itLine;
                 }
@@ -75,7 +77,7 @@ namespace Realisim
             {
                 t = itPoint;
                 // compute the point of intersection d
-                d = (p0 - l0)*n / (l*n);
+                d = p0Minusl0Dotn / (lDotn);
                 p = l*d + l0;
             }
 
@@ -368,7 +370,7 @@ namespace Realisim
                 {
                     iType = itPoint;
                 }
-                if (oPoints->size() > 1) {
+                else if (oPoints->size() > 1) {
                     iType = itPoints;
                 }
                 else {
@@ -404,14 +406,13 @@ namespace Realisim
                     {
                         iType = intersect(iL, ipN->mTriangles[i], &p, &n, &d);
 
-                        if (iType == itPoint)
+                        if (iType != itNone)
                         {
                             if (oPoints) oPoints->push_back(p);
                             if (oNormals) oNormals->push_back(n);
                             if (oDs) oDs->push_back(d);
                         }
                     }
-
 
                     ////!!!!! TEMP CODE - INTERSECTION AABB TO DEBUG
                     //IntersectionType iType;
@@ -428,7 +429,7 @@ namespace Realisim
                     //}
                     ////!!!!! END OF TEMP CODE
 
-                    return;
+                    //return;
                 }
 
                 const int numberOfChilds = ipN->getNumberOfChilds();
@@ -558,6 +559,9 @@ namespace Realisim
             }
             else if (allOutside)
             {
+                // --- Gross collision with triangle aabb
+                // it is a bit greedy but works...
+                //
                 AxisAlignedBoundingBox triAabb;
                 const vector<Vector3> &triVs = iTri.getVertices();
                 triAabb.addPoint(triVs[0]);
@@ -568,6 +572,8 @@ namespace Realisim
                 {
                     iType = itPoint;
                 }
+                //--------------------------------------
+
                 //// it might ou might not intersect
                 ////
                 //// make 12 segments and intersect with the plane

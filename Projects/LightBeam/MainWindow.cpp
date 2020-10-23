@@ -21,7 +21,7 @@ using namespace Realisim;
     using namespace Math;
 using namespace std;
 
-const int kInitialLod = 16;
+const int kInitialLod = 8;
 
 //-----------------------------------------------------------------------------
 //--- MainWindow
@@ -36,7 +36,7 @@ MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow()
     setCentralWidget(pCentralWidget);
 
     QHBoxLayout* pLyt = new QHBoxLayout(pCentralWidget);
-    pLyt->setMargin(5);
+    pLyt->setMargin(0);
     {
         mpView = new View(pCentralWidget, ipBroker);
         connect(mpView, SIGNAL(viewChanged()), this, SLOT(viewChanged()));
@@ -51,12 +51,12 @@ MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow()
     Broker &b = getBroker();
     Scene &scene = b.getScene();
     Rendering::Camera &cam  = b.getCamera();
-    cam.set(Vector3(1.0, 2.0, 4.0),
+    cam.set(Vector3(10.0, 20.0, 30.0),
         Vector3(0.0, 0.0, 0.0),
         Vector3(0.0, 1.0, 0.0));
     
     // add a plane
-    Geometry::Plane p(Vector3(0.0, -30, 0.0), Vector3(0.0, 1.0, 0.0));
+    Geometry::Plane p(Vector3(0.0, -5, 0.0), Vector3(0.0, 1.0, 0.0));
     shared_ptr<PlaneNode> pn = make_shared<PlaneNode>();
     pn->setPlane(p);
     shared_ptr<Material> mat0 = make_shared<Material>();
@@ -107,39 +107,47 @@ MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow()
     //shared_ptr<LightNode> lightNode = make_shared<LightNode>();
     //lightNode->setLight(l);
     
-    // add a mesh
-    shared_ptr<MeshNode> meshNode = make_shared<MeshNode>();
-    shared_ptr<Material> mat4 = make_shared<Material>();
-    mat4->setColor(Color(0.8, 0.8, 0.8, 1.0));
-    mat4->setSpecularFactor(0.0);
-    mat4->setGlossFactor(0.0);
-    meshNode->setMaterial(mat4);
-
     //Geometry::PlatonicSolid ps(Geometry::PlatonicSolid::tCube);
     //Geometry::Mesh *pMesh = new Geometry::Mesh(ps.getMesh());
     //meshNode->setMeshAndTakeOwnership(pMesh);
 
     Geometry::ObjLoader objLoader;
+    vector<Geometry::Mesh*> pMeshes;
     //Geometry::Mesh *pMesh = objLoader.load("D:/Models/standford models/monkey.obj");
-    //Geometry::Mesh *pMesh = objLoader.load("D:/Models/standford models/happyBuddha.obj");
-    //Geometry::Mesh *pMesh = objLoader.load("D:/Models/untitled.obj");
+    //vector<Geometry::Mesh*> pMeshes = objLoader.load("D:/Models/standford models/happyBuddha.obj");
+    //pMeshes = objLoader.load("D:/Models/someBoxes.obj");
+    //pMeshes = objLoader.load("D:/Models/flowerPot.obj");
+    //pMeshes = objLoader.load("D:/Models/debugObject2.obj");
     //Geometry::Mesh *pMesh = objLoader.load("D:/Models/standford models/horse.obj");
     //Geometry::Mesh *pMesh = objLoader.load("D:/Models/standford models/bunny.obj");
-    //Geometry::Mesh *pMesh = objLoader.load("D:/Models/standford models/armadillo.obj");
-    //Geometry::Mesh *pMesh = objLoader.load("D:/Models/standford models/xyzrgb_dragon.obj");
-    Geometry::Mesh *pMesh = objLoader.load("D:/Models/standford models/sponza-master/sponza.obj");
-        
+    //pMeshes = objLoader.load("D:/Models/standford models/armadillo.obj");
+    pMeshes = objLoader.load("D:/Models/standford models/xyzrgb_dragon.obj");
+    //pMeshes = objLoader.load("D:/Models/standford models/sponza-master/sponza.obj");
+
     if (!objLoader.hasErrors())
     {
-        meshNode->setMeshAndTakeOwnership(pMesh);
+        // add all meshes
+        // add a mesh
+        for (auto pMesh : pMeshes)
+        {
+            shared_ptr<MeshNode> meshNode = make_shared<MeshNode>();
+            shared_ptr<Material> mat4 = make_shared<Material>();
+            mat4->setColor(Color(0.8, 0.8, 0.8, 1.0));
+            mat4->setSpecularFactor(0.0);
+            mat4->setGlossFactor(0.0);
+            meshNode->setMaterial(mat4);
+            meshNode->setMeshAndTakeOwnership(pMesh);
+            scene.addNode(meshNode);
+        }
+        
     }
 
-    scene.addNode(pn);
-    scene.addNode(sn);
-    scene.addNode(sn2);
+    //scene.addNode(pn);
+    //scene.addNode(sn);
+    //scene.addNode(sn2);
     //scene.addNode(sn3);
     scene.addNode(lightNode);
-    scene.addNode(meshNode);
+    //scene.addNode(meshNode);
     //------------------------------------
     
     mUpdateTimerId = startTimer(30);
@@ -160,11 +168,11 @@ void MainWindow::handleUserInput()
     
     //--- Mouse
     Mouse &mouse = b.getMouse();
-    if(mouse.isButtonPressed(Mouse::bLeft) &&
-       mouse.getDelta().normSquared() > 0 )
+    if(mouse.getState() == Mouse::sDragging)
     {
         const double f = degreesToRadians(1.0);
         const Vector2i d = mouse.getAndClearDelta();
+        
         
         c.rotate(f * -d.x(),
                  Vector3(0.0, 1.0, 0.0),
@@ -174,7 +182,10 @@ void MainWindow::handleUserInput()
                  c.getLateralVector(),
                  c.getPosition() );
         
-        renderNeeded = true;
+        if (d.normSquared() > 0)
+        {
+            renderNeeded = true;
+        }
     }
     
     //--- keyboard
@@ -215,6 +226,20 @@ void MainWindow::handleUserInput()
             
             renderNeeded = true;
         }
+
+
+        //--- crappy debugging keys
+        if (k.isKeyPressed(Key_R))
+        {
+            // Qt is Y down, while we are Y up...
+            // make the conversion here
+            const int viewPortHeight = b.getCamera().getViewport().getHeight();
+            Vector2i p(mouse.getPosition());
+            p.setY(viewPortHeight - p.y());
+
+            
+            mRayTracerRef.debugRayCast(p);
+        }
     }
     
     if(renderNeeded)
@@ -243,7 +268,7 @@ void MainWindow::timerEvent(QTimerEvent *ipE)
         else
         {
             int lod = mRayTracerRef.getLevelOfDetail();
-            lod /= 2;
+            lod *= 0.5;
             if (lod > 0)
             {
                 mRayTracerRef.render(lod);

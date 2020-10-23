@@ -20,7 +20,7 @@ using namespace std;
 
 namespace  {
     const int kMaxRecursionDepth = 5;
-    const int kTileSize = 64;
+    const int kTileSize = 16;
     int kNumThreads = 1;
 }
 
@@ -29,19 +29,26 @@ RayTracer::RayTracer(Broker *ipBroker) :
     mBrokerRef(*ipBroker)
 {
     // set max number of threads
+#ifdef NDEBUG
     kNumThreads = std::thread::hardware_concurrency();
+#else
+    kNumThreads = 1;
+#endif // NDEBUG
+
+    
 
     using placeholders::_1;
     function<void(MessageQueue::Message*)> f =
         bind(&RayTracer::processMessage, this, _1);
-    mMessageQueue.setProcessingFunction(f);
+    mMessageQueue.setOneByOneProcessingFunction(f);
     mMessageQueue.setMaximumSize(-1);
     mMessageQueue.setNumberOfThreads(kNumThreads);
     mMessageQueue.setBehavior(MessageQueue::bFifo);
     mMessageQueue.startInThread();
     
-    f = bind(&RayTracer::processReply, this, _1);
-    mReplyQueue.setProcessingFunction(f);
+    function<void( const std::vector<MessageQueue::Message*>& )> f2 =
+        bind(&RayTracer::processReplies, this, _1);
+    mReplyQueue.setAllAtOnceProcessingFunction(f2);
     mMessageQueue.setBehavior(MessageQueue::bFifo);
     mReplyQueue.setMaximumSize(-1);
 }
@@ -50,6 +57,34 @@ RayTracer::RayTracer(Broker *ipBroker) :
 RayTracer::~RayTracer()
 {
     mMessageQueue.stopThread();
+}
+
+//-----------------------------------------------------------------------------
+void RayTracer::debugRayCast(const Vector2i &iPixelPosition)
+{
+    Broker &b = getBroker();
+    Camera &camera = b.getCamera();
+    const Scene &scene = b.getScene();
+
+    // make ray for given pixel
+    const Vector2 pixelPos = Vector2(iPixelPosition) + Vector2(0.5);
+
+    const Vector3 camPos = camera.getPosition();
+    Line ray(camPos,
+        camera.pixelToWorld(pixelPos,
+            camPos + camera.getDirection()));
+
+    Color color;
+    double distanceToCamera;
+    rayCast(0, ray, scene, camera, &color, &distanceToCamera);
+
+    printf("--- Debug Ray ---\n"
+        "Pixel pos: %.1f, %.1f\n"
+        "Color: %.2f, %.2f, %.2f, %.2f\n"
+        "Distance to camera (m): %f\n",
+        pixelPos.x(), pixelPos.y(),
+        color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha(),
+        distanceToCamera);
 }
 
 //-----------------------------------------------------------------------------
@@ -109,7 +144,12 @@ bool RayTracer::hasNewFrameAvailable() const
     bool r = !mReplyQueue.isEmpty();
     
     //
-    mReplyQueue.processMessages();
+    //int numMessages = mReplyQueue.getNumberOfMessages();
+    //Timer _t;
+    mReplyQueue.processMessagesAllAtOnce();
+    //double e = _t.elapsed();
+    //printf("number of replies: %d, handled in %.4f sec.\n", numMessages, (float)e );
+    
     return r;
 }
 
@@ -148,16 +188,21 @@ void RayTracer::mergeImage(Core::Image *opImage, ImageCells& iCells)
 //-----------------------------------------------------------------------------
 // reply is handled in the MAIN thread
 //
-void RayTracer::processReply(Core::MessageQueue::Message* ipM)
+void RayTracer::processReplies( const vector<Core::MessageQueue::Message*>& ipMessages)
 {
-    RaytraceReply *m = dynamic_cast<RaytraceReply*>(ipM);
-    if(m)
+    RaytraceReply *m = nullptr;
+    const int numMessages = (int)ipMessages.size();
+    for (int i = 0; i < numMessages; ++i)
     {
-        // update final image
-        //
-        mergeImage(&mFinalImage, m->mRenderedCells);
-        //printf("processReply id: %d, level: %d %f(s)\n", m->mId, mDesiredLevelOfDetail, _t.elapsed());
+        m = dynamic_cast<RaytraceReply*>(ipMessages[i]);
+        if (m)
+        {
+            // update final image
+            //
+            mergeImage(&mFinalImage, m->mRenderedCells);
+        }
     }
+    
 }
 
 //-----------------------------------------------------------------------------
@@ -178,7 +223,6 @@ void RayTracer::processMessage(MessageQueue::Message* ipM)
         done->mRenderedCells = cells;
         done->mId = m->mId;
         mReplyQueue.post(done);
-        
     }
 }
 
@@ -319,11 +363,8 @@ void RayTracer::render(ImageCells* iCells)
     const int w = iCells->getWidthInCells();
     const int h = iCells->getHeightInCells();
     
-    //#pragma omp parallel for //not tested
     for(int y = 0; y < h; ++y)
     {
-        // exit the rendering loop if there is a new message
-        // in the queue...
         for(int x = 0; x < w; ++x)
         {
             const Vector2i cell(x, y);
