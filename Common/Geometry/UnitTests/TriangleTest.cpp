@@ -203,6 +203,12 @@ TEST(Triangle, barycentricCoordinates)
     EXPECT_DOUBLE_EQ(0.5, c[1]);
     EXPECT_DOUBLE_EQ(0.0, c[2]);
 
+    p.set(1.0, -1.0, 0.0);
+    c = t.getBarycentricCoefficients(p);
+    EXPECT_DOUBLE_EQ(0.0, c[0]);
+    EXPECT_DOUBLE_EQ(1.0, c[1]);
+    EXPECT_DOUBLE_EQ(0.0, c[2]);
+
     // out of plane...
     p.set(0.0, 0.0, 3.0);
     c = t.getBarycentricCoefficients(p);

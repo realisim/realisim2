@@ -270,9 +270,6 @@ void RayTracer::rayCast( int iDepth,
     
     double f = mIntegrator.computeLi(iRay, iScene, iCamera, &ir, &vt);
     
-    if(vt.isOccluded() || f < 0.0)
-    { f = 0.0; }
-    
     const double specularFactor = ir.mpMaterial->getSpecularFactor();
     const double oneMinusSpec = 1.0 - specularFactor;
     

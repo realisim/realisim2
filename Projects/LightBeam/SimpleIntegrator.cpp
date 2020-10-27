@@ -67,7 +67,7 @@ double SimpleIntegrator::computeLi(const Line &iLine,
         
         ir = results[0];
         results.clear();
-        
+
         const Vector3 intersectionInWorldSpace = iLine.getOrigin() +
           ir.mD*iLine.getDirection();
         ir.mW0 = iCamera.getPosition() - intersectionInWorldSpace;
@@ -76,8 +76,13 @@ double SimpleIntegrator::computeLi(const Line &iLine,
         const vector<shared_ptr<ILightNode>>& lights = iScene.getLights();
         
         // comput lights contribution
+// THIS CODE SHOULD GO IN Light::Li() method
+//
+//
+        double perLightSpectrum = 0;
         for(auto lightNode : lights)
         {
+            perLightSpectrum = 0.0;
             const Light &light = lightNode->getLight();
             
             Vector3 lightDirection; // wi
@@ -109,31 +114,34 @@ double SimpleIntegrator::computeLi(const Line &iLine,
             default: break;
             }
 
+            // using the intersection point as starting point for the
+            // visibility tester.
+            //
+            //
+            const Vector3 p = intersectionInWorldSpace + 1e-5 * lightDirection;
+            opVisibilityTester->set(p, lightPosition, &iScene);
+
             const double nDotL = ir.mNormal * lightDirection;
-            spectrum += nDotL;
+            perLightSpectrum += fabs(nDotL);
             
             // compute the specular factor
             Vector3 reflectRay = reflect(lightDirection, ir.mNormal);
-            double specularFactor = pow(reflectRay * ir.mW0, 12.0);
-            spectrum += specularFactor;
+            double specularFactor = pow(reflectRay * ir.mW0, 128.0);
+            perLightSpectrum += specularFactor;
             
             const double power = 1.0;
-            spectrum *= attenuation * power;
+            perLightSpectrum *= attenuation * power;
+
+            spectrum += perLightSpectrum;
+            if (opVisibilityTester->isOccluded())
+            {
+                spectrum -= perLightSpectrum;
+            }
+
             //fill the results.
             if(opResult)
             {
                 (*opResult) = ir;
-            }
-            
-            // fill the visibility tester if necessary
-            if(opVisibilityTester)
-            {
-                // using the intersection point as starting point for the
-                // visibility tester.
-                //
-                //
-                const Vector3 p = intersectionInWorldSpace + 1e-5 * lightDirection;
-                opVisibilityTester->set(p, lightPosition, &iScene);
             }
         }
         

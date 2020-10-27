@@ -14,14 +14,21 @@ namespace Geometry
     public:
         ObjLoader();
         ~ObjLoader();
+        
+        struct Asset
+        {
+            std::vector<std::string> mName;
+            std::vector<Mesh*> mMeshes;
+            //std::vector<Material*> mMaterials;
+        };
 
         const std::string getAndClearLastErrors() const;
         bool hasErrors() const;
-        std::vector<Mesh*> load(const std::string &iFilePath);
+        Asset load(const std::string &iFilePath);
 
     protected:
         void addError(const std::string& iE) const;
-        std::vector<Mesh*> createMeshes(const tinyobj::attrib_t &iAttrib, const std::vector<tinyobj::shape_t>& iShapes);
+        void createAsset(const tinyobj::attrib_t &iAttrib, const std::vector<tinyobj::shape_t>& iShapes, Asset *opAsset);
 
         mutable std::string mErrors;
     };

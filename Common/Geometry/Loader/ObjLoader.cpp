@@ -23,17 +23,23 @@ void ObjLoader::addError(const std::string& iE) const
     mErrors += mErrors.empty() ? iE : "\n" + iE;
 }
 
+typedef pair<uint32_t, uint32_t> TinyIndexPair;
 //-----------------------------------------------------------------------------
 // this function assumes the input is triangulated
-vector<Mesh*> ObjLoader::createMeshes(const tinyobj::attrib_t &iAttrib,
-    const std::vector<tinyobj::shape_t>& iShapes)
+void ObjLoader::createAsset(const tinyobj::attrib_t &iAttrib,
+    const std::vector<tinyobj::shape_t>& iShapes,
+    Asset *opAsset)
 {
-    vector<Mesh*> meshes;
-
     // For each shape
     for (size_t i = 0; i < iShapes.size(); i++)
     {
-        map<uint32_t, uint32_t> mTinyIndexToMyIndex;
+        // this map is tricky...
+        // Tiny obj has a vertex pool and a normal pool
+        // We have no pool, we must have a vertex and normal pair (see Mesh::VertexData)
+        // for that reason, we use tiny vertex index and normal index as the key of the map
+        // to point to our unique VertexData index.
+        //
+        map<TinyIndexPair, uint32_t> mTinyIndexToMyIndex;
 
         Mesh *pMesh = new Mesh();
         pMesh->setNumberOfVerticesPerFace(3);
@@ -57,38 +63,39 @@ vector<Mesh*> ObjLoader::createMeshes(const tinyobj::attrib_t &iAttrib,
             for (size_t v = 0; v < fnum; v++) {
                 tinyobj::index_t idx = iShapes[i].mesh.indices[index_offset + v];
 
-                const int tinyIndex = idx.vertex_index;
+                const int tinyVIndex = idx.vertex_index;
+                const int tinyNIndex = idx.normal_index;
+                const int tinyTIndex = idx.texcoord_index;
+                TinyIndexPair tinyIndexPair = make_pair(tinyVIndex, tinyNIndex);
                 // get the vertex and add it to the mesh if necessary
-                if (mTinyIndexToMyIndex.find(tinyIndex) == mTinyIndexToMyIndex.end())
+                if (mTinyIndexToMyIndex.find(tinyIndexPair) == mTinyIndexToMyIndex.end())
                 {
                     Mesh::VertexData vd;
-                    vd.mVertex.set((double)iAttrib.vertices[3* tinyIndex + 0],
-                        (double)iAttrib.vertices[3* tinyIndex + 1],
-                        (double)iAttrib.vertices[3* tinyIndex + 2]);
+                    vd.mVertex.set((double)iAttrib.vertices[3* tinyVIndex + 0],
+                        (double)iAttrib.vertices[3* tinyVIndex + 1],
+                        (double)iAttrib.vertices[3* tinyVIndex + 2]);
                     vds.push_back(vd);
-                    mTinyIndexToMyIndex[tinyIndex] = (uint32_t)vds.size() - 1;
+                    mTinyIndexToMyIndex[tinyIndexPair] = (uint32_t)vds.size() - 1;
                 }
-                const int myIndex = mTinyIndexToMyIndex[tinyIndex];
-
-
+                const int myIndex = mTinyIndexToMyIndex[tinyIndexPair];
                 face.mVertexIndices[v] = myIndex;
+
                 // has a normal
-                if (idx.normal_index >= 0)
+                if (tinyNIndex >= 0)
                 {
                     vds[myIndex].mNormal.set(
-                        (double)iAttrib.normals[idx.normal_index + 0],
-                        (double)iAttrib.normals[idx.normal_index + 1],
-                        (double)iAttrib.normals[idx.normal_index + 2]);
+                        (double)iAttrib.normals[3 * tinyNIndex + 0],
+                        (double)iAttrib.normals[3 * tinyNIndex + 1],
+                        (double)iAttrib.normals[3 * tinyNIndex + 2]);
                     generateNormal = false;
                 }
 
                 // has uv
-                if (idx.texcoord_index >= 0)
+                if (tinyTIndex >= 0)
                 {
                     vds[myIndex].mLayerIndexToTextureCoordinates[0].set(
-                        (double)iAttrib.texcoords[idx.texcoord_index + 0],
-                        (double)iAttrib.texcoords[idx.texcoord_index + 1]);
-
+                        (double)iAttrib.texcoords[2 * tinyTIndex + 0],
+                        (double)iAttrib.texcoords[2 * tinyTIndex + 1]);
                 }
             }
 
@@ -103,10 +110,13 @@ vector<Mesh*> ObjLoader::createMeshes(const tinyobj::attrib_t &iAttrib,
 
             index_offset += fnum;
         }
-        meshes.push_back(pMesh);
+
+        // add name and mesh to asset
+        //
+        opAsset->mName.push_back(iShapes[i].name);
+        opAsset->mMeshes.push_back(pMesh);
     }
 
-    return meshes;
 }
 //-----------------------------------------------------------------------------
 const string ObjLoader::getAndClearLastErrors() const
@@ -123,7 +133,7 @@ bool ObjLoader::hasErrors() const
 }
 
 //-----------------------------------------------------------------------------
-vector<Mesh*> ObjLoader::load(const string& iFilePath)
+ObjLoader::Asset ObjLoader::load(const string& iFilePath)
 {
     tinyobj::attrib_t attrib;
     std::vector<tinyobj::shape_t> shapes;
@@ -149,11 +159,11 @@ vector<Mesh*> ObjLoader::load(const string& iFilePath)
         printf("ObjLoader::load error: %s\n", mErrors.c_str());
     }
 
-    vector<Mesh*> pMeshes;
+    Asset asset;
     if (!hasErrors())
     {
-        pMeshes = createMeshes(attrib, shapes);
+        createAsset(attrib, shapes, &asset);
     }
 
-    return pMeshes;
+    return asset;
 }

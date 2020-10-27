@@ -12,6 +12,10 @@ using namespace Realisim;
     using namespace Math;
 using namespace std;
 
+namespace {
+    const int kMaxDepth = 55;
+}
+
 //---------------------------------------------------------------------------------------------------------------------
 //--- OctreeOfMeshFaces
 //---------------------------------------------------------------------------------------------------------------------
@@ -132,7 +136,7 @@ void OctreeOfMeshFaces::assignFaceIndices(Node *n)
     //  if no vertices is contained, check the triangle plane intersection with
     //  the current node aabb
     bool oneVertexIsContained = false;
-    for (auto faceIndex : p->mFaceIndices)
+    for (auto faceIndex : p->mMeshFaceIndices)
     {
         oneVertexIsContained = false;
 
@@ -141,7 +145,7 @@ void OctreeOfMeshFaces::assignFaceIndices(Node *n)
         {
             if (n->mAabb.contains(vds[vertexIndex].mVertex))
             {
-                n->mFaceIndices.push_back(faceIndex);
+                n->mMeshFaceIndices.push_back(faceIndex);
                 oneVertexIsContained = true;
                 break;
             }
@@ -157,7 +161,7 @@ void OctreeOfMeshFaces::assignFaceIndices(Node *n)
             
             if (intersects(tri, n->mAabb))
             {
-                n->mFaceIndices.push_back(faceIndex);
+                n->mMeshFaceIndices.push_back(faceIndex);
             }
         }
     }
@@ -173,18 +177,23 @@ void OctreeOfMeshFaces::clear()
 }
 
 //---------------------------------------------------------------------------------------------------------------------
+// This method will remove all faceIndices from non leaf, as they where only useful during the octree generation.
+// On leaf nodes, triangles will be add, as an optimization to speed up working with the mesh triangles.
+// We do not clean the faces indices of the leaf nodes as they will be needed to point to the correct
+// mesh faces/VertexData.
+//
 void OctreeOfMeshFaces::cleanupAndAssignLeafTriangles(Node *n, int depthCount)
 {
     mStats.mOctreeDepth = max(mStats.mOctreeDepth, depthCount);
 
     if (n->hasChilds())
     {
-        n->mFaceIndices.clear();
+        n->mMeshFaceIndices.clear();
     }
     else
     {
         Triangle tri;
-        const int numFaces = (int)n->mFaceIndices.size();
+        const int numFaces = (int)n->mMeshFaceIndices.size();
         n->mTriangles.resize(numFaces);
 
         // fill the triangle list since this is a leaf
@@ -193,15 +202,13 @@ void OctreeOfMeshFaces::cleanupAndAssignLeafTriangles(Node *n, int depthCount)
         const std::vector<Mesh::VertexData> &vertices = mpMesh->getVertices();
         for (int i = 0; i < numFaces; ++i)
         {
-            const int faceIndex = n->mFaceIndices[i];
+            const int faceIndex = n->mMeshFaceIndices[i];
             tri.set(vertices[faces[faceIndex].mVertexIndices[0]].mVertex,
                 vertices[faces[faceIndex].mVertexIndices[1]].mVertex,
                 vertices[faces[faceIndex].mVertexIndices[2]].mVertex);
 
             n->mTriangles[i] = tri;
         }
-
-        n->mFaceIndices.clear();
     }
 
     const int numC = n->getNumberOfChilds();
@@ -232,12 +239,12 @@ void OctreeOfMeshFaces::generate()
 
     //add all face indices to the first root
     const int numFaces = mpMesh->getNumberOfFaces();
-    mpRoot->mFaceIndices.resize(numFaces);
+    mpRoot->mMeshFaceIndices.resize(numFaces);
     for (int i = 0; i < numFaces; ++i) {
-        mpRoot->mFaceIndices[i] = i;
+        mpRoot->mMeshFaceIndices[i] = i;
     }
 
-    generate(mpRoot);
+    generate(mpRoot, 0);
 
 #ifdef VALIDATE_GENERATION
     validate(mpRoot);
@@ -250,7 +257,7 @@ void OctreeOfMeshFaces::generate()
 }
 
 //---------------------------------------------------------------------------------------------------------------------
-void OctreeOfMeshFaces::generate(Node *n)
+void OctreeOfMeshFaces::generate(Node *n, int iDepth)
 {
     // root has id 0
     static uint32_t idCounter = 1;
@@ -258,7 +265,8 @@ void OctreeOfMeshFaces::generate(Node *n)
     //
     // ~5% of total number of polygons.
     //
-    if (n->mFaceIndices.size() <= mMaxNumberOfPolygonsPerNode)
+    if (n->mMeshFaceIndices.size() <= mMaxNumberOfPolygonsPerNode ||
+        iDepth >= kMaxDepth)
     {
         return;
     }
@@ -280,11 +288,11 @@ void OctreeOfMeshFaces::generate(Node *n)
         assignPrism(c, i);
         assignFaceIndices(c);
 
-        if (!c->mFaceIndices.empty())
+        if (!c->mMeshFaceIndices.empty())
         {
             n->mChilds.push_back(c);
             numChilds++;
-            generate(c);
+            generate(c, ++iDepth);
         }
         else
         {
@@ -317,7 +325,7 @@ const Mesh* OctreeOfMeshFaces::getMesh() const
 //---------------------------------------------------------------------------------------------------------------------
 bool OctreeOfMeshFaces::isGenerated() const
 {
-    return mpRoot->hasChilds() || !mpRoot->mFaceIndices.empty();
+    return mpRoot->hasChilds() || !mpRoot->mMeshFaceIndices.empty();
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -354,8 +362,8 @@ void OctreeOfMeshFaces::validate(Node *n)
     // validate that all face in parent have been accounted for in childs...
 
     map<int, bool> mParentFaceIdToBool;
-    const int numFacesInParent = (int)n->mFaceIndices.size();
-    for (auto &fi : n->mFaceIndices)
+    const int numFacesInParent = (int)n->mMeshFaceIndices.size();
+    for (auto &fi : n->mMeshFaceIndices)
     {
         mParentFaceIdToBool[fi] = false;
     }
@@ -365,7 +373,7 @@ void OctreeOfMeshFaces::validate(Node *n)
     {
         for (auto c : n->mChilds)
         {
-            for (auto &fi : c->mFaceIndices)
+            for (auto &fi : c->mMeshFaceIndices)
             {
                 mParentFaceIdToBool[fi] = true;
             }

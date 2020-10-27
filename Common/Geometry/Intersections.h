@@ -50,6 +50,7 @@ namespace Geometry
     bool intersects(const Line&, const OctreeOfMeshFaces&, IntersectionType* = nullptr);
     IntersectionType intersect(const Line&, const OctreeOfMeshFaces&, std::vector<Math::Vector3> *oPoints = nullptr, std::vector<Math::Vector3> *oNormals = nullptr, std::vector<double> *oDs = nullptr);
     void intersect(const Line&, const OctreeOfMeshFaces::Node*, const Mesh *, std::vector<Math::Vector3> *oPoints = nullptr, std::vector<Math::Vector3> *oNormals = nullptr, std::vector<double> *oDs = nullptr);
+    Math::Vector3 normalInterpolation(const OctreeOfMeshFaces::Node*, uint32_t iTriangleIndex, const Math::Vector3 &iIntersectionPoint, const Geometry::Mesh *ipMesh);
 
     //------ triangle - plane
     bool intersects(const Triangle&, const Plane&, IntersectionType* = nullptr);

@@ -6,6 +6,7 @@
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include "View.h"
+#include <regex>
 
 
 // temporary until we can read scene from files...
@@ -112,32 +113,63 @@ MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow()
     //meshNode->setMeshAndTakeOwnership(pMesh);
 
     Geometry::ObjLoader objLoader;
-    vector<Geometry::Mesh*> pMeshes;
-    //Geometry::Mesh *pMesh = objLoader.load("D:/Models/standford models/monkey.obj");
-    //vector<Geometry::Mesh*> pMeshes = objLoader.load("D:/Models/standford models/happyBuddha.obj");
+    Geometry::ObjLoader::Asset objAsset;
+    //objAsset = objLoader.load("D:/Models/standford models/monkey.obj");
+    //pMeshes = objLoader.load("D:/Models/standford models/monkey_flat.obj");
+    //objAsset = objLoader.load("D:/Models/standford models/happyBuddha_smooth.obj");
+    //objAsset = objLoader.load("D:/Models/Nefertiti_rotated.obj"); // very heavy...
+    //objAsset = objLoader.load("D:/Models/Nefertiti.obj");
+
     //pMeshes = objLoader.load("D:/Models/someBoxes.obj");
     //pMeshes = objLoader.load("D:/Models/flowerPot.obj");
     //pMeshes = objLoader.load("D:/Models/debugObject2.obj");
     //Geometry::Mesh *pMesh = objLoader.load("D:/Models/standford models/horse.obj");
     //Geometry::Mesh *pMesh = objLoader.load("D:/Models/standford models/bunny.obj");
     //pMeshes = objLoader.load("D:/Models/standford models/armadillo.obj");
-    pMeshes = objLoader.load("D:/Models/standford models/xyzrgb_dragon.obj");
-    //pMeshes = objLoader.load("D:/Models/standford models/sponza-master/sponza.obj");
+    //objAsset = objLoader.load("D:/Models/standford models/xyzrgb_dragon_smooth.obj");
+    //objAsset = objLoader.load("D:/Models/standford models/sponza-master/sponza.obj");
+    objAsset = objLoader.load("D:/Models/wallScene.obj");
+
 
     if (!objLoader.hasErrors())
     {
         // add all meshes
         // add a mesh
-        for (auto pMesh : pMeshes)
+        for (int i = 0; i < objAsset.mMeshes.size(); ++i)
         {
-            shared_ptr<MeshNode> meshNode = make_shared<MeshNode>();
-            shared_ptr<Material> mat4 = make_shared<Material>();
-            mat4->setColor(Color(0.8, 0.8, 0.8, 1.0));
-            mat4->setSpecularFactor(0.0);
-            mat4->setGlossFactor(0.0);
-            meshNode->setMaterial(mat4);
-            meshNode->setMeshAndTakeOwnership(pMesh);
-            scene.addNode(meshNode);
+            string name = objAsset.mName[i];
+            regex matchRe("lightPoint.*");
+            if (regex_match(name, matchRe))
+            {
+                Geometry::Mesh *pMeshToDiscard = objAsset.mMeshes[i];
+
+                Light lightFromObj;
+                lightFromObj.setType(Light::tPoint);
+                lightFromObj.setPosition(pMeshToDiscard->getVertex(0).mVertex);
+                lightFromObj.setAttenuationType(Light::atQuadratic);
+                shared_ptr<LightNode> lightNodeFromObj = make_shared<LightNode>();
+                lightNodeFromObj->setLight(lightFromObj);
+                scene.addNode(lightNodeFromObj);
+
+                delete pMeshToDiscard;
+
+                printf("lightPoint %s added to scene.\n", name.c_str());
+            }
+            else
+            {
+                shared_ptr<MeshNode> meshNode = make_shared<MeshNode>();
+                shared_ptr<Material> mat4 = make_shared<Material>();
+                mat4->setColor(Color(0.85, 0.85, 0.85, 1.0));
+                mat4->setSpecularFactor(0.0);
+                mat4->setGlossFactor(0.0);
+                meshNode->setMaterial(mat4);
+                meshNode->setName(name);
+                meshNode->setMeshAndTakeOwnership(objAsset.mMeshes[i]);
+                scene.addNode(meshNode);
+
+                printf("obj %s added to scene.\n", name.c_str());
+            }
+            
         }
         
     }

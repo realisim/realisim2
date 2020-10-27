@@ -404,10 +404,21 @@ namespace Realisim
 
                     for (int i = 0; i < numFaces; ++i)
                     {
-                        iType = intersect(iL, ipN->mTriangles[i], &p, &n, &d);
+                        const Triangle &tri = ipN->mTriangles[i];
+                        iType = intersect(iL, tri, &p, &n, &d);
 
                         if (iType != itNone)
                         {
+                            // perform normal interpolation.
+                            n = normalInterpolation(ipN, i, p, ipMesh);
+
+                //ne pas faire l<interpolation ici... plutot rapporter 
+                //    le barycentric coeff dans un intersectionResult
+                //    en conjonction avec le material, on pourra
+                //    determinier si on fait une interpolation ou pas...
+
+                            // perform UV interpolation
+
                             if (oPoints) oPoints->push_back(p);
                             if (oNormals) oNormals->push_back(n);
                             if (oDs) oDs->push_back(d);
@@ -439,6 +450,28 @@ namespace Realisim
                     intersect(iL, c, ipMesh, oPoints, oNormals, oDs);
                 }
             }
+        }
+
+        //-------------------------------------------------------------------------
+        Vector3 normalInterpolation(const OctreeOfMeshFaces::Node* ipNode,
+            uint32_t iTriangleIndex, 
+            const Math::Vector3 &iIntersectionPoint, 
+            const Geometry::Mesh *ipMesh)
+        {
+            const Triangle &tri = ipNode->mTriangles[iTriangleIndex];
+            const uint32_t meshFaceIndex = ipNode->mMeshFaceIndices[iTriangleIndex];
+
+            const std::vector<Mesh::VertexData> &meshVertices = ipMesh->getVertices();
+            const Mesh::Face &face = ipMesh->getFaces()[meshFaceIndex];
+
+            Vector3 n0(meshVertices[face.mVertexIndices[0]].mNormal);
+            Vector3 n1(meshVertices[face.mVertexIndices[1]].mNormal);
+            Vector3 n2(meshVertices[face.mVertexIndices[2]].mNormal);
+
+            array<double, 3> coeff = tri.getBarycentricCoefficients(iIntersectionPoint);
+            
+            Vector3 interpolatedNormal = coeff[0] * n0 + coeff[1] * n1 + coeff[2] * n2;
+            return interpolatedNormal;
         }
 
         //-------------------------------------------------------------------------

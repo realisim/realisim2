@@ -27,7 +27,9 @@ namespace LightBeam
 
         const Geometry::AxisAlignedBoundingBox& getAxisAlignedBoundingBox() const;
         uint32_t getId() const;
+        std::string getName() const;
         NodeType getNodeType() const;
+        void setName(const std::string&);
 
     protected:
         void setAxisAlignedBoundingBox(const Geometry::AxisAlignedBoundingBox&);
@@ -36,6 +38,7 @@ namespace LightBeam
         uint32_t mId;
         NodeType mType;
         Geometry::AxisAlignedBoundingBox mAABB;
+        std::string mName;
         //Matrix4 mParentTransform
         //Matrix4 mWorldTransform
     };

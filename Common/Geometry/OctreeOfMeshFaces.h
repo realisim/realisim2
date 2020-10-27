@@ -36,7 +36,7 @@ namespace Geometry
 
             uint32_t mId;
             AxisAlignedBoundingBox mAabb;
-            std::vector<uint32_t> mFaceIndices;
+            std::vector<uint32_t> mMeshFaceIndices;
             std::vector<Triangle> mTriangles; // only leafs have triangles
             
         };
@@ -65,7 +65,7 @@ namespace Geometry
         void assignPrism(Node *n, int iIndex);
         void assignFaceIndices(Node *n);
         void cleanupAndAssignLeafTriangles(Node *, int depthCount);
-        void generate(Node *n);
+        void generate(Node *n, int iDepth);
         void validate(Node *n);
 
         Node *mpRoot; // never null, owned

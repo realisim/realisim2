@@ -15,7 +15,8 @@ uint32_t ISceneNode::mIdCounter = 0;
 
 //-----------------------------------------------------------------------------
 ISceneNode::ISceneNode() : mId(++mIdCounter),
-    mType(ntSceneNode)
+    mType(ntSceneNode),
+    mName("unnamed")
 {}
 
 //-----------------------------------------------------------------------------
@@ -33,6 +34,19 @@ const Geometry::AxisAlignedBoundingBox& ISceneNode::getAxisAlignedBoundingBox() 
     return mAABB;
 }
 
+//-----------------------------------------------------------------------------
+uint32_t ISceneNode::getId() const
+{ return mId;}
+
+//-----------------------------------------------------------------------------
+std::string ISceneNode::getName() const
+{
+    return mName;
+}
+
+//-----------------------------------------------------------------------------
+ISceneNode::NodeType ISceneNode::getNodeType() const
+{ return mType; }
 
 //-----------------------------------------------------------------------------
 void ISceneNode::setAxisAlignedBoundingBox(const Geometry::AxisAlignedBoundingBox& iAABB)
@@ -41,12 +55,11 @@ void ISceneNode::setAxisAlignedBoundingBox(const Geometry::AxisAlignedBoundingBo
 }
 
 //-----------------------------------------------------------------------------
-uint32_t ISceneNode::getId() const
-{ return mId;}
+void ISceneNode::setName(const std::string& iV)
+{
+    mName = iV;
+}
 
-//-----------------------------------------------------------------------------
-ISceneNode::NodeType ISceneNode::getNodeType() const
-{ return mType; }
 
 //-----------------------------------------------------------------------------
 //---IRenderable
