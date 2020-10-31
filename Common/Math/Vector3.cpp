@@ -24,8 +24,20 @@ Vector3::Vector3(const Vector2& iVect2, double iZ)
 { set(iVect2.x(), iVect2.y(), iZ); }
 
 //----------------------------------------------------------------------------
+Vector3 Vector3::cross(const Vector3& iV) const
+{
+    return this->operator^(iV);
+}
+
+//----------------------------------------------------------------------------
 const double* Vector3::dataPointer() const
 { return &mData[0]; }
+
+//----------------------------------------------------------------------------
+double Vector3::dot(const Vector3& iV) const
+{
+    return this->operator*(iV);
+}
 
 //---------------------------------------------------------------------------
 bool Vector3::isEqual(const Vector3& iV, double iEpsilon ) const

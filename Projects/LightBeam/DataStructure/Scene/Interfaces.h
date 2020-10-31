@@ -1,7 +1,7 @@
 #pragma once
+#include "3d/Material.h"
 #include "Geometry/AxisAlignedBoundingBox.h"
 #include "DataStructure/Light.h"
-#include "Material.h"
 #include <memory>
 #include <stdint.h>
 
@@ -55,11 +55,11 @@ namespace LightBeam
         virtual bool intersects(const Geometry::Line& iRay) const = 0;
         virtual bool intersect(const Geometry::Line& iRay, IntersectionResult* opResult) const = 0;
 
-        const std::shared_ptr<Material> getMaterial() const;
-        void setMaterial(std::shared_ptr<Material>);
+        const std::shared_ptr<ThreeD::Material> getMaterial() const;
+        void setMaterial(std::shared_ptr<ThreeD::Material>);
         
     protected:
-        std::shared_ptr<Material> mpMaterial;
+        std::shared_ptr<ThreeD::Material> mpMaterial;
     };
     
     //-------------------------------------------------------------------------

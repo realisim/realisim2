@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 #include "Core/Image.h"
-#include "Core/ImageSupport/ImageInternalFormat.h"
+#include "Core/ImageInternalFormat.h"
 #include "Core/Path.h"
 #include "Core/FileInfo.h"
 #include "Core/Timer.h"

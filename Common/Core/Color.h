@@ -328,7 +328,9 @@ namespace Core
         Color operator-(const Color&);
         Color& operator-=(const Color&);
         Color operator*(double);
+        Color operator*(const Color&);
         Color& operator*=(double);
+        Color& operator*=(const Color&);
         Color operator/(double);
         Color& operator/=(double);
 

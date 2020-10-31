@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/Color.h"
 
 namespace Realisim
 {
@@ -25,7 +26,7 @@ namespace LightBeam
         SimpleIntegrator& operator=(const SimpleIntegrator&) = delete;
         ~SimpleIntegrator();
 
-        double computeLi(const Geometry::Line&, const Scene&, const Rendering::Camera&, IntersectionResult *, VisibilityTester *);
+        Core::Color computeLi(const Geometry::Line&, const Scene&, const Rendering::Camera&, IntersectionResult *, VisibilityTester *);
         
     protected:
     };

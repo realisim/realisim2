@@ -9,6 +9,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/UnitTests)
 # Include necessary CMakeModules
 #------------------------
 include("../../../CMakeModules/Gtest.cmake")
+include("../../../CMakeModules/Half.cmake")
 include("../../../CMakeModules/TinyObjLoader.cmake")
 
 #------------------------
@@ -22,7 +23,8 @@ add_definitions(-D_USE_MATH_DEFINES)
 add_component("./" "TestFiles")
 add_component("../../Math" "Math")
 add_component("../../Geometry" "Geometry")
-add_component("../../Geometry/Loader" "Geometry/Loader")
+add_component("../../3d" "3d")
+add_component("../../3d/Loader" "3d/Loader")
 
 set(CORE_FILE
     ../../Core/FileInfo.h

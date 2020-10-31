@@ -28,13 +28,13 @@ SimpleIntegrator::~SimpleIntegrator()
 {}
 
 //------------------------------------------------------------------
-double SimpleIntegrator::computeLi(const Line &iLine,
+Core::Color SimpleIntegrator::computeLi(const Line &iLine,
     const Scene &iScene,
     const Rendering::Camera &iCamera,
     IntersectionResult *opResult,
     VisibilityTester *opVisibilityTester)
 {
-    double spectrum = 0.0; // mal nommé...
+    Core::Color spectrum;
     
     // collect all intersections from ray with scene
     IntersectionResult ir;
@@ -79,10 +79,16 @@ double SimpleIntegrator::computeLi(const Line &iLine,
 // THIS CODE SHOULD GO IN Light::Li() method
 //
 //
-        double perLightSpectrum = 0;
+        //ambient hack, should define an ambient light type for this kind of hack...
+        /*Core::Color ambient(0.2, 0.2, 0.2, 0.0);
+        const Vector3 ambientDirection = iLine.getDirection();
+        const double nDotLAmbient = ir.mNormal * ambientDirection;
+        spectrum += ambient * fabs(nDotLAmbient);*/
+
+        Core::Color perLightSpectrum;
         for(auto lightNode : lights)
         {
-            perLightSpectrum = 0.0;
+            perLightSpectrum.set(0, 0, 0, 0);
             const Light &light = lightNode->getLight();
             
             Vector3 lightDirection; // wi
@@ -121,16 +127,22 @@ double SimpleIntegrator::computeLi(const Line &iLine,
             const Vector3 p = intersectionInWorldSpace + 1e-5 * lightDirection;
             opVisibilityTester->set(p, lightPosition, &iScene);
 
+            // diffuse C
+            Core::Color lightColor(1.0, 1.0, 1.0, 0.0);
+            Core::Color matDiffuseC; matDiffuseC.setRgb(ir.mpMaterial->getDiffuseColor());
+            Core::Color matSpecularC; matSpecularC.setRgb(ir.mpMaterial->getSpecularColor());
             const double nDotL = ir.mNormal * lightDirection;
-            perLightSpectrum += fabs(nDotL);
+            Core::Color diffuse = lightColor * fabs(nDotL) * matDiffuseC;
             
             // compute the specular factor
-            Vector3 reflectRay = reflect(lightDirection, ir.mNormal);
-            double specularFactor = pow(reflectRay * ir.mW0, 128.0);
-            perLightSpectrum += specularFactor;
-            
-            const double power = 1.0;
-            perLightSpectrum *= attenuation * power;
+            const double kShininess = ir.mpMaterial->getShininess();
+            const double energyConservation = 8.0 * kShininess / (8.0 * M_PI);
+            Vector3 halfDir = (lightDirection + ir.mW0).normalize();
+            double specularFactor = energyConservation * pow( max(halfDir.dot(ir.mNormal), 0.0), kShininess);
+            Core::Color specular = lightColor * specularFactor * matSpecularC;
+
+            const double intensity = 1.0;
+            perLightSpectrum = (diffuse + specular) * intensity * attenuation;
 
             spectrum += perLightSpectrum;
             if (opVisibilityTester->isOccluded())
@@ -146,7 +158,6 @@ double SimpleIntegrator::computeLi(const Line &iLine,
         }
         
     }
-    
-    
+
     return spectrum;
 }

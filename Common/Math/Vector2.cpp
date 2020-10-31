@@ -32,6 +32,12 @@ Vector2::Vector2(const Vector2i &iVector2i)
 const double* Vector2::dataPointer() const
 { return &mData[0]; }
 
+//----------------------------------------------------------------------------
+double Vector2::dot(const Vector2& iV) const
+{
+    return this->operator*(iV);
+}
+
 //---------------------------------------------------------------------------
 bool Vector2::isEqual(const Vector2& iV, double iEpsilon) const
 {

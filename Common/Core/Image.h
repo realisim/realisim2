@@ -3,7 +3,7 @@
 
 #include "ByteArray.h"
 #include "Color.h"
-#include "ImageSupport/ImageInternalFormat.h"
+#include "ImageInternalFormat.h"
 //#include "ImageSupport/DdsImage.h"
 #include "ImageSupport/HgtImage.h"
 #include "ImageSupport/PngImage.h"

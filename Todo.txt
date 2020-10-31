@@ -3,7 +3,7 @@
 2020-10-15
 
 Core
-    - Faire un logger plus decent...                
+    - Faire un logger plus decent...              spdLog?!?
     - ajouter un callback dans messageQueue pour                    DONE
         recevoir tous les messages d<un coup au lieu de 1 a la 
         fois... trop de mutex...
@@ -19,10 +19,12 @@ Geometry
     - Triangle: coordonnées barycentriques, modifier le             DONE
     - Triangle::contains pour utiliser le barycentrique.
         a investiguer.
-    - Rename OctreeOfMeshFaces to OctreeOfMeshTriangles
+    - OctreeOfMeshFaces
+        - multithreader... pour les gros modeles...
+        - Rename OctreeOfMeshFaces to OctreeOfMeshTriangles
     - objLoader 
         - doit retourner Meshes,Materials,Name...             DONE
-        - multithreader... pour les gros modeles...
+        
 
 
 
@@ -32,8 +34,17 @@ LightBeam
     - ILight
         sampleLi
         power
-    - SpectrumRGB
-    - Radiosité
+        intensity
+        color
+        - ajouter un light ambient pour hack ambient...
+    - SpectrumRGB - ColorRgb fera l'affaire                         DONE
+    - SimpleIntegrator - deplacer le calcul des Lights dans 
+        sampleLi des class lights
+    - Radiosité (voir notes plus bas)
+    - support Material/texture
+    - SceneManagement
+        - faire un culling de scene et preparer une liste de rendu pour le frame...
+
 
     - Config
         - numThread
@@ -43,3 +54,21 @@ LightBeam
         - 
 
         - save/show camera position
+
+    - Radiosité
+        1. Octree pour radiosité
+            1.1 - on stoke triangle pour les intersection rayon
+                - une grid2d par triangle (16x16 en coord barycentrique) de rayons refléchie avec son intensity (spectrum)
+                - une grid2d par triangle (16x16 en coord barycentrique) de spectrum accumulé.
+        2. On rend la scene a partir de chaque lumières
+            2.1 - intersection avec la scene
+                - au point d'intersection on calcul le Li et on accumule dans la grid d'accumulation (en barycentrique).
+        3. pour chaque node du octree (emetteur)
+            3.1 pour chaque node du octree (recepteur)
+                3.1.1 on envoit des rayons (1 par cellule de la grid2d de li accumulé en barycentrique) dans la direction
+                      du recepteur. La direction est defini comme: barycentreRecpteur - barycentreEmetteur
+                3.1.2 au point d'intersection on calcul le Li et on accumule dans la grid d'accumulation (en barycentrique).
+                3.1.3 on recommence 3.
+
+        4. Rendu final avec la camera
+            4.1 faire l'intersection avec le octree de radiosité et prendre le li accumulé.

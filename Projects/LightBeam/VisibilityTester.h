@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Material.h"
 #include "Math/Vector.h"
 
 namespace Realisim

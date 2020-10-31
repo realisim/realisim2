@@ -7,6 +7,7 @@
 
 using namespace Realisim;
     using namespace Geometry;
+    using namespace ThreeD;
 using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -28,11 +29,24 @@ typedef pair<uint32_t, uint32_t> TinyIndexPair;
 // this function assumes the input is triangulated
 void ObjLoader::createAsset(const tinyobj::attrib_t &iAttrib,
     const std::vector<tinyobj::shape_t>& iShapes,
+    const std::vector<tinyobj::material_t> &iMaterials,
     Asset *opAsset)
 {
+    UNUSED(iMaterials);
+    // create all materials
+    vector<Material> materials;
+    createMaterials(iMaterials, &materials);
+
+    int materialIndex = -1;
     // For each shape
     for (size_t i = 0; i < iShapes.size(); i++)
     {
+        // reset material index for each shape
+        // we support only one material index per shape
+        // There is an assert validating it at the end of the function
+        //
+        materialIndex = -1;
+
         // this map is tricky...
         // Tiny obj has a vertex pool and a normal pool
         // We have no pool, we must have a vertex and normal pair (see Mesh::VertexData)
@@ -108,6 +122,12 @@ void ObjLoader::createAsset(const tinyobj::attrib_t &iAttrib,
                 faces.push_back(face);
             }
 
+            // check material
+            if(materialIndex == -1 )
+                materialIndex = iShapes[i].mesh.material_ids[f];
+            assert(materialIndex == iShapes[i].mesh.material_ids[f] && "If this trigs, it means that a shape has"
+                "multiple materials assigned, and it is not supported.");
+            
             index_offset += fnum;
         }
 
@@ -115,9 +135,56 @@ void ObjLoader::createAsset(const tinyobj::attrib_t &iAttrib,
         //
         opAsset->mName.push_back(iShapes[i].name);
         opAsset->mMeshes.push_back(pMesh);
+        opAsset->mMeshIndexToMaterial[(int)i] = materials[materialIndex];
     }
-
 }
+
+//-----------------------------------------------------------------------------
+void ObjLoader::createMaterials(const std::vector<tinyobj::material_t> &iMaterials,
+    std::vector<Material> *opMaterials)
+{
+    const int numMaterials = (int)iMaterials.size();
+    opMaterials->resize(numMaterials);
+
+    Core::ColorRgbF32 c;
+    for (int i = 0; i < numMaterials; ++i)
+    {
+        Material &mat = (*opMaterials)[i];
+
+        c.set(
+            iMaterials[i].ambient[0],
+            iMaterials[i].ambient[1],
+            iMaterials[i].ambient[2]);
+        mat.setAmbientColor(c);
+
+        c.set(
+            iMaterials[i].diffuse[0],
+            iMaterials[i].diffuse[1],
+            iMaterials[i].diffuse[2]);
+        mat.setDiffuseColor(c);
+
+        c.set(
+            iMaterials[i].specular[0],
+            iMaterials[i].specular[1],
+            iMaterials[i].specular[2]);
+        mat.setSpecularColor(c);
+
+        c.set(
+            iMaterials[i].emission[0],
+            iMaterials[i].emission[1],
+            iMaterials[i].emission[2]);
+        mat.setEmissiveColor(c);
+
+        mat.setShininess(iMaterials[i].shininess);
+
+        // textures
+        mat.addImageLayer(Material::ilAmbient, iMaterials[i].ambient_texname);
+        mat.addImageLayer(Material::ilDiffuse, iMaterials[i].diffuse_texname);
+        mat.addImageLayer(Material::ilSpecular, iMaterials[i].specular_texname);
+        mat.addImageLayer(Material::ilNormal, iMaterials[i].normal_texname);
+    }
+}
+
 //-----------------------------------------------------------------------------
 const string ObjLoader::getAndClearLastErrors() const
 {
@@ -162,7 +229,7 @@ ObjLoader::Asset ObjLoader::load(const string& iFilePath)
     Asset asset;
     if (!hasErrors())
     {
-        createAsset(attrib, shapes, &asset);
+        createAsset(attrib, shapes, materials, &asset);
     }
 
     return asset;

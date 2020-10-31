@@ -12,7 +12,7 @@
 // temporary until we can read scene from files...
 #include "DataStructure/Scene/GeometryNodes.h"
 #include "DataStructure/Scene/LightNode.h"
-#include "Geometry/Loader/ObjLoader.h"
+#include "3d/Loader/ObjLoader.h"
 #include "Geometry/PlatonicSolid.h"
 
 
@@ -20,6 +20,7 @@ using namespace Realisim;
     using namespace Core;
     using namespace LightBeam;
     using namespace Math;
+    using namespace ThreeD;
 using namespace std;
 
 const int kInitialLod = 8;
@@ -61,7 +62,7 @@ MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow()
     shared_ptr<PlaneNode> pn = make_shared<PlaneNode>();
     pn->setPlane(p);
     shared_ptr<Material> mat0 = make_shared<Material>();
-    mat0->setColor(Color(1.0, 0.0, 0.0, 1.0));
+    mat0->setDiffuseColor(ColorRgbF32(1, 0, 0));
     pn->setMaterial(mat0);
     
     // add a sphere
@@ -69,7 +70,7 @@ MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow()
     shared_ptr<SphereNode> sn = make_shared<SphereNode>();
     sn->setSphere(sphere);
     shared_ptr<Material> mat1 = make_shared<Material>();
-    mat1->setColor( Color(0.0, 1.0, 0.0, 1.0) );
+    mat1->setDiffuseColor(ColorRgbF32(0, 1, 0));
     sn->setMaterial(mat1);
     
     // add another sphere
@@ -78,9 +79,7 @@ MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow()
     shared_ptr<SphereNode> sn2 = make_shared<SphereNode>();
     sn2->setSphere(sphere);
     shared_ptr<Material> mat2 = make_shared<Material>();
-    mat2->setColor( Color(0.0, 0.0, 1.0, 1.0) );
-    mat2->setSpecularFactor(0.0);
-    mat2->setGlossFactor(1.0);
+    mat2->setDiffuseColor(ColorRgbF32(0, 0, 1));
     sn2->setMaterial(mat2);
     
     // add another sphere
@@ -89,17 +88,18 @@ MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow()
     shared_ptr<SphereNode> sn3 = make_shared<SphereNode>();
     sn3->setSphere(sphere);
     shared_ptr<Material> mat3 = make_shared<Material>();
-    mat3->setColor( Color(1.0, 1.0, 1.0, 1.0) );
-    mat3->setSpecularFactor(0.7);
-    mat3->setGlossFactor(0.8);
+    mat3->setDiffuseColor(ColorRgbF32(0.9f, 0.9f, 0.9f));
+    mat3->setSpecularColor(ColorRgbF32(0.1f, 0.1f, 0.1f));
+    mat3->setShininess(1024);
+   // mat3->setReflectanceModel(mat3->getReflectanceModel() | Material::rmPerfectSpecular);
     sn3->setMaterial(mat3);
     
     // add a light
     Light l;
     l.setType(Light::tDirectionnal);
     l.setDirection( Vector3(0.3, 1.0, 2.0) );
-    shared_ptr<LightNode> lightNode = make_shared<LightNode>();
-    lightNode->setLight(l);
+    shared_ptr<LightNode> directionalLightNode = make_shared<LightNode>();
+    directionalLightNode->setLight(l);
 
     //Light l;
     //l.setType(Light::tPoint);
@@ -112,8 +112,8 @@ MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow()
     //Geometry::Mesh *pMesh = new Geometry::Mesh(ps.getMesh());
     //meshNode->setMeshAndTakeOwnership(pMesh);
 
-    Geometry::ObjLoader objLoader;
-    Geometry::ObjLoader::Asset objAsset;
+    ThreeD::ObjLoader objLoader;
+    ThreeD::ObjLoader::Asset objAsset;
     //objAsset = objLoader.load("D:/Models/standford models/monkey.obj");
     //pMeshes = objLoader.load("D:/Models/standford models/monkey_flat.obj");
     //objAsset = objLoader.load("D:/Models/standford models/happyBuddha_smooth.obj");
@@ -128,7 +128,10 @@ MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow()
     //pMeshes = objLoader.load("D:/Models/standford models/armadillo.obj");
     //objAsset = objLoader.load("D:/Models/standford models/xyzrgb_dragon_smooth.obj");
     //objAsset = objLoader.load("D:/Models/standford models/sponza-master/sponza.obj");
-    objAsset = objLoader.load("D:/Models/wallScene.obj");
+    //objAsset = objLoader.load("D:/Models/wallScene.obj");
+    //objAsset = objLoader.load("D:/Models/Dragon_1_rotated.obj");
+    //objAsset = objLoader.load("D:/Models/SponzaWithLightPoints.obj");
+    
 
 
     if (!objLoader.hasErrors())
@@ -158,10 +161,7 @@ MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow()
             else
             {
                 shared_ptr<MeshNode> meshNode = make_shared<MeshNode>();
-                shared_ptr<Material> mat4 = make_shared<Material>();
-                mat4->setColor(Color(0.85, 0.85, 0.85, 1.0));
-                mat4->setSpecularFactor(0.0);
-                mat4->setGlossFactor(0.0);
+                shared_ptr<ThreeD::Material> mat4 = make_shared<ThreeD::Material>(objAsset.mMeshIndexToMaterial[i]);
                 meshNode->setMaterial(mat4);
                 meshNode->setName(name);
                 meshNode->setMeshAndTakeOwnership(objAsset.mMeshes[i]);
@@ -174,11 +174,11 @@ MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow()
         
     }
 
-    //scene.addNode(pn);
-    //scene.addNode(sn);
-    //scene.addNode(sn2);
-    //scene.addNode(sn3);
-    scene.addNode(lightNode);
+    scene.addNode(pn);
+    scene.addNode(sn);
+    scene.addNode(sn2);
+    scene.addNode(sn3);
+    scene.addNode(directionalLightNode);
     //scene.addNode(meshNode);
     //------------------------------------
     

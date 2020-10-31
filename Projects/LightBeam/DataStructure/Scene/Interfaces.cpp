@@ -5,6 +5,7 @@
 
 using namespace Realisim;
     using namespace LightBeam;
+    using namespace ThreeD;
 using namespace std;
 
 

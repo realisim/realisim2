@@ -4,7 +4,7 @@
 
 #include "gtest/gtest.h"
 #include "Geometry/Intersections.h"
-#include "Geometry/Loader/ObjLoader.h"
+#include "3d/Loader/ObjLoader.h"
 #include "Geometry/OctreeOfMeshFaces.h"
 
 using namespace Realisim;
@@ -86,11 +86,11 @@ TEST(Intersections, linePlane)
 TEST(Intersections, lineOctreeOfMeshFaces)
 {
     OctreeOfMeshFaces octree;
-    ObjLoader objLoader;
+    ThreeD::ObjLoader objLoader;
 
     std::string filePath = getAssetsPath() + "/cow.obj";
-    std::vector<Mesh*> pMeshes = objLoader.load(filePath);
-    octree.setMesh(pMeshes[0]);
+    ThreeD::ObjLoader::Asset asset = objLoader.load(filePath);
+    octree.setMesh(asset.mMeshes[0]);
     octree.generate();
 
     Line l;

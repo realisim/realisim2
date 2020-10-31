@@ -1,4 +1,5 @@
 
+#include "3d/Material.h"
 #include "Geometry/Mesh.h"
 #include <string>
 #include <vector>
@@ -7,7 +8,7 @@
 
 namespace Realisim
 {
-namespace Geometry
+namespace ThreeD
 {
     class ObjLoader
     {
@@ -18,8 +19,8 @@ namespace Geometry
         struct Asset
         {
             std::vector<std::string> mName;
-            std::vector<Mesh*> mMeshes;
-            //std::vector<Material*> mMaterials;
+            std::vector<Geometry::Mesh*> mMeshes;
+            std::map<int, Material> mMeshIndexToMaterial;
         };
 
         const std::string getAndClearLastErrors() const;
@@ -28,7 +29,8 @@ namespace Geometry
 
     protected:
         void addError(const std::string& iE) const;
-        void createAsset(const tinyobj::attrib_t &iAttrib, const std::vector<tinyobj::shape_t>& iShapes, Asset *opAsset);
+        void createAsset(const tinyobj::attrib_t &iAttrib, const std::vector<tinyobj::shape_t>& iShapes, const std::vector<tinyobj::material_t> &iMaterials, Asset *opAsset);
+        void createMaterials(const std::vector<tinyobj::material_t> &iMaterials, std::vector<Material> *opMaterials);
 
         mutable std::string mErrors;
     };

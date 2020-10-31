@@ -39,6 +39,12 @@ Vector4::Vector4(double v)
     mData[0] = mData[1] = mData[2] = mData[3] = v;
 }
 
+//----------------------------------------------------------------------------
+double Vector4::dot(const Vector4& iV) const
+{
+    return this->operator*(iV);
+}
+
 //---------------------------------------------------------------------------
 double Vector4::norm() const
 {

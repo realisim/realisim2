@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Material.h"
+#include "3d/Material.h"
 #include "Math/Vector.h"
 #include <memory>
 
@@ -29,7 +29,7 @@ namespace LightBeam
         double mD; //parametric distance along the ray
         Math::Vector3 mW0;
         Math::Vector3 mWi;
-        std::shared_ptr<Material> mpMaterial;
+        std::shared_ptr<ThreeD::Material> mpMaterial;
     };
 
 }

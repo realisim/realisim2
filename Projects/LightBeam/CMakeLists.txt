@@ -31,10 +31,14 @@ add_component( "../../Common/Geometry" "Geometry")
 add_component( "../../Common/Math" "Math")
 add_component( "../../Common/Rendering" "Rendering")
 
-set(GeometryLoaders
-    "../../Common/Geometry/Loader/ObjLoader.h"
-    "../../Common/Geometry/Loader/ObjLoader.cpp")
-add_files("${GeometryLoaders}" "Geometry/Loader")
+set(3d
+    "../../Common/3d/Material.h"
+    "../../Common/3d/Material.cpp")
+add_files("${3d}" "3d")
+set(3dLoaders
+    "../../Common/3d/Loader/ObjLoader.h"
+    "../../Common/3d/Loader/ObjLoader.cpp")
+add_files("${3dLoaders}" "3d/Loader")
 
 qt_automoc()
 

@@ -2,7 +2,7 @@
 #pragma once
 
 #include <Core/ByteArray.h>
-#include <ImageInternalFormat.h>
+#include <Core/ImageInternalFormat.h>
 #include <fstream>
 #include <stdint.h>
 #include <string>

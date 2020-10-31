@@ -5,7 +5,7 @@
 
 #include "gtest/gtest.h"
 
-#include "Geometry/Loader/ObjLoader.h"
+#include "3d/Loader/ObjLoader.h"
 #include "Geometry/OctreeOfMeshFaces.h"
 #include "Math/IsEqual.h"
 
@@ -13,6 +13,7 @@ using namespace Realisim;
     using namespace Core;
     using namespace Geometry;
     using namespace Math;
+    using namespace ThreeD;
 
 namespace
 {
@@ -47,8 +48,8 @@ TEST(OctreeOfMeshFaces, generate)
     ObjLoader objLoader;
 
     std::string filePath = getAssetsPath() + "/cow.obj";
-    std::vector<Mesh*> pMeshes = objLoader.load(filePath);
-    octree.setMesh(pMeshes[0]);
+    ObjLoader::Asset asset = objLoader.load(filePath);
+    octree.setMesh(asset.mMeshes[0]);
     octree.generate();
 
     printf("%s\n%s\n", filePath.c_str(), octree.statsToString().c_str());

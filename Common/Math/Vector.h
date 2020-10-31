@@ -22,6 +22,7 @@ namespace Math
         ~Vector2() = default;
 
         const double* dataPointer() const;
+        double dot(const Vector2&) const;
         bool isEqual(const Vector2&, double iEpsilon = std::numeric_limits<double>::epsilon() ) const;
         double norm() const;
         Vector2& normalize();
@@ -70,7 +71,9 @@ namespace Math
         Vector3& operator=(const Vector3 &vect) = default;
         ~Vector3() = default;
 
+        Vector3 cross(const Vector3 &vect) const;
         const double* dataPointer() const;
+        double dot(const Vector3&) const;
         bool isEqual(const Vector3&, double iEpsilon = std::numeric_limits<double>::epsilon() ) const;
         double norm() const;
         double normSquared() const;
@@ -126,6 +129,7 @@ namespace Math
         Vector4& operator=(const Vector4&) = default;
         ~Vector4() = default;
         
+        double dot(const Vector4 &vect) const;
         double norm() const;
         Vector4& normalize();
         double normSquared() const;

@@ -2,6 +2,7 @@
 #include "Broker.h"
 #include <cassert>
 #include "Core/Timer.h"
+#include "Core/Unused.h"
 #include "Geometry/Intersections.h"
 #include "IntersectionResult.h"
 #include "Math/Vector.h"
@@ -16,6 +17,7 @@ using namespace Realisim;
     using namespace LightBeam;
     using namespace Math;
     using namespace Rendering;
+    using namespace ThreeD;
 using namespace std;
 
 namespace  {
@@ -268,22 +270,14 @@ void RayTracer::rayCast( int iDepth,
     IntersectionResult ir;
     VisibilityTester vt;
     
-    double f = mIntegrator.computeLi(iRay, iScene, iCamera, &ir, &vt);
-    
-    const double specularFactor = ir.mpMaterial->getSpecularFactor();
-    const double oneMinusSpec = 1.0 - specularFactor;
-    
-    Color ambient(0.0, 0.0, 0.0, 0.0);
-    Color diffuse = ir.mpMaterial->getColor();
-    diffuse.set( diffuse.getRed() * f * oneMinusSpec,
-          diffuse.getGreen() * f * oneMinusSpec,
-          diffuse.getBlue() * f * oneMinusSpec,
-          diffuse.getAlpha() );
-    
-    *opColor += diffuse + ambient;
+    Color li = mIntegrator.computeLi(iRay, iScene, iCamera, &ir, &vt);
+    li.setAlpha(1.0);
 
+    *opColor += li;
+
+    // reflect ray if material is specular
     if( iDepth < kMaxRecursionDepth &&
-       ir.mpMaterial->getSpecularFactor() > 0.0)
+        ir.mpMaterial->hasReflectanceModel(Material::rmPerfectSpecular) )
     {
         // reflect the ray and call raycast again.
         Vector3 reflectedDirection = reflect(iRay.getDirection(), ir.mNormal);

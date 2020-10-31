@@ -159,12 +159,31 @@ Color Color::operator*(double iV)
 }
 
 //------------------------------------------------------------------------------
+Color Color::operator*(const Color& iV)
+{
+    return Color(mRed * iV.mRed,
+        mGreen * iV.mGreen,
+        mBlue * iV.mBlue,
+        mAlpha * iV.mAlpha);
+}
+
+//------------------------------------------------------------------------------
 Color& Color::operator*=(double iV)
 {
     mRed *= iV;
     mGreen *= iV;
     mBlue *= iV;
     mAlpha *= iV;
+    return *this;
+}
+
+//------------------------------------------------------------------------------
+Color& Color::operator*=(const Color& iV)
+{
+    mRed *= iV.mRed;
+    mGreen *= iV.mGreen;
+    mBlue *= iV.mBlue;
+    mAlpha *= iV.mAlpha;
     return *this;
 }
 
