@@ -477,3 +477,56 @@ TEST(Image, RgbaF32_images)
             EXPECT_EQ(c.getAlphaF32(), a);
         }
 }
+
+//---------------------------------------------------------------------------------------------------------------------
+TEST(Image, Rgb_image_format)
+{
+    Image imRefPng, imRgb;
+    imRefPng.setFilenamePath(getAssetsPath() + "/dices.png");
+    imRefPng.load();
+
+    imRgb.setFilenamePath(getAssetsPath() + "/dices.rgb");
+    imRgb.load();
+
+    EXPECT_TRUE(imRefPng.isValid());
+    EXPECT_TRUE(imRgb.isValid());
+
+    // visually asses that the converted image looks like the original
+    imRgb.saveAs(getCurrentFolderPath() + "/converted_dices_rgb.png", Image::wfPng);
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+TEST(Image, Tga_image_format)
+{
+    Image imRefPng, imTga;
+    imRefPng.setFilenamePath(getAssetsPath() + "/dices.png");
+    imRefPng.load();
+
+    imTga.setFilenamePath(getAssetsPath() + "/dices.tga");
+    imTga.load();
+
+    EXPECT_TRUE(imRefPng.isValid());
+    EXPECT_TRUE(imTga.isValid());
+
+    // visually asses that the converted image looks like the original
+    imTga.saveAs(getCurrentFolderPath() + "/converted_dices_tga.png", Image::wfPng);
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+TEST(Image, Hgt_image_format)
+{
+    Image hgtImage;
+    hgtImage.setFilenamePath(getAssetsPath() + "/N45W072.hgt");
+    hgtImage.load();
+
+    EXPECT_TRUE(hgtImage.isValid());
+
+    // check first few 8 bytes...
+    short compareTo[8] = { 415, 418, 420, 421, 422, 421, 421, 422 };
+    
+    for (int i = 0; i < 8; ++i)
+    {
+        Color c = hgtImage.getPixelColor(Vector2i(i, 0));
+        EXPECT_EQ(c.getRedInt16(), compareTo[i]);
+    }
+}

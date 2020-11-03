@@ -11,6 +11,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/UnitTests)
 include("../../../CMakeModules/Gtest.cmake")
 INCLUDE( "../../../CMakeModules/Lodepng.cmake" )
 INCLUDE( "../../../CMakeModules/Half.cmake" )
+INCLUDE( "../../../CMakeModules/Tga.cmake" )
 
 #------------------------
 # Add define

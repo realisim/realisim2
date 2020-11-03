@@ -14,6 +14,7 @@ INCLUDE( "../../CMakeModules/Lodepng.cmake" )
 INCLUDE( "../../CMakeModules/Half.cmake" )
 INCLUDE( "../../CMakeModules/OpenMP.cmake" )
 INCLUDE( "../../CMakeModules/TinyObjLoader.cmake" )
+INCLUDE( "../../CMakeModules/Tga.cmake" )
 
 IF(WIN32)
     INCLUDE( "../../CMakeModules/OpenMP.cmake" )

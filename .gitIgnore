@@ -1,6 +1,7 @@
 *.bak
 bin/
 cmake/
+.vscode/
 
 # LightBeam
 Projects/LightBeam/issues

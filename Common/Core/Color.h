@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Half/half.hpp"
+#include "Math/Interpolation.h"
 #include <vector>
 #include <stdint.h>
 
@@ -19,6 +20,8 @@ namespace Core
     // The template is there to allow for typedef like ColorRgb8, ColorRgb16 
     // and ColorRgbF. (see typedef at bottom of file).
     //
+    // DO NOT CREATE VIRTUAL FUNCTIONS !
+    //
     template<typename T>
     class ColorRgb
     {
@@ -32,12 +35,30 @@ namespace Core
         T getBlue() const;
         T getGreen() const;
         T getRed() const;
+        double norm() const;
+        double normSquare() const;
+
         bool operator==(const ColorRgb<T>& iC) const;
         bool operator!=(const ColorRgb<T>& iC) const;
+
+        ColorRgb<T> operator+(const ColorRgb<T>& iC) const;
+        ColorRgb<T>& operator+=(const ColorRgb<T>& iC);
+        ColorRgb<T> operator-(const ColorRgb<T>& iC) const;
+        ColorRgb<T>& operator-=(const ColorRgb<T>& iC);
+        ColorRgb<T> operator*(const ColorRgb<T>& iC) const;
+        ColorRgb<T>& operator*=(const ColorRgb<T>& iC);
+        ColorRgb<T> operator/(const ColorRgb<T>& iC) const;
+        ColorRgb<T>& operator/=(const ColorRgb<T>& iC);
+        ColorRgb<T> operator*(double iC) const;
+        ColorRgb<T>& operator*=(double iC);
+        ColorRgb<T> operator/(double iC) const;
+        ColorRgb<T>& operator/=(double iC);
+
         void set(T iR, T iG, T iB);
         void setBlue(T iV);
         void setGreen(T iV);
         void setRed(T iV);
+        double toLuma() const;
 
     protected:
         T mRed;
@@ -62,22 +83,34 @@ namespace Core
     {}
 
     //-------------------------------------------------------------------------
-    template<typename T>
+    template<typename T> inline
     T ColorRgb<T>::getBlue() const
     { return mBlue; }
 
     //-------------------------------------------------------------------------
-    template<typename T>
+    template<typename T> inline
     T ColorRgb<T>::getGreen() const
     { return mGreen; }
 
     //-------------------------------------------------------------------------
-    template<typename T>
+    template<typename T> inline
     T ColorRgb<T>::getRed() const
     { return mRed; }
 
     //-------------------------------------------------------------------------
-    template<typename T>
+    template<typename T> inline
+    double ColorRgb<T>::norm() const
+    {
+        return sqrt(mRed*mRed + mGreen*mGreen + mBlue*mBlue);
+    }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+    double ColorRgb<T>::normSquare() const
+    { return mRed*mRed + mGreen*mGreen + mBlue*mBlue; }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
     bool ColorRgb<T>::operator==(const ColorRgb<T>& iC) const
     {
         return mRed == iC.getRed() &&
@@ -86,14 +119,128 @@ namespace Core
     }
 
     //-------------------------------------------------------------------------
-    template<typename T>
+    template<typename T> inline
     bool ColorRgb<T>::operator!=(const ColorRgb<T>& iC) const
     {
         return !operator==(iC);
     }
 
     //-------------------------------------------------------------------------
-    template<typename T>
+    template<typename T> inline
+        ColorRgb<T> ColorRgb<T>::operator+(const ColorRgb<T>& iC) const
+    {
+        return ColorRgb<T>(mRed + iC.getRed(),
+            mGreen + iC.getGreen(),
+            mBlue + iC.getBlue());
+    }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+        ColorRgb<T>& ColorRgb<T>::operator+=(const ColorRgb<T>& iC)
+    {
+        mRed += iC.getRed();
+        mGreen += iC.getGreen();
+        mBlue += iC.getBlue();
+        return *this;
+    }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+        ColorRgb<T> ColorRgb<T>::operator-(const ColorRgb<T>& iC) const
+    {
+        return ColorRgb<T>(mRed - iC.getRed(),
+            mGreen - iC.getGreen(),
+            mBlue - iC.getBlue());
+    }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+        ColorRgb<T>& ColorRgb<T>::operator-=(const ColorRgb<T>& iC)
+    {
+        mRed -= iC.getRed();
+        mGreen -= iC.getGreen();
+        mBlue -= iC.getBlue();
+        return *this;
+    }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+        ColorRgb<T> ColorRgb<T>::operator*(const ColorRgb<T>& iC) const
+    {
+        return ColorRgb<T>(mRed * iC.getRed(),
+            mGreen * iC.getGreen(),
+            mBlue * iC.getBlue());
+    }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+        ColorRgb<T>& ColorRgb<T>::operator*=(const ColorRgb<T>& iC)
+    {
+        mRed *= iC.getRed();
+        mGreen *= iC.getGreen();
+        mBlue *= iC.getBlue();
+        return *this;
+    }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+        ColorRgb<T> ColorRgb<T>::operator/(const ColorRgb<T>& iC) const
+    {
+        return ColorRgb<T>(mRed / iC.getRed(),
+            mGreen / iC.getGreen(),
+            mBlue / iC.getBlue());
+    }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+        ColorRgb<T>& ColorRgb<T>::operator/=(const ColorRgb<T>& iC)
+    {
+        mRed /= iC.getRed();
+        mGreen /= iC.getGreen();
+        mBlue /= iC.getBlue();
+        return *this;
+    }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+        ColorRgb<T> ColorRgb<T>::operator*(double iC) const
+    {
+        return ColorRgb<T>((T)((double)mRed * iC),
+            (T)((double)mGreen * iC),
+            (T)((double)mBlue * iC));
+    }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+        ColorRgb<T>& ColorRgb<T>::operator*=(double iC)
+    {
+        mRed = (T)((double)mRed * iC);
+        mGreen = (T)((double)mGreen * iC);
+        mBlue = (T)((double)mBlue * iC);
+        return *this;
+    }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+        ColorRgb<T> ColorRgb<T>::operator/(double iC) const
+    {
+        return ColorRgb<T>((T)((double)mRed / iC),
+            (T)((double)mGreen / iC),
+            (T)((double)mBlue / iC));
+    }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+        ColorRgb<T>& ColorRgb<T>::operator/=(double iC)
+    {
+        mRed = (T)((double)mRed / iC);
+        mGreen = (T)((double)mGreen / iC);
+        mBlue = (T)((double)mBlue / iC);
+        return *this;
+    }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
     void ColorRgb<T>::set(T iR, T iG, T iB)
     {
         mRed = iR;
@@ -102,19 +249,26 @@ namespace Core
     }
 
     //-------------------------------------------------------------------------
-    template<typename T>
+    template<typename T> inline
     void ColorRgb<T>::setBlue(T iV)
     { mBlue = iV; }
 
     //-------------------------------------------------------------------------
-    template<typename T>
+    template<typename T> inline
     void ColorRgb<T>::setGreen(T iV)
     { mGreen = iV; }
 
     //-------------------------------------------------------------------------
-    template<typename T>
+    template<typename T> inline
     void ColorRgb<T>::setRed(T iV)
     { mRed = iV; }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+    double ColorRgb<T>::toLuma() const
+    {
+        return 0.2126*(double)mRed + 0.7152*(double)mGreen + 0.0722*(double)mBlue;
+    }
 
     //-------------------------------------------------------------------------
     // ColorRgba
@@ -127,9 +281,19 @@ namespace Core
     // a. Apart from that, there is no good reason to not inherit from ColorRgb
     // in the following manner.
     //
-    // template<typename T> class ColorRgba : publi ColorRgb<T>
-    //  make sure to have destructor virtual in ColorRgb
+    // Note there is no virtual destructor althoug class Color (see below) inherits
+    // from ColorRgba. So creating something like this:
     //
+    //  ColorRgba *ptr = new Color()
+    //
+    // would leak memory when deleting ptr. It is clearly not our intention to do
+    // so. The reason why there is no virtual destructor is an optimisation for 
+    // performance. We want to be able to cast the rawData of image (Image::constData)
+    // to a ColorRgb/a in the following manner.
+    //
+    // const ColorRgbaUint8 *pPtr = reinterpret_cast<const ColorRgbaUint8*>(im.getImageData().constData());
+    //
+    // Having a virtual destructor would prevent such usage.
     //
     template<typename T>
     class ColorRgba
@@ -139,19 +303,37 @@ namespace Core
         ColorRgba(T iR, T iG, T iB, T iA);
         ColorRgba(const ColorRgba&) = default;
         ColorRgba& operator=(const ColorRgba&) = default;
-        virtual ~ColorRgba() {};
+        ~ColorRgba() {};
 
         T getAlpha() const;
         T getBlue() const;
         T getGreen() const;
         T getRed() const;
+        double norm() const;
+        double normSquare() const;
+
         bool operator==(const ColorRgba<T>& iC) const;
         bool operator!=(const ColorRgba<T>& iC) const;
+
+        ColorRgba<T> operator+(const ColorRgba<T>& iC) const;
+        ColorRgba<T>& operator+=(const ColorRgba<T>& iC);
+        ColorRgba<T> operator-(const ColorRgba<T>& iC) const;
+        ColorRgba<T>& operator-=(const ColorRgba<T>& iC);
+        ColorRgba<T> operator*(const ColorRgba<T>& iC) const;
+        ColorRgba<T>& operator*=(const ColorRgba<T>& iC);
+        ColorRgba<T> operator/(const ColorRgba<T>& iC) const;
+        ColorRgba<T>& operator/=(const ColorRgba<T>& iC);
+        ColorRgba<T> operator*(double iC) const;
+        ColorRgba<T>& operator*=(double iC);
+        ColorRgba<T> operator/(double iC) const;
+        ColorRgba<T>& operator/=(double iC);
+
         void set(T iR, T iG, T iB, T iA);
         void setAlpha(T iV);
         void setBlue(T iV);
         void setGreen(T iV);
         void setRed(T iV);
+        double toLuma() const;
 
     protected:
         T mRed;
@@ -179,27 +361,37 @@ namespace Core
     {}
 
     //-------------------------------------------------------------------------
-    template<typename T>
+    template<typename T> inline
     T ColorRgba<T>::getAlpha() const
     { return mAlpha; }
 
     //-------------------------------------------------------------------------
-    template<typename T>
+    template<typename T> inline
     T ColorRgba<T>::getBlue() const
     { return mBlue; }
 
     //-------------------------------------------------------------------------
-    template<typename T>
+    template<typename T> inline
     T ColorRgba<T>::getGreen() const
     { return mGreen; }
 
     //-------------------------------------------------------------------------
-    template<typename T>
+    template<typename T> inline
     T ColorRgba<T>::getRed() const
     { return mRed; }
 
     //-------------------------------------------------------------------------
-    template<typename T>
+    template<typename T> inline
+    double ColorRgba<T>::norm() const
+    { return sqrt(mRed*mRed + mGreen*mGreen + mBlue*mBlue + mAlpha*mAlpha); }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+    double ColorRgba<T>::normSquare() const
+    { return mRed*mRed + mGreen*mGreen + mBlue*mBlue + mAlpha*mAlpha; }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
     bool ColorRgba<T>::operator==(const ColorRgba<T>& iC) const
     {
         return mRed == iC.getRed() &&
@@ -209,14 +401,140 @@ namespace Core
     }
 
     //-------------------------------------------------------------------------
-    template<typename T>
+    template<typename T> inline
     bool ColorRgba<T>::operator!=(const ColorRgba<T>& iC) const
     {
         return !operator==(iC);
     }
 
     //-------------------------------------------------------------------------
-    template<typename T>
+    template<typename T> inline
+    ColorRgba<T> ColorRgba<T>::operator+(const ColorRgba<T>& iC) const
+    {
+        return ColorRgba<T>(mRed + iC.getRed(),
+            mGreen + iC.getGreen(),
+            mBlue + iC.getBlue(),
+            mAlpha + iC.getAlpha());
+    }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+    ColorRgba<T>& ColorRgba<T>::operator+=(const ColorRgba<T>& iC)
+    {
+        mRed += iC.getRed();
+        mGreen += iC.getGreen();
+        mBlue += iC.getBlue();
+        mAlpha += iC.getAlpha();
+        return *this;
+    }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+    ColorRgba<T> ColorRgba<T>::operator-(const ColorRgba<T>& iC) const
+    {
+        return ColorRgba<T>(mRed - iC.getRed(),
+            mGreen - iC.getGreen(),
+            mBlue - iC.getBlue(),
+            mAlpha - iC.getAlpha());
+    }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+    ColorRgba<T>& ColorRgba<T>::operator-=(const ColorRgba<T>& iC)
+    {
+        mRed -= iC.getRed();
+        mGreen -= iC.getGreen();
+        mBlue -= iC.getBlue();
+        mAlpha -= iC.getAlpha();
+        return *this;
+    }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+    ColorRgba<T> ColorRgba<T>::operator*(const ColorRgba<T>& iC) const
+    {
+        return ColorRgba<T>(mRed * iC.getRed(),
+            mGreen * iC.getGreen(),
+            mBlue * iC.getBlue(),
+            mAlpha * iC.getAlpha());
+    }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+    ColorRgba<T>& ColorRgba<T>::operator*=(const ColorRgba<T>& iC)
+    {
+        mRed *= iC.getRed();
+        mGreen *= iC.getGreen();
+        mBlue *= iC.getBlue();
+        mAlpha *= iC.getAlpha();
+        return *this;
+    }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+    ColorRgba<T> ColorRgba<T>::operator/(const ColorRgba<T>& iC) const
+    {
+        return ColorRgba<T>(mRed / iC.getRed(),
+            mGreen / iC.getGreen(),
+            mBlue / iC.getBlue(),
+            mAlpha / iC.getAlpha());
+    }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+    ColorRgba<T>& ColorRgba<T>::operator/=(const ColorRgba<T>& iC)
+    {
+        mRed /= iC.getRed();
+        mGreen /= iC.getGreen();
+        mBlue /= iC.getBlue();
+        mAlpha /= iC.getAlpha();
+        return *this;
+    }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+    ColorRgba<T> ColorRgba<T>::operator*(double iC) const
+    {
+        return ColorRgba<T>((T)(mRed * iC),
+            (T)(mGreen * iC),
+            (T)(mBlue * iC),
+            (T)(mAlpha * iC));
+    }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+    ColorRgba<T>& ColorRgba<T>::operator*=(double iC)
+    {
+        mRed = (T)(mRed * iC);
+        mGreen = (T)(mGreen * iC);
+        mBlue = (T)(mBlue * iC);
+        mAlpha = (T)(mAlpha * iC);
+        return *this;
+    }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+    ColorRgba<T> ColorRgba<T>::operator/(double iC) const
+    {
+        return ColorRgba<T>((T)(mRed / iC),
+            (T)(mGreen / iC),
+            (T)(mBlue / iC),
+            (T)(mAlpha / iC));
+    }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+    ColorRgba<T>& ColorRgba<T>::operator/=(double iC)
+    {
+        mRed = (T)(mRed / iC);
+        mGreen = (T)(mGreen / iC);
+        mBlue = (T)(mBlue / iC);
+        mAlpha = (T)(mAlpha / iC);
+        return *this;
+    }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
     void ColorRgba<T>::set(T iR, T iG, T iB, T iA)
     {
         mRed = iR;
@@ -226,24 +544,32 @@ namespace Core
     }
 
     //-------------------------------------------------------------------------
-    template<typename T>
+    template<typename T> inline
     void ColorRgba<T>::setAlpha(T iV)
     { mAlpha = iV; }
 
     //-------------------------------------------------------------------------
-    template<typename T>
+    template<typename T> inline
     void ColorRgba<T>::setBlue(T iV)
     { mBlue = iV; }
 
     //-------------------------------------------------------------------------
-    template<typename T>
+    template<typename T> inline
     void ColorRgba<T>::setGreen(T iV)
     { mGreen = iV; }
 
     //-------------------------------------------------------------------------
-    template<typename T>
+    template<typename T> inline
     void ColorRgba<T>::setRed(T iV)
     { mRed = iV; }
+
+    //-------------------------------------------------------------------------
+    template<typename T> inline
+    double ColorRgba<T>::toLuma() const
+    {
+        return 0.2126*mRed + 0.7152*mGreen + 0.0722*mBlue;
+    }
+    
 
     typedef ColorRgb<uint8_t> ColorRgbUint8;
     typedef ColorRgb<int8_t> ColorRgbInt8;
@@ -309,6 +635,7 @@ namespace Core
     {
     public:
         Color();
+        Color(const ColorRgba<double>&);
         Color(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 0);
         Color(int8_t r, int8_t g, int8_t b, int8_t a = 0);
         Color(uint16_t r, uint16_t g, uint16_t b, uint16_t a = 0);
@@ -321,18 +648,7 @@ namespace Core
 
         Color(const Color&) = default;
         Color& operator=(const Color&) = default;
-        virtual ~Color() = default;
-        
-        Color operator+(const Color&);
-        Color& operator+=(const Color&);
-        Color operator-(const Color&);
-        Color& operator-=(const Color&);
-        Color operator*(double);
-        Color operator*(const Color&);
-        Color& operator*=(double);
-        Color& operator*=(const Color&);
-        Color operator/(double);
-        Color& operator/=(double);
+        ~Color() = default;
 
         uint8_t getAlphaUint8() const;
         int8_t getAlphaInt8() const;

@@ -1,4 +1,5 @@
 
+#include "Core/Unused.h"
 #include "Interfaces.h"
 #include "IntersectionResult.h"
 #include "Math/CommonMath.h"
@@ -79,15 +80,15 @@ const std::shared_ptr<Material> IRenderable::getMaterial() const
 //-----------------------------------------------------------------------------
 bool IRenderable::intersects(const Geometry::Line& iRay) const
 { 
-    SUPPRESS_WARNING(iRay);
+    UNUSED(iRay);
     return false;
 }
 
 //-----------------------------------------------------------------------------
 bool IRenderable::intersect(const Geometry::Line& iRay, IntersectionResult* opResult) const
 { 
-    SUPPRESS_WARNING(iRay);
-    SUPPRESS_WARNING(opResult);
+    UNUSED(iRay);
+    UNUSED(opResult);
     return false;
 }
 

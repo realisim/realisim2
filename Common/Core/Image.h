@@ -4,12 +4,27 @@
 #include "ByteArray.h"
 #include "Color.h"
 #include "ImageInternalFormat.h"
+
+//--- start of ImageSUpport------------------------------------------------------
+// image support powered by thirdParties are activated via a 
+// define.
+// The define is automatically set by cmake when adding the relevant thirdParty
+// Some image support are native and do not require third party, thus are available
+// without defines
+//
 //#include "ImageSupport/DdsImage.h"
 #include "ImageSupport/HgtImage.h"
-#include "ImageSupport/PngImage.h"
+#ifdef REALISIM_THIRDPARTIES_LODEPNG
+    #include "ImageSupport/PngImage.h"
+#endif // DREALISIM_THIRDPARTIES_LODEPNG
 #include "ImageSupport/RawImage.h"
 #include "ImageSupport/RgbImage.h"
 //#include "ImageSupport/TiffImage.h"
+#ifdef REALISIM_THIRDPARTIES_TGA
+    #include "ImageSupport/TgaImage.h"
+#endif // REALISIM_THIRDPARTIES_TGA
+//--- End of ImageSUpport------------------------------------------------------
+
 #include "Math/Vector.h"
 #include "Math/VectorI.h"
 
@@ -17,8 +32,6 @@ namespace Realisim
 {
 namespace Core
 {
-    class HgtImage;
-    
     /*-------------------------------------------------------------------------
     This class presents a 2d image.
 
@@ -89,8 +102,9 @@ namespace Core
     class Image
     {
     public:
-        enum Format { fUnsupported, fRaw, fRgb, /*fDds,*/ fPng, /*fTiff,*/ fHgt }; // renomer a FileFormat
-
+        enum Format { fUnsupported, fRaw, fRgb, /*fDds,*/ fPng, /*fTiff,*/ fHgt, fTga }; // renomer a FileFormat
+        enum PixelInterpolation { piNearest, piLinear };
+        enum WrapType { wtClampToBorder, wtClampToEdge, wtRepeat };
         enum WritableFormat { wfPng, wfRaw/*, wfDds*/ };
 
         Image();
@@ -99,58 +113,59 @@ namespace Core
         Image& operator=(const Image&) = default;
         virtual ~Image();
 
-        virtual void clear();
-        virtual void flipVertical(); //flips 180 deg around x axis
-        virtual int getBytesPerChannel() const;
+        void clear();
+        void flipVertical(); //flips 180 deg around x axis
+        int getBytesPerChannel() const;
         static std::string getExtensionFromFormat(Format);
-        virtual std::string getFilenamePath() const;        
+        std::string getFilenamePath() const;        
         static Format getFormatFromExtension(const std::string& iExtension);
         static Format getFormatFromFilename(const std::string& iFilename);
-        virtual int getHeight() const;
-        virtual ImageInternalFormat getInternalFormat() const;
-        virtual ByteArray getImageData() const;
-        virtual int getNumberOfChannels() const;
-        virtual Color getPixelColor(Math::Vector2i iPixel) const;
-        virtual Color getPixelColor(Math::Vector2 iPixel) const;
-        virtual uint64_t getSizeInBytes() const;
-        virtual const Math::Vector2i& getSizeInPixels() const;
-        virtual int getWidth() const;
-        virtual bool hasImageData() const;
-        virtual bool isValid() const;
-        virtual bool load();
-        virtual bool load(Format);
-        virtual bool loadHeader();
-        virtual bool loadHeader(Format);
-        virtual bool saveAs(const std::string& iFilenamePath, WritableFormat iF);
-        //virtual bool saveAs(const std::string& iFilenamePath, const DdsImage::SaveOptions& iSaveOption); //implicitly save as DDS.
-        virtual void set(const std::string& iFilenamePath);
-        virtual void setFilenamePath(const std::string& iFilenamePath);
-        virtual void set(int iWidth, int iHeight, ImageInternalFormat iIf);
-        virtual void set(const Math::Vector2i& iSize, ImageInternalFormat iIf);
-        virtual void setData(int iWidth, int iHeight, ImageInternalFormat iIf, const char* ipData);
+        int getHeight() const;
+        ImageInternalFormat getInternalFormat() const;
+        ByteArray getImageData() const;
+        int getNumberOfChannels() const;
+        Color getPixelColor(const Math::Vector2i& iPixel) const;
+        Color getPixelColor(int iX, int iY) const;
+        Color getPixelColor(double iX, double iY) const; // with linear interpolation
+        Color getPixelColor(const Math::Vector2& iPixel) const;
+        Color getPixelColor(const Math::Vector2& iPixel, PixelInterpolation iPi) const;
+        uint64_t getSizeInBytes() const;
+        const Math::Vector2i& getSizeInPixels() const;
+        int getWidth() const;
+        WrapType getWrapType() const;
+        bool hasImageData() const;
+        bool isValid() const;
+        bool load();
+        bool loadHeader();
+        bool saveAs(const std::string& iFilenamePath, WritableFormat iF);
+        //bool saveAs(const std::string& iFilenamePath, const DdsImage::SaveOptions& iSaveOption); //implicitly save as DDS.
+        void set(const std::string& iFilenamePath);
+        void setFilenamePath(const std::string& iFilenamePath);
+        void set(int iWidth, int iHeight, ImageInternalFormat iIf);
+        void set(const Math::Vector2i& iSize, ImageInternalFormat iIf);
+        void setData(int iWidth, int iHeight, ImageInternalFormat iIf, const char* ipData);
 
-        virtual void setPixelColor(Math::Vector2i iPixel, const Color& iCol); //this should be changed to Color which abstracts rgb8, 16 and float
-        virtual void setPixelColor(Math::Vector2 iPixel, const Color& iCol);
-        virtual void unloadImageData();
+        void setPixelColor(Math::Vector2i iPixel, const Color& iCol); //this should be changed to Color which abstracts rgb8, 16 and float
+        void setPixelColor(Math::Vector2 iPixel, const Color& iCol);
+        void setWrapType(WrapType iWt);
+        void unloadImageData();
         
     protected:
-        virtual void flipVertical(ByteArray& iBa);
-        virtual Format guessFormatFromFileName() const;
-        //virtual bool loadDdsImage(const std::string& iFilenamePath, bool iHeaderOnly);
-        virtual bool loadHgtImage(const std::string& iFilenamePath, bool iHeaderOnly);
-        virtual bool loadPngImage(const std::string& iFilenamePath, bool iHeaderOnly);
-        virtual bool loadRawImage(const std::string& iFilenamePath, bool iHeaderOnly);
-        virtual bool loadRgbImage(const std::string& iFilenamePath, bool iHeaderOnly);
-        //virtual bool loadTiffImage(const std::string& iFilenamePath, bool iHeaderOnly);
-        //virtual bool saveDdsImage(const std::string& iFilenamePath, const DdsImage::SaveOptions& iSaveOption);
-        virtual bool savePngImage(const std::string& iFilenamePath);
-        virtual bool saveRawImage(const std::string& iFilenamePath);
+        bool applyWrapType(int iX, int iY, uint64_t *iPx, uint64_t *iPy) const;
+        void flipVertical(ByteArray& iBa);
+        Format guessFormatFromFileName() const;
+        bool load(Format, bool iHeaderOnly);
+        bool load(IImageReader *ipReader, bool iHeaderOnly);
+        bool savePngImage(const std::string& iFilenamePath);
+        bool saveRawImage(const std::string& iFilenamePath);
+
 
         std::string mFilenamePath;
         ByteArray mImageData;
         Math::Vector2i mSizeInPixel;
         uint64_t mSizeInBytes;
         ImageInternalFormat mInternalFormat;
+        WrapType mWrapType;
         bool mIsValid;
     };
 }

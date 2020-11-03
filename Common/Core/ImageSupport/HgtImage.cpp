@@ -29,17 +29,11 @@ namespace
 
 //------------------------------------------------------------------------------
 HgtImage::HgtImage() :
-mFilenamePath(),
-mImageData(),
-mType(tUndefined),
-mIsValid(false),
-mBytesPerChannel(0),
-mWidthInSample(0),
-mHeightInSample(0),
-mNumberOfChannels(0),
-mResolutionPerSampleInDegrees(0.0),
-mGeoTiffLowerLeftCorner(),
-mGeoTiffUpperRightCorner()
+    IImageReader(),
+    mType(tUndefined),
+    mResolutionPerSampleInDegrees(0.0),
+    mGeoTiffLowerLeftCorner(),
+    mGeoTiffUpperRightCorner()
 {}
 
 //------------------------------------------------------------------------------
@@ -51,14 +45,9 @@ HgtImage::~HgtImage()
 //------------------------------------------------------------------------------
 void HgtImage::clear()
 {
-    mImageData = ByteArray();
+    IImageReader::clear();
     
-    mIsValid = false;
     mType = tUndefined;
-    mBytesPerChannel = 0;
-    mWidthInSample = 0;
-    mHeightInSample = 0;
-    mNumberOfChannels = 0;
     mResolutionPerSampleInDegrees = 0.0;
 
     // geo referenced data
@@ -71,13 +60,13 @@ void HgtImage::clear()
 //
 void HgtImage::flipVertical()
 {
-    const uint64_t lineSize = getWidthInSample() * getNumberOfChannels() * getBytesPerChannel();
+    const uint64_t lineSize = getWidthInPixel() * getNumberOfChannels() * getBytesPerChannel();
     uint8_t *pTemp = new uint8_t[lineSize];
 
     uint8_t *pTop = nullptr, *pBottom = nullptr;
     uint8_t *data = (uint8_t*)mImageData.data();
 
-    const int h = getHeightInSample();
+    const int h = getHeightInPixel();
     const int h2 = h >> 1;
     for (int y = 0; y < h2; ++y)
     {
@@ -91,18 +80,6 @@ void HgtImage::flipVertical()
 
     delete pTemp;
 }
-
-//------------------------------------------------------------------------------
-int HgtImage::getBytesPerChannel() const
-{ return mBytesPerChannel; }
-
-//------------------------------------------------------------------------------
-const std::string& HgtImage::getFilenamePath() const
-{ return mFilenamePath; }
-
-//------------------------------------------------------------------------------
-ByteArray HgtImage::getImageData() const
-{ return mImageData; }
 
 //------------------------------------------------------------------------------
 ImageInternalFormat HgtImage::getInternalFormat() const
@@ -163,16 +140,6 @@ Math::Vector2 HgtImage::getGeoTiffUpperRightCorner() const
 }
 
 //------------------------------------------------------------------------------
-int HgtImage::getHeightInSample() const
-{
-    return mHeightInSample;
-}
-
-//------------------------------------------------------------------------------
-int HgtImage::getNumberOfChannels() const
-{ return mNumberOfChannels; }
-
-//------------------------------------------------------------------------------
 double HgtImage::getResolutionPerSampleInDegrees() const
 {
     return mResolutionPerSampleInDegrees;
@@ -183,33 +150,6 @@ HgtImage::type HgtImage::getType() const
 {
     return mType;
 }
-
-//------------------------------------------------------------------------------
-Math::Vector2i HgtImage::getSizeInPixel() const
-{
-    return Math::Vector2i(mWidthInSample, mHeightInSample);
-}
-
-//------------------------------------------------------------------------------
-uint64_t HgtImage::getSizeInBytes() const
-{
-    return (uint64_t)mBytesPerChannel * 
-        (uint64_t)mWidthInSample * 
-        (uint64_t)mHeightInSample * 
-        (uint64_t)mNumberOfChannels;
-}
-
-//------------------------------------------------------------------------------
-int HgtImage::getWidthInSample() const
-{ return mWidthInSample; }
-
-//------------------------------------------------------------------------------
-bool HgtImage::hasImageData() const
-{ return !mImageData.isEmpty(); }
-
-//------------------------------------------------------------------------------
-bool HgtImage::isValid() const
-{ return mIsValid; }
 
 //------------------------------------------------------------------------------
 void HgtImage::load()
@@ -227,7 +167,7 @@ void HgtImage::load()
         //
         if (StreamUtility::getLocalMachineByteOrder() != StreamUtility::eBigEndian)
         {
-            uint64_t numberOfSamples = (uint64_t)getWidthInSample() * (uint64_t)getHeightInSample();
+            uint64_t numberOfSamples = (uint64_t)getWidthInPixel() * (uint64_t)getHeightInPixel();
             char *pCursor = (char*)mImageData.data();
             char *pCursorPlusOne = nullptr;
             for (size_t i = 0; i < numberOfSamples; ++i)
@@ -282,8 +222,8 @@ void HgtImage::loadHeader()
     case tSrtm1:
         mGeoTiffLowerLeftCorner = getLowerLeftCornerFromFileName(getFilenamePath(), &mIsValid);
 
-        mWidthInSample = kSrtm1NumberOfSamplePerLines;
-        mHeightInSample = kSrtm1NumberOfLines;
+        mWidthInPixel = kSrtm1NumberOfSamplePerLines;
+        mHeightInPixel = kSrtm1NumberOfLines;
         mResolutionPerSampleInDegrees = kSrtm1ResolutionPerSampleInDegree;
 
         mGeoTiffUpperRightCorner.setX(mGeoTiffLowerLeftCorner.x() + kSrtm1CoverageInLatLon);
@@ -295,8 +235,8 @@ void HgtImage::loadHeader()
     case tSrtm3:
         mGeoTiffLowerLeftCorner = getLowerLeftCornerFromFileName(getFilenamePath(), &mIsValid);
 
-        mWidthInSample = kSrtm3NumberOfSamplePerLines;
-        mHeightInSample = kSrtm3NumberOfLines;
+        mWidthInPixel = kSrtm3NumberOfSamplePerLines;
+        mHeightInPixel = kSrtm3NumberOfLines;
         mResolutionPerSampleInDegrees = kSrtm3ResolutionPerSampleInDegree;
 
         mGeoTiffUpperRightCorner.setX(mGeoTiffLowerLeftCorner.x() + kSrtm3CoverageInLatLon);
@@ -305,14 +245,14 @@ void HgtImage::loadHeader()
 //        mGeoTiffUpperRightCorner.setLatitude(mGeoTiffLowerLeftCorner.getLatitude() + kSrtm3CoverageInLatLon);
         break;
     case tBlueMarbleSrtmRamp2:
-        mWidthInSample = 86400;
-        mHeightInSample = 43200;
+        mWidthInPixel = 86400;
+        mHeightInPixel = 43200;
         mResolutionPerSampleInDegrees = 1 / 240.0;
         //mGeoTiffLowerLeftCorner = GeodeticCoordinate(-90.0, -180.0, 0.0, Datum::WGS84);
         
         mGeoTiffLowerLeftCorner.set(-180.0, -90.0);
-        mGeoTiffUpperRightCorner.setX(mGeoTiffLowerLeftCorner.x() + (mWidthInSample * mResolutionPerSampleInDegrees));
-        mGeoTiffUpperRightCorner.setY(mGeoTiffLowerLeftCorner.y() + (mHeightInSample * mResolutionPerSampleInDegrees));
+        mGeoTiffUpperRightCorner.setX(mGeoTiffLowerLeftCorner.x() + (mWidthInPixel * mResolutionPerSampleInDegrees));
+        mGeoTiffUpperRightCorner.setY(mGeoTiffLowerLeftCorner.y() + (mHeightInPixel * mResolutionPerSampleInDegrees));
         //mGeoTiffUpperRightCorner.setLongitude(mGeoTiffLowerLeftCorner.getLongitude() + (mWidthInSample * mResolutionPerSampleInDegrees));
         //mGeoTiffUpperRightCorner.setLatitude(mGeoTiffLowerLeftCorner.getLatitude() + (mHeightInSample * mResolutionPerSampleInDegrees));
         mIsValid = true;
@@ -330,13 +270,6 @@ void HgtImage::loadHeader()
 }
 
 //------------------------------------------------------------------------------
-void HgtImage::setFilenamePath(const std::string& iV)
-{ 
-    clear();
-    mFilenamePath = iV;
-}
-
-//------------------------------------------------------------------------------
 // This method is used to fully define the format of the image to be read.
 // Ex:
 //      HgtImage im;
@@ -348,10 +281,10 @@ void HgtImage::setCustomType(int iNumberOfSamplesPerLine, int iNumberOfLines, do
                              Math::Vector2 iLowerLeftCorner)
 {
     mType = tCustom;
-    mWidthInSample = iNumberOfSamplesPerLine;
-    mHeightInSample = iNumberOfLines;
+    mWidthInPixel = iNumberOfSamplesPerLine;
+    mHeightInPixel = iNumberOfLines;
     mResolutionPerSampleInDegrees = iResolutionPerSampleInDegree;
     mGeoTiffLowerLeftCorner = iLowerLeftCorner;
-    mGeoTiffUpperRightCorner.setX(mGeoTiffLowerLeftCorner.x() + (mWidthInSample * mResolutionPerSampleInDegrees));
-    mGeoTiffUpperRightCorner.setY(mGeoTiffLowerLeftCorner.y() + (mHeightInSample * mResolutionPerSampleInDegrees));
+    mGeoTiffUpperRightCorner.setX(mGeoTiffLowerLeftCorner.x() + (mWidthInPixel * mResolutionPerSampleInDegrees));
+    mGeoTiffUpperRightCorner.setY(mGeoTiffLowerLeftCorner.y() + (mHeightInPixel * mResolutionPerSampleInDegrees));
 }

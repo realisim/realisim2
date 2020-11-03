@@ -11,17 +11,10 @@ using namespace Realisim;
     using namespace Core;
 using namespace std;
 
-RgbImage::RgbImage() :
-mFilenamePath(),
-mImageData(),
-mIsValid(false),
+RgbImage::RgbImage() : IImageReader(),
 mMagicNumber(0),
 mStorage(0),
-mBytesPerPixel(0),
 mDimension(0),
-mPixelSizeX(0),
-mPixelSizeY(0),
-mNumberOfChannels(0),
 mMinumumPixelValue(0),
 mMaximumPixelValue(0),
 mImageName(),
@@ -30,16 +23,10 @@ mColorMapId(0)
 
 //------------------------------------------------------------------------------
 RgbImage::RgbImage(const std::string& iFilenamePath) :
-    mFilenamePath(iFilenamePath),
-    mImageData(),
-    mIsValid(false),
+    IImageReader(iFilenamePath),
     mMagicNumber(0),
     mStorage(0),
-    mBytesPerPixel(0),
     mDimension(0),
-    mPixelSizeX(0),
-    mPixelSizeY(0),
-    mNumberOfChannels(0),
     mMinumumPixelValue(0),
     mMaximumPixelValue(0),
     mImageName(),
@@ -57,15 +44,10 @@ RgbImage::~RgbImage()
 //------------------------------------------------------------------------------
 void RgbImage::clear()
 {
-    mImageData = ByteArray();
+    IImageReader::clear();
     
-    mIsValid = false;
     mStorage = 0;
-    mBytesPerPixel = 0;
     mDimension = 0;
-    mPixelSizeX = 0;
-    mPixelSizeY = 0;
-    mNumberOfChannels = 0;
     mMinumumPixelValue = 0;
     mMaximumPixelValue = 0;
     mImageName = string();
@@ -98,24 +80,12 @@ void RgbImage::decompress(const std::string &iRleData, unsigned char *iDest)
 }
 
 //------------------------------------------------------------------------------
-int RgbImage::getBytesPerChannel() const
-{ return mBytesPerPixel; }
-
-//------------------------------------------------------------------------------
 int RgbImage::getColorMapId() const
 { return mColorMapId; }
 
 //------------------------------------------------------------------------------
 int RgbImage::getDimension() const
 { return mDimension; }
-
-//------------------------------------------------------------------------------
-const std::string& RgbImage::getFilenamePath() const
-{ return mFilenamePath; }
-
-//------------------------------------------------------------------------------
-ByteArray RgbImage::getImageData() const
-{ return mImageData; }
 
 //------------------------------------------------------------------------------
 std::string RgbImage::getImageName() const
@@ -175,32 +145,12 @@ int RgbImage::getMinumumPixelValue() const
 { return mMinumumPixelValue; }
 
 //------------------------------------------------------------------------------
-int RgbImage::getNumberOfChannels() const
-{ return mNumberOfChannels; }
-
-//------------------------------------------------------------------------------
-int RgbImage::getPixelSizeX() const
-{ return mPixelSizeX; }
-
-//------------------------------------------------------------------------------
-int RgbImage::getPixelSizeY() const
-{ return mPixelSizeY; }
-
-//------------------------------------------------------------------------------
 int RgbImage::getStorage() const
 { return mStorage; }
 
 //------------------------------------------------------------------------------
-bool RgbImage::hasImageData() const
-{ return !mImageData.isEmpty(); }
-
-//------------------------------------------------------------------------------
 bool RgbImage::isRleEncoded() const
 { return getStorage() == 1; }
-
-//------------------------------------------------------------------------------
-bool RgbImage::isValid() const
-{ return mIsValid; }
 
 //------------------------------------------------------------------------------
 void RgbImage::load()
@@ -259,11 +209,15 @@ bool RgbImage::loadHeader(ifstream& ifs)
     {
         ok &= su.readInt8(ifs, &mStorage);
         
-        ok &= su.readInt8(ifs, &mBytesPerPixel);
+        uint16_t width, height, numberOfChannels;
+        ok &= su.readInt8(ifs, &mBytesPerChannel);
         ok &= su.readUint16(ifs, &mDimension);
-        ok &= su.readUint16(ifs, &mPixelSizeX);
-        ok &= su.readUint16(ifs, &mPixelSizeY);
-        ok &= su.readUint16(ifs, &mNumberOfChannels);
+        ok &= su.readUint16(ifs, &width);
+        mWidthInPixel = width;
+        ok &= su.readUint16(ifs, &height);
+        mHeightInPixel = height;
+        ok &= su.readUint16(ifs, &numberOfChannels);
+        mNumberOfChannels = (int8_t)numberOfChannels;
         ok &= su.readInt32(ifs, &mMinumumPixelValue);
         ok &= su.readInt32(ifs, &mMaximumPixelValue);
         
@@ -300,8 +254,8 @@ bool RgbImage::parseAsRle(std::ifstream &ifs)
     su.setStreamFormat(Realisim::Core::StreamUtility::eBigEndian);
     
     const int numChannels = getNumberOfChannels();
-    const int sx = getPixelSizeX();
-    const int sy = getPixelSizeY();
+    const int sx = getWidthInPixel();
+    const int sy = getHeightInPixel();
     
     //--- read offset table
     int32_t* startTable = nullptr;
@@ -385,7 +339,7 @@ bool RgbImage::parseAsVerbatim(std::ifstream &ifs)
         
     //read all data at once, it is faster and enables using openmp
     string rawData;
-    ok &= su.readBytes(ifs, getPixelSizeX() * getPixelSizeY() * getNumberOfChannels(), &rawData);
+    ok &= su.readBytes(ifs, mWidthInPixel * mHeightInPixel * mNumberOfChannels, &rawData);
 
     if (ok)
     {
@@ -393,11 +347,11 @@ bool RgbImage::parseAsVerbatim(std::ifstream &ifs)
 
         // create final buffer to recombine channel buffer into a
         // single rgb/rgba buffer.
-        const int finalSize = getPixelSizeX() * getPixelSizeY() * n;
+        const int finalSize = getWidthInPixel() * getHeightInPixel() * n;
         mImageData.resize(finalSize);
 
         int i = 0;
-        const int sizeOfChannelInBytes = getPixelSizeX() * getPixelSizeY();
+        const int sizeOfChannelInBytes = mWidthInPixel * mHeightInPixel;
 
         //on channel per thread.
         #pragma omp parallel for num_threads(n) private(i)
@@ -413,9 +367,5 @@ bool RgbImage::parseAsVerbatim(std::ifstream &ifs)
     return ok;
 }
 
-
-//------------------------------------------------------------------------------
-void RgbImage::setFilenamePath(const std::string& iV)
-{ mFilenamePath = iV; }
 
 

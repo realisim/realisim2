@@ -509,3 +509,120 @@ TEST(Color, floatTest)
         EXPECT_EQ(c3.getAlphaF32(), a);
     }
 }
+
+#include <iostream>
+TEST(Color, operatorTestColorInt32)
+{
+    Color c0(1, 2, 3, 4);
+    Color c1(11, 12, 13, 14);
+
+    EXPECT_TRUE(c0 == Color(1, 2, 3, 4));
+    EXPECT_TRUE(c1 != Color(1, 2, 3, 4));
+
+    //Color c3 = (c0+c1);
+    //Color c4(12, 14, 16);
+    //std::cout << c3.getRedInt32() << " " <<
+    //    c3.getGreenInt32() << " " <<
+    //    c3.getBlueInt32() << " " <<
+    //    c3.getAlphaInt32() << " " << std::endl;
+
+    {
+        Color c3 = (c0 + c1);
+        EXPECT_EQ(c3.getRedInt32(), 12);
+        EXPECT_EQ(c3.getGreenInt32(), 14);
+        EXPECT_EQ(c3.getBlueInt32(), 16);
+        EXPECT_EQ(c3.getAlphaInt32(), 18);
+
+        Color t(c0);
+        t += c1;
+        EXPECT_EQ(t.getRedInt32(), 12);
+        EXPECT_EQ(t.getGreenInt32(), 14);
+        EXPECT_EQ(t.getBlueInt32(), 16);
+        EXPECT_EQ(t.getAlphaInt32(), 18);
+    }
+
+    {
+        Color c3 = (c0 - c1);
+        EXPECT_EQ(c3.getRedInt32(), -10);
+        EXPECT_EQ(c3.getGreenInt32(), -10);
+        EXPECT_EQ(c3.getBlueInt32(), -10);
+        EXPECT_EQ(c3.getAlphaInt32(), -10);
+
+        Color t(c0);
+        t -= c1;
+        EXPECT_EQ(t.getRedInt32(), -10);
+        EXPECT_EQ(t.getGreenInt32(), -10);
+        EXPECT_EQ(t.getBlueInt32(), -10);
+        EXPECT_EQ(t.getAlphaInt32(), -10);
+    }
+
+    {
+        Color c4(0.1, 0.2, 0.3, 0.4);
+        Color c5(0.5, 0.6, 0.7, 1.0);
+        Color c6 = (c4 * c5);
+
+        EXPECT_EQ(c6.getRed(), 0.1*0.5);
+        EXPECT_EQ(c6.getGreen(), 0.2*0.6);
+        EXPECT_EQ(c6.getBlue(), 0.3*0.7);
+        EXPECT_EQ(c6.getAlpha(), 0.4*1.0);
+
+        Color t(c4);
+        t *= c5;
+        EXPECT_EQ(c6.getRed(), 0.1*0.5);
+        EXPECT_EQ(c6.getGreen(), 0.2*0.6);
+        EXPECT_EQ(c6.getBlue(), 0.3*0.7);
+        EXPECT_EQ(c6.getAlpha(), 0.4*1.0);
+    }
+
+    {
+        Color c4(0.1, 0.2, 0.3, 0.4);
+        Color c5(0.5, 0.6, 0.7, 1.0);
+        Color c6 = (c4 / c5);
+
+        EXPECT_EQ(c6.getRed(), 0.1/0.5);
+        EXPECT_EQ(c6.getGreen(), 0.2/0.6);
+        EXPECT_EQ(c6.getBlue(), 0.3/0.7);
+        EXPECT_EQ(c6.getAlpha(), 0.4/1.0);
+
+        Color t(c4);
+        t /= c5;
+        EXPECT_EQ(c6.getRed(), 0.1 / 0.5);
+        EXPECT_EQ(c6.getGreen(), 0.2 / 0.6);
+        EXPECT_EQ(c6.getBlue(), 0.3 / 0.7);
+        EXPECT_EQ(c6.getAlpha(), 0.4 / 1.0);
+    }
+
+    {
+        Color c3 = (c0 * 2.0);
+
+        EXPECT_EQ(c3.getRedInt32(), 2);
+        EXPECT_EQ(c3.getGreenInt32(), 4);
+        EXPECT_EQ(c3.getBlueInt32(), 6);
+        EXPECT_EQ(c3.getAlphaInt32(), 8);
+
+        Color t(c0);
+        t *= 2;
+        EXPECT_EQ(t.getRedInt32(), 2);
+        EXPECT_EQ(t.getGreenInt32(), 4);
+        EXPECT_EQ(t.getBlueInt32(), 6);
+        EXPECT_EQ(t.getAlphaInt32(), 8);
+    }
+
+    {
+        Color c4(0.1, 0.2, 0.3, 0.4);
+        Color c6 = (c4 / 2.0);
+
+        EXPECT_EQ(c6.getRed(), 0.1 / 2.0);
+        EXPECT_EQ(c6.getGreen(), 0.2 / 2.0);
+        EXPECT_EQ(c6.getBlue(), 0.3 / 2.0);
+        EXPECT_EQ(c6.getAlpha(), 0.4 / 2.0);
+
+        Color t(c4);
+        t /= 2.0;
+        EXPECT_EQ(c6.getRed(), 0.1 / 2.0);
+        EXPECT_EQ(c6.getGreen(), 0.2 / 2.0);
+        EXPECT_EQ(c6.getBlue(), 0.3 / 2.0);
+        EXPECT_EQ(c6.getAlpha(), 0.4 / 2.0);
+    }
+
+}

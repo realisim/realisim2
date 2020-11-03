@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Core/ByteArray.h"
-#include "ImageInternalFormat.h"
+#include "IImageReader.h"
 #include "Math/Vector.h"
 #include "Math/VectorI.h"
 #include <stdint.h>
@@ -51,7 +50,7 @@ namespace Core
     //-------------------------------------------------------------------------
     // none
     //
-    class HgtImage
+    class HgtImage : public IImageReader
     {
     public:
         enum type { tUndefined, tCustom, tSrtm1, tSrtm3, tBlueMarbleSrtmRamp2 };
@@ -62,41 +61,23 @@ namespace Core
         ~HgtImage();
 
         void clear();
-        int getBytesPerChannel() const;
-        const std::string& getFilenamePath() const;
-        ByteArray getImageData() const;
-        ImageInternalFormat getInternalFormat() const;
+        
+        virtual ImageInternalFormat getInternalFormat() const override;
         static Math::Vector2 getLowerLeftCornerFromFileName(const std::string& iFilename, bool *oSuccess);
         Math::Vector2 getGeoTiffLowerLeftCorner() const;
         Math::Vector2 getGeoTiffUpperRightCorner() const;
-        int getHeightInSample() const;
-        int getNumberOfChannels() const;
         double getResolutionPerSampleInDegrees() const;
-        Math::Vector2i getSizeInPixel() const;
-        uint64_t getSizeInBytes() const;
         type getType() const;
-        int getWidthInSample() const;
-        bool hasImageData() const;
-        bool isValid() const;
-        void load();
-        void loadHeader();
-        void setFilenamePath(const std::string&);
+        virtual void load() override;
+        virtual void loadHeader() override;       
         void setCustomType(int iNumberOfSamplesPerLine, int iNumberOfLines, double iResolutionPerSampleInDegree,
                            Math::Vector2 iLowerLeftCorner);
         
     protected:
         void flipVertical();
-
-        std::string mFilenamePath;
-        ByteArray mImageData;
         type mType;
-        bool mIsValid;
         
         //-- data read from header.
-        int8_t mBytesPerChannel;
-        unsigned int mWidthInSample;
-        unsigned int mHeightInSample;
-        int8_t mNumberOfChannels;
         double mResolutionPerSampleInDegrees;
 
         //-- data read from image name

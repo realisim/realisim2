@@ -13,24 +13,15 @@ namespace
     const int kHeaderSize = 64;
 }
 
-
-RawImage::RawImage() :
-mFilenamePath(),
-mWidth(0),
-mHeight(0),
-mInternalFormat(iifUndefined),
-mImageData(),
-mIsValid(false)
+//------------------------------------------------------------------------------
+RawImage::RawImage() : IImageReader(),
+mInternalFormat(iifUndefined)
 {}
 
 //------------------------------------------------------------------------------
 RawImage::RawImage(const std::string& iFilenamePath) :
-    mFilenamePath(iFilenamePath),
-    mWidth(0),
-    mHeight(0),
-    mInternalFormat(iifUndefined),
-    mImageData(),
-    mIsValid(false)
+    IImageReader(iFilenamePath),
+    mInternalFormat(iifUndefined)
 {
     load();
 }
@@ -44,24 +35,8 @@ RawImage::~RawImage()
 //------------------------------------------------------------------------------
 void RawImage::clear()
 {
-    mImageData = ByteArray();
-    mWidth = 0;
-    mHeight = 0;
+    IImageReader::clear();
     mInternalFormat = iifUndefined;
-}
-
-//------------------------------------------------------------------------------
-const std::string& RawImage::getFilenamePath() const
-{ return mFilenamePath; }
-
-//------------------------------------------------------------------------------
-ByteArray RawImage::getImageData() const
-{ return mImageData; }
-
-//------------------------------------------------------------------------------
-unsigned int RawImage::getHeight() const
-{
-    return mHeight;
 }
 
 //------------------------------------------------------------------------------
@@ -69,22 +44,6 @@ ImageInternalFormat RawImage::getInternalFormat() const
 {
     return mInternalFormat;
 }
-
-//------------------------------------------------------------------------------
-unsigned int RawImage::getWidth() const
-{
-    return mWidth;
-}
-
-//------------------------------------------------------------------------------
-bool RawImage::hasImageData() const
-{
-    return !mImageData.isEmpty();
-}
-
-//------------------------------------------------------------------------------
-bool RawImage::isValid() const
-{ return mIsValid; }
 
 //------------------------------------------------------------------------------
 void RawImage::load()
@@ -156,9 +115,10 @@ bool RawImage::loadHeader(ifstream& ifs)
         ok &= su.readUint32(ifs, &w);
         ok &= su.readUint32(ifs, &h);
         ok &= su.readUint16(ifs, &internalFormat);
-        mWidth = w;
-        mHeight = h;
-        mInternalFormat = (ImageInternalFormat)internalFormat;   
+        mWidthInPixel = w;
+        mHeightInPixel = h;
+        mInternalFormat = (ImageInternalFormat)internalFormat;
+        mNumberOfChannels = (int8_t)Core::getNumberOfChannels(getInternalFormat());
     }
   
     return ok;
@@ -215,8 +175,8 @@ bool RawImage::save(std::string iFilenamePath,
     return r;
 }
 
-//------------------------------------------------------------------------------
-void RawImage::setFilenamePath(const std::string& iV)
-{ mFilenamePath = iV; }
+////------------------------------------------------------------------------------
+//void RawImage::setFilenamePath(const std::string& iV)
+//{ mFilenamePath = iV; }
 
 

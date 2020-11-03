@@ -72,6 +72,52 @@ TEST(ColorRgbUint8, cornerCases)
     EXPECT_NE(rgb.getBlue(), 259);*/
 }
 
+TEST(ColorRgb, operatorTestColorRGB)
+{
+    ColorRgbInt32 c0(1, 2, 3);
+    ColorRgbInt32 c1(11, 12, 13);
+
+    EXPECT_TRUE(c0 == ColorRgbInt32(1, 2, 3));
+    EXPECT_TRUE(c1 != ColorRgbInt32(1, 2, 3));
+
+    {
+        EXPECT_TRUE(ColorRgbInt32(12, 14, 16) == (c0 + c1));
+        ColorRgbInt32 t(c0);
+        EXPECT_TRUE(ColorRgbInt32(12, 14, 16) == (t += c1));
+    }
+
+    {
+        EXPECT_TRUE(ColorRgbInt32(-10, -10, -10) == (c0 - c1));
+        ColorRgbInt32 t(c0);
+        EXPECT_TRUE(ColorRgbInt32(-10, -10, -10) == (t -= c1));
+    }
+
+    {
+        EXPECT_TRUE(ColorRgbInt32(11, 24, 39) == (c0 * c1));
+        ColorRgbInt32 t(c0);
+        EXPECT_TRUE(ColorRgbInt32(11, 24, 39) == (t *= c1));
+    }
+
+    {
+        EXPECT_TRUE(ColorRgbInt32(1 / 11, 2 / 12, 3 / 13) == (c0 / c1));
+        ColorRgbInt32 t(c0);
+        EXPECT_TRUE(ColorRgbInt32(1 / 11, 2 / 12, 3 / 13) == (t /= c1));
+    }
+
+    {
+        EXPECT_TRUE(ColorRgbInt32(2, 4, 6) == (c0 * 2));
+        ColorRgbInt32 t(c0);
+        EXPECT_TRUE(ColorRgbInt32(2, 4, 6) == (t *= 2));
+    }
+
+    {
+        EXPECT_TRUE(ColorRgbInt32((int)(1 / 2.0), (int)(2 / 2.0), (int)(3 / 2.0)) == (c0 / 2.0));
+        ColorRgbInt32 t(c0);
+        EXPECT_TRUE(ColorRgbInt32((int)(1 / 2.0), (int)(2 / 2.0), (int)(3 / 2.0)) == (t /= 2.0));
+    }
+
+}
+
 //-----------------------------------------------------------------------------
 // ColorRgba
 //-----------------------------------------------------------------------------
@@ -134,4 +180,50 @@ TEST(ColorRgbaF32, sets)
 
     rgb.setAlpha(400);
     EXPECT_EQ(rgb.getAlpha(), 400);
+}
+
+TEST(ColorRgba, operatorTestColorRGBA)
+{
+    ColorRgbaInt32 c0(1, 2, 3, 4);
+    ColorRgbaInt32 c1(11, 12, 13, 14);
+
+    EXPECT_TRUE(c0 == ColorRgbaInt32(1, 2, 3, 4));
+    EXPECT_TRUE(c1 != ColorRgbaInt32(1, 2, 3, 5));
+
+    {
+        EXPECT_TRUE(ColorRgbaInt32(12, 14, 16, 18) == (c0 + c1));
+        ColorRgbaInt32 t(c0);
+        EXPECT_TRUE(ColorRgbaInt32(12, 14, 16, 18) == (t += c1));
+    }
+
+    {
+        EXPECT_TRUE(ColorRgbaInt32(-10, -10, -10, -10) == (c0 - c1));
+        ColorRgbaInt32 t(c0);
+        EXPECT_TRUE(ColorRgbaInt32(-10, -10, -10, -10) == (t -= c1));
+    }
+
+    {
+        EXPECT_TRUE(ColorRgbaInt32(11, 24, 39, 56) == (c0 * c1));
+        ColorRgbaInt32 t(c0);
+        EXPECT_TRUE(ColorRgbaInt32(11, 24, 39, 56) == (t *= c1));
+    }
+
+    {
+        EXPECT_TRUE(ColorRgbaInt32(1 / 11, 2 / 12, 3 / 13, 4 / 14) == (c0 / c1));
+        ColorRgbaInt32 t(c0);
+        EXPECT_TRUE(ColorRgbaInt32(1 / 11, 2 / 12, 3 / 13, 4 / 14) == (t /= c1));
+    }
+
+    {
+        EXPECT_TRUE(ColorRgbaInt32(2, 4, 6, 8) == (c0 * 2));
+        ColorRgbaInt32 t(c0);
+        EXPECT_TRUE(ColorRgbaInt32(2, 4, 6, 8) == (t *= 2));
+    }
+
+    {
+        EXPECT_TRUE(ColorRgbaInt32((int)(1 / 2.0), (int)(2 / 2.0), (int)(3 / 2.0), (int)(4 / 2.0)) == (c0 / 2.0));
+        ColorRgbaInt32 t(c0);
+        EXPECT_TRUE(ColorRgbaInt32((int)(1 / 2.0), (int)(2 / 2.0), (int)(3 / 2.0), (int)(4 / 2.0)) == (t /= 2.0));
+    }
+
 }

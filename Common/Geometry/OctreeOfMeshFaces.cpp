@@ -217,7 +217,6 @@ void OctreeOfMeshFaces::cleanupAndAssignLeafTriangles(Node *n, int depthCount)
     }
 }
 
-#define VALIDATE_GENERATION
 //---------------------------------------------------------------------------------------------------------------------
 void OctreeOfMeshFaces::generate()
 {
@@ -246,9 +245,6 @@ void OctreeOfMeshFaces::generate()
 
     generate(mpRoot, 0);
 
-#ifdef VALIDATE_GENERATION
-    validate(mpRoot);
-#endif
     // cleanup all nodes except leafs...
     int depthCount = 1;
     cleanupAndAssignLeafTriangles(mpRoot, depthCount);
@@ -354,44 +350,6 @@ std::string OctreeOfMeshFaces::statsToString() const
     oss << "total number of nodes: " << mStats.mTotalNumberOfNodes;
 
     return oss.str();
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-void OctreeOfMeshFaces::validate(Node *n)
-{
-    // validate that all face in parent have been accounted for in childs...
-
-    map<int, bool> mParentFaceIdToBool;
-    const int numFacesInParent = (int)n->mMeshFaceIndices.size();
-    for (auto &fi : n->mMeshFaceIndices)
-    {
-        mParentFaceIdToBool[fi] = false;
-    }
-
-    // go over childs
-    if (n->hasChilds())
-    {
-        for (auto c : n->mChilds)
-        {
-            for (auto &fi : c->mMeshFaceIndices)
-            {
-                mParentFaceIdToBool[fi] = true;
-            }
-        }
-
-        for (auto &it : mParentFaceIdToBool)
-        {
-            if (it.second == false)
-            {
-                printf("face %d is missing in childs from parent %d\n", it.first, n->mId);
-            }
-        }
-    }
-
-    const int numC = n->getNumberOfChilds();
-    for (int i = 0; i < numC; ++i) {
-        validate(n->mChilds[i]);
-    }
 }
 
 //---------------------------------------------------------------------------------------------------------------------

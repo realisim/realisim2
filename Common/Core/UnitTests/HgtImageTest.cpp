@@ -36,11 +36,11 @@ TEST(HgtImage, testHgtImageTypeSrtm3)
     EXPECT_EQ(im.getGeoTiffUpperRightCorner().y(), 45 + (1201 * im.getResolutionPerSampleInDegrees()) );
     EXPECT_EQ(im.getGeoTiffUpperRightCorner().x(), -72 + (1201 * im.getResolutionPerSampleInDegrees()));
 
-    EXPECT_EQ(im.getHeightInSample(), 1201);
+    EXPECT_EQ(im.getHeightInPixel(), 1201);
     EXPECT_EQ(im.getNumberOfChannels(), 1);
     EXPECT_EQ(im.getResolutionPerSampleInDegrees(), 3/3600.0);
     EXPECT_EQ(im.getType(), HgtImage::tSrtm3);
-    EXPECT_EQ(im.getWidthInSample(), 1201);
+    EXPECT_EQ(im.getWidthInPixel(), 1201);
     
     im.load();
     EXPECT_TRUE(im.isValid());
@@ -66,11 +66,11 @@ TEST(HgtImage, testHgtImageCustomType)
     EXPECT_EQ(im.getGeoTiffUpperRightCorner().x(), 0 + (kNumSamplePerLines * im.getResolutionPerSampleInDegrees()));
     EXPECT_EQ(im.getGeoTiffUpperRightCorner().y(), 0 + (kNumLines * im.getResolutionPerSampleInDegrees()));
 
-    EXPECT_EQ(im.getHeightInSample(), kNumLines);
+    EXPECT_EQ(im.getHeightInPixel(), kNumLines);
     EXPECT_EQ(im.getNumberOfChannels(), 1);
     EXPECT_EQ(im.getResolutionPerSampleInDegrees(), 1 / (double)kNumSamplePerLines);
     EXPECT_EQ(im.getType(), HgtImage::tCustom);
-    EXPECT_EQ(im.getWidthInSample(), kNumSamplePerLines);
+    EXPECT_EQ(im.getWidthInPixel(), kNumSamplePerLines);
 
     im.load();
     EXPECT_TRUE(im.isValid());

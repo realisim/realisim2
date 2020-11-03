@@ -9,45 +9,76 @@ namespace
     //-------------------------------------------------------------------------
     // Here we normalize the input value iValue. 
     //
+    // All unsigned type will be in the range [0.0, 1.0]
+    // All signed type will be in the range [-0.5, 0.5]
+    // The reason for the signed type to be between [-0.5, 0.5] is to enable
+    // arithmetic operation on normalized value.
+    //
+    // For example:
+    //   int8_t c = 0; will be 0.0 normalized.
+    //   uint8_t d = 0; will be 0.0 normalized.
+    //   thus: c+d = 0; normalized and unnormalized
+    //
+    //   If signed values were map to [0, 1], things would be different
+    //   int8_t c = 0; will be 0.5 normalized.
+    //   uint8_t d = 0; will be 0.0 normalized.
+    //   thus: c+d = 0.5; thus 0 if unnormalized as int8_t, but 127 if unnormalized as uint8_t;
+    //
     // Limitations: The largest representable type is uint32. To properly 
     //   normalize an uint32, we promote to int64 and store the result in
     //   double.    
     //
+#pragma warning( push )
+#pragma warning( disable : 4127 )
     template<class T>
     double normalize(T iValue)
     {
         const int64_t vMin = std::numeric_limits<T>::min();
         const int64_t vMax = std::numeric_limits<T>::max();
+        const int64_t d = vMax - vMin;
+        const double oneOverD = 1.0/(double)d;
 
         const int64_t n = iValue - vMin;
-        const int64_t d = vMax - vMin;
-        return (n/(double)d);
+        double r = n * oneOverD;
+
+        if(vMin < 0)
+        { r -= 0.5; }
+
+        return r;
     }
+#pragma warning( pop )
 
     //-------------------------------------------------------------------------
-    template<class T>
+    template<class T> inline
     void setRgbNormalized(Color *oColor, T iR, T iG, T iB)
-    { oColor->setF64(normalize(iR), normalize(iG), normalize(iB)); }
+    { oColor->setF64(normalize(iR), normalize(iG), normalize(iB), oColor->getAlpha()); }
 
     //-------------------------------------------------------------------------
-    template<class T>
+    template<class T> inline
     void setRgbaNormalized(Color *oColor, T iR, T iG, T iB, T iA)
     { oColor->setF64(normalize(iR), normalize(iG), normalize(iB), normalize(iA)); }
 
     //-------------------------------------------------------------------------
     // see normalize.
     //
-    template<class T>
+#pragma warning( push )
+#pragma warning( disable : 4127 )
+    template<class T> inline
     T unnormalize(double iValue)
     {
         const int64_t vMin = std::numeric_limits<T>::min();
         const int64_t vMax = std::numeric_limits<T>::max();
         const int64_t d = vMax - vMin;
+
+        if(vMin < 0)
+        { iValue += 0.5; }
+
         return (T)(vMin + (iValue * d));
     }
+#pragma warning( pop )
 
     //-------------------------------------------------------------------------
-    template<class T>
+    template<class T> inline
     ColorRgb<T> getRgbUnnormalized(const Color *iC)
     {
         return ColorRgb<T>(unnormalize<T>(iC->getRed()),
@@ -56,7 +87,7 @@ namespace
     }
 
     //-------------------------------------------------------------------------
-    template<class T>
+    template<class T> inline
     ColorRgba<T> getRgbaUnnormalized(const Color *iC)
     {
         return ColorRgba<T>(unnormalize<T>(iC->getRed()),
@@ -68,7 +99,11 @@ namespace
 }
 
 //------------------------------------------------------------------------------
-Color::Color() : ColorRgbaF64(0.0, 0.0, 0.0, 0.0)
+Color::Color() : ColorRgbaF64()
+{}
+
+//------------------------------------------------------------------------------
+Color::Color(const ColorRgba<double>& iC) : ColorRgbaF64(iC)
 {}
 
 //------------------------------------------------------------------------------
@@ -110,102 +145,6 @@ Color::Color(float r, float g, float b, float a) :
 Color::Color(double r, double g, double b, double a) :
     ColorRgbaF64(r, g, b, a)
 {}
-
-//------------------------------------------------------------------------------
-Color Color::operator+(const Color& iRhs)
-{
-    return Color(mRed + iRhs.getRed(),
-                 mGreen + iRhs.getGreen(),
-                 mBlue + iRhs.getBlue(),
-                 mAlpha + iRhs.getAlpha());
-}
-
-//------------------------------------------------------------------------------
-Color& Color::operator+=(const Color& iRhs)
-{
-    mRed += iRhs.getRed();
-    mGreen += iRhs.getGreen();
-    mBlue += iRhs.getBlue();
-    mAlpha += iRhs.getAlpha();
-    return *this;
-}
-
-//------------------------------------------------------------------------------
-Color Color::operator-(const Color& iRhs)
-{
-    return Color(mRed - iRhs.getRed(),
-                 mGreen - iRhs.getGreen(),
-                 mBlue - iRhs.getBlue(),
-                 mAlpha - iRhs.getAlpha());
-}
-
-//------------------------------------------------------------------------------
-Color& Color::operator-=(const Color& iRhs)
-{
-    mRed -= iRhs.getRed();
-    mGreen -= iRhs.getGreen();
-    mBlue -= iRhs.getBlue();
-    mAlpha -= iRhs.getAlpha();
-    return *this;
-}
-
-//------------------------------------------------------------------------------
-Color Color::operator*(double iV)
-{
-    return Color(mRed * iV,
-                 mGreen * iV,
-                 mBlue * iV,
-                 mAlpha * iV);
-}
-
-//------------------------------------------------------------------------------
-Color Color::operator*(const Color& iV)
-{
-    return Color(mRed * iV.mRed,
-        mGreen * iV.mGreen,
-        mBlue * iV.mBlue,
-        mAlpha * iV.mAlpha);
-}
-
-//------------------------------------------------------------------------------
-Color& Color::operator*=(double iV)
-{
-    mRed *= iV;
-    mGreen *= iV;
-    mBlue *= iV;
-    mAlpha *= iV;
-    return *this;
-}
-
-//------------------------------------------------------------------------------
-Color& Color::operator*=(const Color& iV)
-{
-    mRed *= iV.mRed;
-    mGreen *= iV.mGreen;
-    mBlue *= iV.mBlue;
-    mAlpha *= iV.mAlpha;
-    return *this;
-}
-
-//------------------------------------------------------------------------------
-Color Color::operator/(double iV)
-{
-    return Color(mRed / iV,
-                 mGreen / iV,
-                 mBlue / iV,
-                 mAlpha / iV);
-
-}
-
-//------------------------------------------------------------------------------
-Color& Color::operator/=(double iV)
-{
-    mRed /= iV;
-    mGreen /= iV;
-    mBlue /= iV;
-    mAlpha /= iV;
-    return *this;
-}
 
 //------------------------------------------------------------------------------
 uint8_t Color::getAlphaUint8() const
@@ -589,11 +528,11 @@ void Color::setRgb(const ColorRgbInt32& iV)
 
 //------------------------------------------------------------------------------
 void Color::setRgb(const ColorRgbF16& iV)
-{ setF16(iV.getRed(), iV.getGreen(), iV.getBlue()); }
+{ setF16(iV.getRed(), iV.getGreen(), iV.getBlue(), (half_float::half)(float)getAlpha()); }
 
 //------------------------------------------------------------------------------
 void Color::setRgb(const ColorRgbF32& iV)
-{ setF32(iV.getRed(), iV.getGreen(), iV.getBlue()); }
+{ setF32(iV.getRed(), iV.getGreen(), iV.getBlue(), (float)getAlpha()); }
 
 //------------------------------------------------------------------------------
 void Color::setRgba(const ColorRgbaUint8& iV)

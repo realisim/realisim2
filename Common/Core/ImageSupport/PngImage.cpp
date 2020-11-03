@@ -10,25 +10,11 @@ using namespace Realisim;
 using namespace std;
 
 //------------------------------------------------------------------------------
-PngImage::PngImage() :
-mFilenamePath(),
-mImageData(),
-mIsValid(false),
-mBytesPerChannel(0),
-mWidthInPixel(0),
-mHeightInPixel(0),
-mNumberOfChannels(0)
+PngImage::PngImage() : IImageReader()
 {}
 
 //------------------------------------------------------------------------------
-PngImage::PngImage(const std::string& iFilenamePath) :
-    mFilenamePath(iFilenamePath),
-    mImageData(),
-    mIsValid(false),
-    mBytesPerChannel(0),
-    mWidthInPixel(0),
-    mHeightInPixel(0),
-    mNumberOfChannels(0)
+PngImage::PngImage(const std::string& iFilenamePath) : IImageReader(iFilenamePath)
 {
     load();
 }
@@ -37,18 +23,6 @@ PngImage::PngImage(const std::string& iFilenamePath) :
 PngImage::~PngImage()
 {
     clear();
-}
-
-//------------------------------------------------------------------------------
-void PngImage::clear()
-{
-    mImageData = ByteArray();
-    
-    mIsValid = false;
-    mBytesPerChannel = 0;
-    mWidthInPixel = 0;
-    mHeightInPixel = 0;
-    mNumberOfChannels = 0;
 }
 
 //----------------------------------------------------------------------------
@@ -76,18 +50,6 @@ void PngImage::flipVertical()
 
     delete pTemp;
 }
-
-//------------------------------------------------------------------------------
-int PngImage::getBytesPerChannel() const
-{ return mBytesPerChannel; }
-
-//------------------------------------------------------------------------------
-const std::string& PngImage::getFilenamePath() const
-{ return mFilenamePath; }
-
-//------------------------------------------------------------------------------
-ByteArray PngImage::getImageData() const
-{ return mImageData; }
 
 //------------------------------------------------------------------------------
 ImageInternalFormat PngImage::getInternalFormat() const
@@ -135,39 +97,7 @@ ImageInternalFormat PngImage::getInternalFormat() const
 }
 
 //------------------------------------------------------------------------------
-int PngImage::getNumberOfChannels() const
-{ return mNumberOfChannels; }
-
-//------------------------------------------------------------------------------
-int PngImage::getHeightInPixel() const
-{ return mHeightInPixel; }
-
-//------------------------------------------------------------------------------
-Math::Vector2i PngImage::getSizeInPixel() const
-{
-	return Math::Vector2i(mWidthInPixel, mHeightInPixel);
-}
-
-//------------------------------------------------------------------------------
-int PngImage::getSizeInBytes() const
-{
-    return mBytesPerChannel * mWidthInPixel * mHeightInPixel * mNumberOfChannels;
-}
-
-//------------------------------------------------------------------------------
-int PngImage::getWidthInPixel() const
-{ return mWidthInPixel; }
-
-//------------------------------------------------------------------------------
-bool PngImage::hasImageData() const
-{ return !mImageData.isEmpty(); }
-
-//------------------------------------------------------------------------------
-bool PngImage::isValid() const
-{ return mIsValid; }
-
-//------------------------------------------------------------------------------
-void PngImage::load(bool iFlip /*=true*/)
+void PngImage::load()
 {
     clear();
 
@@ -218,16 +148,21 @@ void PngImage::load(bool iFlip /*=true*/)
         default: assert(0); break;
         }
 
-        if(iFlip)
-        {
-            flipVertical();
-        }
-
         mIsValid = true;
     }
     else
     { 
         std::cout << "error " << error << ": " << lodepng_error_text(error) << std::endl;
+    }
+}
+
+//------------------------------------------------------------------------------
+void PngImage::load(bool iFlip)
+{
+    load();
+    if(iFlip && isValid())
+    {
+        flipVertical();
     }
 }
 
@@ -330,12 +265,3 @@ bool PngImage::save(const std::string& iFilenamePath,
 
 	return error == 0;
 }
-
-//------------------------------------------------------------------------------
-void PngImage::setFilenamePath(const std::string& iV)
-{ 
-    clear();
-    mFilenamePath = iV;
-}
-
-
