@@ -7,5 +7,5 @@ using namespace std;
 
 //-----------------------------------------------------------------------------
 IntersectionResult::IntersectionResult() :
-    mpMaterial(make_shared<ThreeD::Material>())
+    mpMaterialNode(make_shared<MaterialNode>())
 {}

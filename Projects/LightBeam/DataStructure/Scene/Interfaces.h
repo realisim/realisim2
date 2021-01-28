@@ -1,23 +1,21 @@
 #pragma once
-#include "3d/Material.h"
+
 #include "Geometry/AxisAlignedBoundingBox.h"
 #include "DataStructure/Light.h"
 #include <memory>
 #include <stdint.h>
 
-namespace Realisim{ namespace Geometry {class Line; } }
 
 namespace Realisim
 {
 namespace LightBeam
 {
-    class IntersectionResult;
     
     //-------------------------------------------------------------------------
     class ISceneNode
     {
     public:
-        enum NodeType{ntSceneNode, ntRenderable, ntLight};
+        enum NodeType{ntSceneNode, ntRenderable, ntLight, ntMaterial};
     
         ISceneNode();
         explicit ISceneNode(NodeType);
@@ -43,24 +41,6 @@ namespace LightBeam
         //Matrix4 mWorldTransform
     };
 
-    //-------------------------------------------------------------------------
-    class IRenderable
-    {
-    public:
-        IRenderable();
-        IRenderable(const IRenderable&) = default;
-        IRenderable& operator=(const IRenderable&) = default;
-        virtual ~IRenderable() = 0;
-
-        virtual bool intersects(const Geometry::Line& iRay) const = 0;
-        virtual bool intersect(const Geometry::Line& iRay, IntersectionResult* opResult) const = 0;
-
-        const std::shared_ptr<ThreeD::Material> getMaterial() const;
-        void setMaterial(std::shared_ptr<ThreeD::Material>);
-        
-    protected:
-        std::shared_ptr<ThreeD::Material> mpMaterial;
-    };
     
     //-------------------------------------------------------------------------
     class ILightNode

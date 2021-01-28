@@ -1,7 +1,7 @@
 #pragma once
 
-#include "3d/Material.h"
 #include "Math/Vector.h"
+#include "DataStructure/Scene/MaterialNode.h"
 #include <memory>
 
 namespace Realisim
@@ -26,10 +26,11 @@ namespace LightBeam
         ~IntersectionResult() = default;
 
         Math::Vector3 mNormal;
+        Math::Vector2 mUV;
         double mD; //parametric distance along the ray
         Math::Vector3 mW0;
         Math::Vector3 mWi;
-        std::shared_ptr<ThreeD::Material> mpMaterial;
+        std::shared_ptr<MaterialNode> mpMaterialNode;
     };
 
 }

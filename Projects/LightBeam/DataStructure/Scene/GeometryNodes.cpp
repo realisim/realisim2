@@ -43,7 +43,7 @@ bool PlaneNode::intersect(const Line& iRay, IntersectionResult* opResult) const
     {
         (*opResult).mNormal = n;
         (*opResult).mD = d;
-        (*opResult).mpMaterial = getMaterial();
+        (*opResult).mpMaterialNode = getMaterialNode();
     }
     return it != itNone;
 }
@@ -94,7 +94,7 @@ bool SphereNode::intersect(const Line& iRay, IntersectionResult* opResult) const
         
         (*opResult).mNormal = n[index];
         (*opResult).mD = d[index];
-        (*opResult).mpMaterial = getMaterial();
+        (*opResult).mpMaterialNode = getMaterialNode();
     }
     return it != itNone;
 }
@@ -145,8 +145,9 @@ bool MeshNode::intersect(const Line& iRay, IntersectionResult* opResult) const
     std::vector<Vector3> p;
     std::vector<Vector3> n;
     std::vector<double> d;
+    std::vector<Vector2> uv;
 
-    iType = Geometry::intersect(iRay, mOctree, &p, &n, &d);
+    iType = Geometry::intersect(iRay, mOctree, &p, &n, &d, &uv);
 
     if (opResult && iType != itNone)
     {
@@ -163,7 +164,8 @@ bool MeshNode::intersect(const Line& iRay, IntersectionResult* opResult) const
 
         (*opResult).mNormal = n[index];
         (*opResult).mD = d[index];
-        (*opResult).mpMaterial = getMaterial();
+        (*opResult).mpMaterialNode = getMaterialNode();
+        (*opResult).mUV = uv[index];
     }
 
     

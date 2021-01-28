@@ -5,6 +5,7 @@
 #include "DataStructure/Scene/LightNode.h"
 #include "DataStructure/Scene/Scene.h"
 #include "Geometry/Line.h"
+#include "Math/Conversion.h"
 #include "Math/Vector.h"
 #include <memory>
 #include "Rendering/Camera.h"
@@ -106,6 +107,17 @@ Core::Color SimpleIntegrator::computeLi(const Line &iLine,
                 lightPosition = intersectionInWorldSpace + 1e8*lightDirection; // very far in the light direction...
                 break;
             case Light::tArea: break;
+            case Light::tAmbient: 
+            {
+                lightDirection = iLine.getDirection();
+                const double nDotLAmbient = ir.mNormal * lightDirection;
+
+                //CACA ICI!!! ajouter une methode getPixelColorFromUV()...
+                const Core::Image &im = ir.mpMaterialNode->getDiffuse();
+                Core::Color matDiffuseC = im.getPixelColor(ir.mUV .multiplyComponents(toVector2(im.getSizeInPixels())) );
+                spectrum += light.getColor() * fabs(nDotLAmbient) * matDiffuseC;;
+                continue;
+            } break;
             default: break;
             }
 
@@ -129,19 +141,24 @@ Core::Color SimpleIntegrator::computeLi(const Line &iLine,
 
             // diffuse C
             Core::Color lightColor(1.0, 1.0, 1.0, 0.0);
-            Core::Color matDiffuseC; matDiffuseC.setRgb(ir.mpMaterial->getDiffuseColor());
-            Core::Color matSpecularC; matSpecularC.setRgb(ir.mpMaterial->getSpecularColor());
+            //Core::Color matDiffuseC; matDiffuseC.setRgb(ir.mpMaterialNode->getMaterial().getDiffuseColor());
+            
+            //!!!!! Corriger le get Color.
+            const Core::Image& im = ir.mpMaterialNode->getDiffuse();
+            Core::Color matDiffuseC = im.getPixelColor(ir.mUV.multiplyComponents(toVector2(im.getSizeInPixels())));
+
+            Core::Color matSpecularC; matSpecularC.setRgb(ir.mpMaterialNode->getMaterial().getSpecularColor());
             const double nDotL = ir.mNormal * lightDirection;
             Core::Color diffuse = lightColor * fabs(nDotL) * matDiffuseC;
             
             // compute the specular factor
-            const double kShininess = ir.mpMaterial->getShininess();
+            const double kShininess = ir.mpMaterialNode->getMaterial().getShininess();
             const double energyConservation = 8.0 * kShininess / (8.0 * M_PI);
             Vector3 halfDir = (lightDirection + ir.mW0).normalize();
             double specularFactor = energyConservation * pow( max(halfDir.dot(ir.mNormal), 0.0), kShininess);
             Core::Color specular = lightColor * specularFactor * matSpecularC;
 
-            const double intensity = 1.0;
+            const double intensity = 100.0;
             perLightSpectrum = (diffuse + specular) * intensity * attenuation;
 
             spectrum += perLightSpectrum;

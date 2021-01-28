@@ -16,18 +16,17 @@ namespace LightBeam
         Broker();
         ~Broker();
 
-        Rendering::Camera& getCamera();
         Core::Image& getFinalImage();
         Interface::Keyboard& getKeyboard();
         Interface::Mouse& getMouse();
-        Scene& getScene();
+        const Scene& getScene() const;
+        Scene& getSceneRef();
         
     protected:
         Interface::Keyboard mKeyboard;
         Interface::Mouse mMouse;
     
         Core::Image mFinalImage;
-        Rendering::Camera mCamera;
         Scene mScene;
     };
 }

@@ -6,14 +6,6 @@
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include "View.h"
-#include <regex>
-
-
-// temporary until we can read scene from files...
-#include "DataStructure/Scene/GeometryNodes.h"
-#include "DataStructure/Scene/LightNode.h"
-#include "3d/Loader/ObjLoader.h"
-#include "Geometry/PlatonicSolid.h"
 
 
 using namespace Realisim;
@@ -48,139 +40,11 @@ MainWindow::MainWindow(Broker *ipBroker, RayTracer *ipRayTracer) : QMainWindow()
     
     mpView->initialize();
     
-    //------------------------------------
-    // add some crap to the scene...
-    Broker &b = getBroker();
-    Scene &scene = b.getScene();
-    Rendering::Camera &cam  = b.getCamera();
-    cam.set(Vector3(10.0, 20.0, 30.0),
-        Vector3(0.0, 0.0, 0.0),
-        Vector3(0.0, 1.0, 0.0));
-    
-    // add a plane
-    Geometry::Plane p(Vector3(0.0, -5, 0.0), Vector3(0.0, 1.0, 0.0));
-    shared_ptr<PlaneNode> pn = make_shared<PlaneNode>();
-    pn->setPlane(p);
-    shared_ptr<Material> mat0 = make_shared<Material>();
-    mat0->setDiffuseColor(ColorRgbF32(1, 0, 0));
-    pn->setMaterial(mat0);
-    
-    // add a sphere
-    Geometry::Sphere sphere(Vector3(6.0, 0.0, 0.0), 4);
-    shared_ptr<SphereNode> sn = make_shared<SphereNode>();
-    sn->setSphere(sphere);
-    shared_ptr<Material> mat1 = make_shared<Material>();
-    mat1->setDiffuseColor(ColorRgbF32(0, 1, 0));
-    sn->setMaterial(mat1);
-    
-    // add another sphere
-    sphere.setCenter(Vector3(-6, 0.0, 0));
-    sphere.setRadius(4);
-    shared_ptr<SphereNode> sn2 = make_shared<SphereNode>();
-    sn2->setSphere(sphere);
-    shared_ptr<Material> mat2 = make_shared<Material>();
-    mat2->setDiffuseColor(ColorRgbF32(0, 0, 1));
-    sn2->setMaterial(mat2);
-    
-    // add another sphere
-    sphere.setCenter(Vector3(70, 0, -50));
-    sphere.setRadius(50);
-    shared_ptr<SphereNode> sn3 = make_shared<SphereNode>();
-    sn3->setSphere(sphere);
-    shared_ptr<Material> mat3 = make_shared<Material>();
-    mat3->setDiffuseColor(ColorRgbF32(0.9f, 0.9f, 0.9f));
-    mat3->setSpecularColor(ColorRgbF32(0.1f, 0.1f, 0.1f));
-    mat3->setShininess(1024);
-   // mat3->setReflectanceModel(mat3->getReflectanceModel() | Material::rmPerfectSpecular);
-    sn3->setMaterial(mat3);
-    
-    // add a light
-    Light l;
-    l.setType(Light::tDirectionnal);
-    l.setDirection( Vector3(0.3, 1.0, 2.0) );
-    shared_ptr<LightNode> directionalLightNode = make_shared<LightNode>();
-    directionalLightNode->setLight(l);
-
-    //Light l;
-    //l.setType(Light::tPoint);
-    //l.setPosition(Vector3(2.0, 2.0, 2.0));
-    //l.setAttenuationType(Light::atQuadratic);
-    //shared_ptr<LightNode> lightNode = make_shared<LightNode>();
-    //lightNode->setLight(l);
-    
-    //Geometry::PlatonicSolid ps(Geometry::PlatonicSolid::tCube);
-    //Geometry::Mesh *pMesh = new Geometry::Mesh(ps.getMesh());
-    //meshNode->setMeshAndTakeOwnership(pMesh);
-
-    ThreeD::ObjLoader objLoader;
-    ThreeD::ObjLoader::Asset objAsset;
-    //objAsset = objLoader.load("D:/Models/standford models/monkey.obj");
-    //pMeshes = objLoader.load("D:/Models/standford models/monkey_flat.obj");
-    //objAsset = objLoader.load("D:/Models/standford models/happyBuddha_smooth.obj");
-    //objAsset = objLoader.load("D:/Models/Nefertiti_rotated.obj"); // very heavy...
-    //objAsset = objLoader.load("D:/Models/Nefertiti.obj");
-
-    //pMeshes = objLoader.load("D:/Models/someBoxes.obj");
-    //pMeshes = objLoader.load("D:/Models/flowerPot.obj");
-    //pMeshes = objLoader.load("D:/Models/debugObject2.obj");
-    //Geometry::Mesh *pMesh = objLoader.load("D:/Models/standford models/horse.obj");
-    //Geometry::Mesh *pMesh = objLoader.load("D:/Models/standford models/bunny.obj");
-    //pMeshes = objLoader.load("D:/Models/standford models/armadillo.obj");
-    //objAsset = objLoader.load("D:/Models/standford models/xyzrgb_dragon_smooth.obj");
-    //objAsset = objLoader.load("D:/Models/standford models/sponza-master/sponza.obj");
-    //objAsset = objLoader.load("D:/Models/wallScene.obj");
-    //objAsset = objLoader.load("D:/Models/Dragon_1_rotated.obj");
-    //objAsset = objLoader.load("D:/Models/SponzaWithLightPoints.obj");
-    
-
-
-    if (!objLoader.hasErrors())
-    {
-        // add all meshes
-        // add a mesh
-        for (int i = 0; i < objAsset.mMeshes.size(); ++i)
-        {
-            string name = objAsset.mName[i];
-            regex matchRe("lightPoint.*");
-            if (regex_match(name, matchRe))
-            {
-                Geometry::Mesh *pMeshToDiscard = objAsset.mMeshes[i];
-
-                Light lightFromObj;
-                lightFromObj.setType(Light::tPoint);
-                lightFromObj.setPosition(pMeshToDiscard->getVertex(0).mVertex);
-                lightFromObj.setAttenuationType(Light::atQuadratic);
-                shared_ptr<LightNode> lightNodeFromObj = make_shared<LightNode>();
-                lightNodeFromObj->setLight(lightFromObj);
-                scene.addNode(lightNodeFromObj);
-
-                delete pMeshToDiscard;
-
-                printf("lightPoint %s added to scene.\n", name.c_str());
-            }
-            else
-            {
-                shared_ptr<MeshNode> meshNode = make_shared<MeshNode>();
-                shared_ptr<ThreeD::Material> mat4 = make_shared<ThreeD::Material>(objAsset.mMeshIndexToMaterial[i]);
-                meshNode->setMaterial(mat4);
-                meshNode->setName(name);
-                meshNode->setMeshAndTakeOwnership(objAsset.mMeshes[i]);
-                scene.addNode(meshNode);
-
-                printf("obj %s added to scene.\n", name.c_str());
-            }
-            
-        }
-        
-    }
-
-    scene.addNode(pn);
-    scene.addNode(sn);
-    scene.addNode(sn2);
-    scene.addNode(sn3);
-    scene.addNode(directionalLightNode);
-    //scene.addNode(meshNode);
-    //------------------------------------
+    //getBroker().getSceneRef().createDummyScene();
+    getBroker().getSceneRef().importObj("D:/Models/SponzaWithLightPoints.obj");
+    //getBroker().getSceneRef().importObj("D:/Models/standford models/monkey.obj");
+    //getBroker().getSceneRef().importObj("D:/Models/texturedCube/cube.obj");
+    //getBroker().getSceneRef().importObj("D:/Models/turboSquid/turbosonicobj/turbosonic.obj");
     
     mUpdateTimerId = startTimer(30);
 }
@@ -196,7 +60,7 @@ void MainWindow::handleUserInput()
     bool renderNeeded = false;
     
     Broker &b = getBroker();
-    Rendering::Camera &c = b.getCamera();
+    Rendering::Camera &c = b.getSceneRef().getCameraRef();
     
     //--- Mouse
     Mouse &mouse = b.getMouse();
@@ -265,7 +129,7 @@ void MainWindow::handleUserInput()
         {
             // Qt is Y down, while we are Y up...
             // make the conversion here
-            const int viewPortHeight = b.getCamera().getViewport().getHeight();
+            const int viewPortHeight = c.getViewport().getHeight();
             Vector2i p(mouse.getPosition());
             p.setY(viewPortHeight - p.y());
 
@@ -276,7 +140,7 @@ void MainWindow::handleUserInput()
     
     if(renderNeeded)
     {
-        mRayTracerRef.render(kInitialLod);
+        mRayTracerRef.render(kInitialLod, true);
     }
            
 }
@@ -299,11 +163,12 @@ void MainWindow::timerEvent(QTimerEvent *ipE)
         }
         else
         {
+            
             int lod = mRayTracerRef.getLevelOfDetail();
             lod *= 0.5;
             if (lod > 0)
             {
-                mRayTracerRef.render(lod);
+                mRayTracerRef.render(lod, false);
             }
         }
     }
@@ -312,7 +177,7 @@ void MainWindow::timerEvent(QTimerEvent *ipE)
 //-----------------------------------------------------------------------------
 void MainWindow::viewChanged()
 {
-    mRayTracerRef.render(kInitialLod);
+    mRayTracerRef.render(kInitialLod, true);
 }
 
 //-----------------------------------------------------------------------------

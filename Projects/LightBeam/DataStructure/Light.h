@@ -15,7 +15,7 @@ namespace LightBeam
         Light& operator=(const Light&) = default;
         virtual ~Light();
 
-        enum Type {tPoint, tSpot, tDirectionnal, tArea};
+        enum Type {tPoint, tSpot, tDirectionnal, tArea, tAmbient};
         enum AttenuationType {atNone, atLinear, atQuadratic};
 
         AttenuationType getAttenuationType() const;

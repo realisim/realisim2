@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Interfaces.h"
+#include "DataStructure/Scene/IRenderable.h"
+#include "DataStructure/Scene/Interfaces.h"
 #include "Geometry/Line.h"
 #include "Geometry/Mesh.h"
 #include "Geometry/OctreeOfMeshFaces.h"

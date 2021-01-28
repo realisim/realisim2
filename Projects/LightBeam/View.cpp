@@ -43,7 +43,7 @@ void View::initialize()
     Broker &b = getBroker();
     
     // resize the projection and viewport of the camera
-    Camera &cRef = b.getCamera();
+    Camera &cRef = b.getSceneRef().getCameraRef();
     
     cRef.set(Vector3(0, 12, 100),
              Vector3(0, 0, 0),
@@ -104,7 +104,7 @@ void View::resizeEvent(QResizeEvent *ipE)
     Broker &b = getBroker();
     
     // resize the projection and viewport of the camera
-    Camera &cRef = b.getCamera();
+    Camera &cRef = b.getSceneRef().getCameraRef();
     Viewport vp;
     vp.set(w, h);
     cRef.setViewport(vp);

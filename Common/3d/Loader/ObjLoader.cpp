@@ -135,7 +135,8 @@ void ObjLoader::createAsset(const tinyobj::attrib_t &iAttrib,
         //
         opAsset->mName.push_back(iShapes[i].name);
         opAsset->mMeshes.push_back(pMesh);
-        opAsset->mMeshIndexToMaterial[(int)i] = materials[materialIndex];
+        if(materialIndex != -1)
+            opAsset->mMeshIndexToMaterial[(int)i] = materials[materialIndex];
     }
 }
 
