@@ -355,13 +355,14 @@ namespace Realisim
         IntersectionType intersect(const Line& iL, const OctreeOfMeshFaces& iO,
             std::vector<Math::Vector3> *oPoints /*= nullptr*/,
             std::vector<Math::Vector3> *oNormals /*= nullptr*/,
-            std::vector<double> *oDs /*= nullptr*/)
+            std::vector<double> *oDs /*= nullptr*/,
+            std::vector<Math::Vector2>* oUVs /*= nullptr*/)
         {
             const OctreeOfMeshFaces::Node *pRoot = iO.getRoot();
 
             // dig until we find a leaf child, then intersect with all
             // the triangles.
-            intersect(iL, pRoot, iO.getMesh(), oPoints, oNormals, oDs);
+            intersect(iL, pRoot, iO.getMesh(), oPoints, oNormals, oDs, oUVs);
 
             IntersectionType iType = itNone;
             if (oPoints)
@@ -387,7 +388,8 @@ namespace Realisim
             const Mesh *ipMesh,
             std::vector<Math::Vector3> *oPoints /*= nullptr*/,
             std::vector<Math::Vector3> *oNormals /*= nullptr*/,
-            std::vector<double> *oDs /*= nullptr*/)
+            std::vector<double> *oDs /*= nullptr*/,
+            std::vector<Math::Vector2>* oUVs /*=nullptr*/)
         {
             // dig if aabb intersects
             if (intersects(iL, ipN->mAabb))
@@ -398,6 +400,7 @@ namespace Realisim
                     IntersectionType iType;
                     Vector3 p;
                     Vector3 n;
+                    Vector2 uv;
                     double d;
 
                     const int numFaces = (int)ipN->mTriangles.size();
@@ -418,10 +421,12 @@ namespace Realisim
                 //    determinier si on fait une interpolation ou pas...
 
                             // perform UV interpolation
+                            uv = uvInterpolation(ipN, i, p, ipMesh);
 
                             if (oPoints) oPoints->push_back(p);
                             if (oNormals) oNormals->push_back(n);
                             if (oDs) oDs->push_back(d);
+                            if (oUVs) oUVs->push_back(uv);
                         }
                     }
 
@@ -447,7 +452,7 @@ namespace Realisim
                 for (int i = 0; i < numberOfChilds; ++i)
                 {
                     OctreeOfMeshFaces::Node *c = ipN->mChilds[i];
-                    intersect(iL, c, ipMesh, oPoints, oNormals, oDs);
+                    intersect(iL, c, ipMesh, oPoints, oNormals, oDs, oUVs);
                 }
             }
         }
@@ -472,6 +477,28 @@ namespace Realisim
             
             Vector3 interpolatedNormal = coeff[0] * n0 + coeff[1] * n1 + coeff[2] * n2;
             return interpolatedNormal;
+        }
+
+        //-------------------------------------------------------------------------
+        Vector2 uvInterpolation(const OctreeOfMeshFaces::Node* ipNode,
+            uint32_t iTriangleIndex,
+            const Math::Vector3& iIntersectionPoint,
+            const Geometry::Mesh* ipMesh)
+        {
+            const Triangle& tri = ipNode->mTriangles[iTriangleIndex];
+            const uint32_t meshFaceIndex = ipNode->mMeshFaceIndices[iTriangleIndex];
+
+            const std::vector<Mesh::VertexData>& meshVertices = ipMesh->getVertices();
+            const Mesh::Face& face = ipMesh->getFaces()[meshFaceIndex];
+
+            const Vector2& uv0 = meshVertices[face.mVertexIndices[0]].mLayerIndexToTextureCoordinates.at(0);
+            const Vector2& uv1 = meshVertices[face.mVertexIndices[1]].mLayerIndexToTextureCoordinates.at(0);
+            const Vector2& uv2 = meshVertices[face.mVertexIndices[2]].mLayerIndexToTextureCoordinates.at(0);
+
+            array<double, 3> coeff = tri.getBarycentricCoefficients(iIntersectionPoint);
+
+            Vector2 interpolatedUv = coeff[0] * uv0 + coeff[1] * uv1 + coeff[2] * uv2;
+            return interpolatedUv;
         }
 
         //-------------------------------------------------------------------------

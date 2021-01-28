@@ -51,7 +51,7 @@ RayTracer::RayTracer(Broker *ipBroker) :
     function<void( const std::vector<MessageQueue::Message*>& )> f2 =
         bind(&RayTracer::processReplies, this, _1);
     mReplyQueue.setAllAtOnceProcessingFunction(f2);
-    mMessageQueue.setBehavior(MessageQueue::bFifo);
+    mReplyQueue.setBehavior(MessageQueue::bFifo);
     mReplyQueue.setMaximumSize(-1);
 }
 
@@ -65,8 +65,9 @@ RayTracer::~RayTracer()
 void RayTracer::debugRayCast(const Vector2i &iPixelPosition)
 {
     Broker &b = getBroker();
-    Camera &camera = b.getCamera();
     const Scene &scene = b.getScene();
+    const Camera &camera = scene.getCamera();
+    
 
     // make ray for given pixel
     const Vector2 pixelPos = Vector2(iPixelPosition) + Vector2(0.5);
@@ -215,7 +216,7 @@ void RayTracer::processMessage(MessageQueue::Message* ipM)
     {
         ImageCells cells;
         cells.setCoverage(m->mCoverage);
-        cells.setSize(m->mTileSizeInPixel / mDesiredLevelOfDetail);
+        cells.setSize(m->mTileSizeInPixel);
 
         render(&cells);
 
@@ -233,8 +234,9 @@ void RayTracer::rayCast(ImageCells* iCells,
     const Vector2i& iCell)
 {
     Broker &b = getBroker();
-    Camera &camera = b.getCamera();
+
     const Scene &scene = b.getScene();
+    const Camera &camera = scene.getCamera();
     
     // make ray for given pixel
     const Rectangle& r = iCells->getCellCoverage(iCell);
@@ -277,7 +279,7 @@ void RayTracer::rayCast( int iDepth,
 
     // reflect ray if material is specular
     if( iDepth < kMaxRecursionDepth &&
-        ir.mpMaterial->hasReflectanceModel(Material::rmPerfectSpecular) )
+        ir.mpMaterialNode->getMaterial().hasReflectanceModel(Material::rmPerfectSpecular) )
     {
         // reflect the ray and call raycast again.
         Vector3 reflectedDirection = reflect(iRay.getDirection(), ir.mNormal);
@@ -297,9 +299,14 @@ void RayTracer::rayCast( int iDepth,
 }
 
 //-----------------------------------------------------------------------------
-void RayTracer::render(int iLevelOfDetail)
+void RayTracer::render(int iLevelOfDetail, bool iClearIterativeRendering)
 {
-    //mMessageQueue.clear();
+
+    printf("lod: %d\n", iLevelOfDetail);
+
+    if(iClearIterativeRendering)
+        mMessageQueue.clear();
+
     mDesiredLevelOfDetail = iLevelOfDetail;
 
     Image &im = getBroker().getFinalImage();
@@ -325,7 +332,7 @@ void RayTracer::render(int iLevelOfDetail)
                 kTileSize, kTileSize);
 
             m->mCoverage = coverage;
-            m->mTileSizeInPixel = kTileSize;
+            m->mTileSizeInPixel = kTileSize / mDesiredLevelOfDetail;
             m->mId = i + j*numberOfCellsX;
             // send request to compute.
             mMessageQueue.post(m);

@@ -12,10 +12,6 @@ Broker::~Broker()
 {}
 
 //-----------------------------------------------------------------------------
-Rendering::Camera& Broker::getCamera()
-{ return mCamera; }
-
-//-----------------------------------------------------------------------------
 Core::Image& Broker::getFinalImage()
 { return mFinalImage; }
 
@@ -28,5 +24,11 @@ Interface::Mouse& Broker::getMouse()
 { return mMouse; }
 
 //-----------------------------------------------------------------------------
-Scene& Broker::getScene()
+const Scene& Broker::getScene() const
+{
+    return mScene;
+}
+
+//-----------------------------------------------------------------------------
+Scene& Broker::getSceneRef()
 { return mScene; }

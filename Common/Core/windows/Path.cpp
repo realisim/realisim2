@@ -29,7 +29,9 @@ string Path::getApplicationFilePath()
     WCHAR path[MAX_PATH];
     GetModuleFileNameW(hModule, path, MAX_PATH);
     wstring w(path);
-    return string(w.begin(), w.end());
+
+	// nasty destructive wchar to char convertion
+    return string((const char*)w.data(), w.size());
 }
 
 //-----------------------------------------------------------------------------

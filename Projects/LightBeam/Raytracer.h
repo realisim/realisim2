@@ -26,7 +26,7 @@ namespace LightBeam
         bool hasNewFrameAvailable() const;
         Broker& getBroker();
         int getLevelOfDetail() const { return mDesiredLevelOfDetail; }
-        void render(int iLevelOfDetail);
+        void render(int iLevelOfDetail, bool iClearIterativeRendering);
         const Core::Image& getImage() const;
         
     protected:
