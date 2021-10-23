@@ -1,5 +1,6 @@
 *.bak
 bin/
+lib/
 cmake/
 .vscode/
 

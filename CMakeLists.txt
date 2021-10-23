@@ -1,7 +1,7 @@
 # ROOT CMakeList
 PROJECT( Realisim2 )
 
-cmake_minimum_required (VERSION 2.8.11)
+cmake_minimum_required (VERSION 2.8.12)
 
 #------------------------------
 # Global variables to hold source/include files
@@ -35,7 +35,8 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #------------------------------------------------------------------------------
 # Options and variables in CMake GUI
 #------------------------------------------------------------------------------
-option(BUILD_LIGHTBEAM "Builds LightBeam" OFF)
+option(BUILD_REALISIM_AS_STATIC_LIBS "Builds all realisim libs" OFF)
+option(BUILD_PROJECT_LIGHTBEAM "Builds LightBeam" OFF)
 option(BUILD_UNIT_TESTS "Builds the unit tests" OFF)
 option(BUILD_PROTOTYPE "Builds the protype specified by Prototype_to_build" OFF)
 set(Prototype_to_build "" CACHE PATH "Path to prototype")
@@ -84,7 +85,12 @@ endif(APPLE)
 #------------------------------------------------------------------------------
 # add subdirectories
 #------------------------------------------------------------------------------
-if( BUILD_LIGHTBEAM )
+if(BUILD_REALISIM_AS_STATIC_LIBS)
+    ADD_SUBDIRECTORY(Common/Core)
+    ADD_SUBDIRECTORY(Common/Math)
+endif()
+
+if( BUILD_PROJECT_LIGHTBEAM )
     ADD_SUBDIRECTORY(Projects/LightBeam)
 endif()
 
