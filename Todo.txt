@@ -9,6 +9,8 @@ Core
         fois... trop de mutex...
     - Fixed size memory pool (pour les message)
 
+asdasd
+
 
 Geometry
     - faire l'intersection avec le octree -                         DONE
