@@ -14,11 +14,11 @@ public:
     BinaryWriterVisitor();
     ~BinaryWriterVisitor();
 
-    template<typename Described>
-    void visit(Described& iDescribed) {
-        mOss.str().clear();
+    void clear() { mOss.str(std::string()); }
 
-        iDescribed.describe(*this);
+    template<typename ClassToIntrospect>
+    void visit(ClassToIntrospect& iToInstrospect) {
+        iToInstrospect.describe(*this);
     }
 
     void Name(const std::string& iName);
@@ -75,9 +75,9 @@ public:
     BinaryReaderVisitor();
     ~BinaryReaderVisitor();
 
-    template<typename Described>
-    void visit(Described& iDescribed) {
-        iDescribed.describe(*this);
+    template<typename ClassToIntrospect>
+    void visit(ClassToIntrospect& iToInstrospect) {
+        iToInstrospect.describe(*this);
     }
 
     void Name(const std::string& iName);

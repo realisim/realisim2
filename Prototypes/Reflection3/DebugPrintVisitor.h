@@ -15,9 +15,9 @@ public:
         mOss.str(std::string());
     }
 
-    template<typename Described>
-    void visit(Described& iDescribed) {
-        iDescribed.describe(*this);
+    template<typename ClassToIntrospect>
+    void visit(ClassToIntrospect& iToInstrospect) {
+        iToInstrospect.describe(*this);
     }
 
     void Name(const std::string& iName);

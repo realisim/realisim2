@@ -34,22 +34,23 @@ int main(int argc, char* argv[])
     };
 
 
-    DebugPrintVisitor dv;
-    dv.visit(ds);
-    printf("ds\n %s\n", dv.getString().c_str());
-    dv.clear();
+    DebugPrintVisitor debugPrinter;
+    debugPrinter.visit(ds);
+    printf("ds\n %s\n", debugPrinter.getString().c_str());
+    debugPrinter.clear();
 
-    BinaryWriterVisitor bw;
-    BinaryReaderVisitor br;
+    BinaryWriterVisitor bWriter;
+    BinaryReaderVisitor bReader;
 
-    bw.visit(ds);
+    bWriter.visit(ds);
 
     DummyStruct ds2;
-    br.setBinaryPayload(bw.getString());
-    br.visit(ds2);
+    bReader.setBinaryPayload(bWriter.getString());
+    bReader.visit(ds2);
+    bWriter.clear();
     
-    dv.visit(ds2);
-    printf("ds2\n%s\n", dv.getString().c_str());
+    debugPrinter.visit(ds2);
+    printf("ds2\n%s\n", debugPrinter.getString().c_str());
     return 0;
 }
 
