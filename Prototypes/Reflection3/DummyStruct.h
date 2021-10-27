@@ -15,11 +15,7 @@ struct DummyStruct {
         uint16_t mInnerUint16;
         uint8_t mInnerUint8;
 
-        //REFLECT_BEGIN(DummyStruct::InnerData)
-        //    REFLECT_MEMBER(mInnerUint32)
-        //    REFLECT_MEMBER(mInnerUint16)
-        //    REFLECT_MEMBER(mInnerUint8)
-        //REFLECT_END()
+        // visitor refelection
         template<typename Visitor>
         void describe(Visitor& v) {
             v.Name("DummyStruct::InnerData");
@@ -36,15 +32,7 @@ struct DummyStruct {
     InnerData mInnerData;
     std::vector<InnerData> mInnerDataVector;
 
-
-    /*REFLECT_BEGIN(DummyStruct)
-        REFLECT_MEMBER(mUint32)
-        REFLECT_MEMBER(mUint16)
-        REFLECT_MEMBER(mUint8)
-        REFLECT_MEMBER(mVectorOfUint32)
-        REFLECT_MEMBER(mInnerData)
-        REFLECT_MEMBER(mInnerDataVector)
-    REFLECT_END()*/
+    // visitor refelection
     template<typename Visitor>
     void describe(Visitor& v) {
         v.Name("DummyStruct");
