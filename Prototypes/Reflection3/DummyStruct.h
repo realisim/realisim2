@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <vector>
 
-struct DummyStruct {
+struct DummyStruct : public IReflectable {
     DummyStruct() : mUint32(0), mUint16(0), mUint8(0) { }
 
     struct InnerData : public IReflectable {
