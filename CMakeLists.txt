@@ -37,6 +37,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #------------------------------------------------------------------------------
 option(BUILD_REALISIM_AS_STATIC_LIBS "Builds all realisim libs" OFF)
 option(BUILD_PROJECT_LIGHTBEAM "Builds LightBeam" OFF)
+option(BUILD_PROJECT_REACTOR "Builds Reactor" OFF)
 option(BUILD_UNIT_TESTS "Builds the unit tests" OFF)
 option(BUILD_PROTOTYPE "Builds the protype specified by Prototype_to_build" OFF)
 set(Prototype_to_build "" CACHE PATH "Path to prototype")
@@ -73,15 +74,6 @@ if(MSVC)
 
 endif(MSVC)
 
-if(APPLE)
-    #enable most warning and treat them as error
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror -Wall -Wno-long-long -pedantic")
-
-     # this is necessary for some c++11 features such as atomic.
-    # MSVC does not require any special flags for c++11
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=gnu++0x")
-endif(APPLE)
-
 #------------------------------------------------------------------------------
 # add subdirectories
 #------------------------------------------------------------------------------
@@ -92,6 +84,10 @@ endif()
 
 if( BUILD_PROJECT_LIGHTBEAM )
     ADD_SUBDIRECTORY(Projects/LightBeam)
+endif()
+
+if( BUILD_PROJECT_REACTOR )
+    ADD_SUBDIRECTORY(Projects/Reactor)
 endif()
 
 if( BUILD_PROTOTYPE )
