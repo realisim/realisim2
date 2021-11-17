@@ -1,13 +1,12 @@
 
 #pragma once
 
+#include "Broker.h"
+#include "Hub.h"
+
 namespace Realisim {
 namespace Reactor
 {
-
-    class Broker;
-    class Hub;
-
     class ISystem {
     public:
         ISystem() = delete;

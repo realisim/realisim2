@@ -8,6 +8,7 @@ namespace Realisim
 {
 namespace Reactor{
 
+    class CameraController;
     class ISystem;
     class Renderer;
 
@@ -23,8 +24,10 @@ namespace Reactor{
         
         enum System {sRenderer = 0, sNumberOfSystems, sUserDefined = 10000};
 
-        const Renderer& getRenderer() const;
-        Renderer& getRendererRef() const;
+        CameraController& getCameraController() { return *mpCameraController; }
+
+        const Renderer& getRenderer() const { return *mpRenderer; }
+        Renderer& getRendererRef() const { return *mpRenderer; };
 
         ISystem* getSystem(System);
         ISystem* getUserDefinedSystem(int iSystem);
@@ -33,7 +36,8 @@ namespace Reactor{
         void clear(); // only called by Engine.
 
         // not owned pointers to all core systems
-        Renderer* mpRenderer;
+        Renderer *mpRenderer;
+        CameraController *mpCameraController;
 
         // owned pointer to all userDefined systems
         std::map<int, ISystem*> mUserDefinedSystems;

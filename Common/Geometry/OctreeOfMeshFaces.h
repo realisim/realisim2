@@ -2,7 +2,7 @@
 #pragma once
 
 #include "AxisAlignedBoundingBox.h"
-#include <Triangle.h>
+#include "Triangle.h"
 #include <vector>
 #include <string>
 

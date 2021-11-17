@@ -22,6 +22,7 @@ namespace Math
         ~Vector2() = default;
 
         const double* dataPointer() const;
+        Vector2	divideComponents(const Vector2&) const;
         double dot(const Vector2&) const;
         bool isEqual(const Vector2&, double iEpsilon = std::numeric_limits<double>::epsilon() ) const;
         double norm() const;
@@ -73,6 +74,7 @@ namespace Math
 
         Vector3 cross(const Vector3 &vect) const;
         const double* dataPointer() const;
+        Vector3	divideComponents(const Vector3&) const;
         double dot(const Vector3&) const;
         bool isEqual(const Vector3&, double iEpsilon = std::numeric_limits<double>::epsilon() ) const;
         double norm() const;
@@ -130,6 +132,7 @@ namespace Math
         ~Vector4() = default;
         
         double dot(const Vector4 &vect) const;
+        Vector4	divideComponents(const Vector4&) const;
         double norm() const;
         Vector4& normalize();
         double normSquared() const;

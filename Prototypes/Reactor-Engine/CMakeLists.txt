@@ -16,6 +16,7 @@ add_component( "../../Common/Core" "Core")
 add_component( "../../Common/Core/${PLATFORM_SPECIFIC_FOLDER}" "Core/${PLATFORM_SPECIFIC_FOLDER}")
 add_component( "../../Common/Core/ImageSupport" "Core/ImageSupport")
 add_component( "../../Common/Geometry" "Geometry")
+add_component( "../../Common/Interface" "Interface")
 add_component( "../../Common/Math" "Math")
 add_component( "../../Common/Rendering" "Rendering")
 
@@ -25,7 +26,8 @@ add_component( "../../Common/Rendering" "Rendering")
 # AssetProcessor needs the Reactor Engine, most of the code does #include "Reactor/blabla/blabla"
 # so we give access to Prjects Folder.
 #------------------------------------------------------------------------------
-INCLUDE_DIRECTORIES("../../Projects")
+INCLUDE_DIRECTORIES("../../Projects/")
+INCLUDE_DIRECTORIES("../../Projects/Reactor")
 
 qt_automoc()
 

@@ -32,6 +32,12 @@ Vector2::Vector2(const Vector2i &iVector2i)
 const double* Vector2::dataPointer() const
 { return &mData[0]; }
 
+//---------------------------------------------------------------------------
+Vector2	Vector2::divideComponents(const Vector2& v) const
+{
+    return Vector2(this->x() / v.x(), this->y() / v.y());
+}
+
 //----------------------------------------------------------------------------
 double Vector2::dot(const Vector2& iV) const
 {

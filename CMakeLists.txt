@@ -9,6 +9,9 @@ cmake_minimum_required (VERSION 2.8.12)
 set( SOURCE_FILES "" )
 set( INCLUDE_FILES "" )
 
+# general include_directories
+include_directories("Common")
+
 #------------------------------------------------------------------------------
 # GLobal variable to hold the platform specific folder.
 # this represent the name of the folder containing the platform

@@ -6,6 +6,11 @@
 #include "Systems/ISystem.h"
 #include <vector>
 
+#ifdef _WIN32
+    // for HDC and HGLRC
+    #include <Windows.h>
+#endif // WIN32
+
 namespace Realisim
 {
 namespace Reactor{
@@ -26,6 +31,7 @@ namespace Reactor{
         void update();
         //void start();
         //void stop();
+        void setNativeWindowsGlContext(HDC iHDC, HGLRC iHGLRC);
         void terminate();
 
     protected:

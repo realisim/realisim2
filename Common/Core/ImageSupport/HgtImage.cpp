@@ -1,10 +1,10 @@
 
 #include <cassert>
-#include "CommonMath.h"
-#include "FileInfo.h"
+#include "Math/CommonMath.h"
+#include "Core/FileInfo.h"
 #include "HgtImage.h"
 #include <regex>
-#include "StreamUtility.h"
+#include "Core/StreamUtility.h"
 
 using namespace Realisim;
     using namespace Core;

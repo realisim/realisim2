@@ -39,6 +39,12 @@ Vector4::Vector4(double v)
     mData[0] = mData[1] = mData[2] = mData[3] = v;
 }
 
+//---------------------------------------------------------------------------
+Vector4	Vector4::divideComponents(const Vector4& v) const
+{
+    return Vector4(this->x() / v.x(), this->y() / v.y(), this->z() / v.z(), this->w() / v.w());
+}
+
 //----------------------------------------------------------------------------
 double Vector4::dot(const Vector4& iV) const
 {

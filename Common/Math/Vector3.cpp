@@ -33,6 +33,13 @@ Vector3 Vector3::cross(const Vector3& iV) const
 const double* Vector3::dataPointer() const
 { return &mData[0]; }
 
+//---------------------------------------------------------------------------
+Vector3	Vector3::divideComponents(const Vector3& v) const
+{
+    return Vector3(this->x() / v.x(), this->y() / v.y(), this->z() / v.z());
+}
+
+
 //----------------------------------------------------------------------------
 double Vector3::dot(const Vector3& iV) const
 {

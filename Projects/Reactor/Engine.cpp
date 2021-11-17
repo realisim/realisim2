@@ -1,6 +1,7 @@
 
 #include "Engine.h"
 #include "Systems/Renderer/Renderer.h"
+#include "Systems/CameraController.h"
 
 using namespace Realisim;
     using namespace Reactor;
@@ -10,12 +11,15 @@ void Engine::createCoreSystems() {
 
     // create and assign systems to the hub
     // renderer
-    Renderer* pRenderer = new Renderer(&mBroker, &mHub);
+    Renderer *pRenderer = new Renderer(&mBroker, &mHub);
+    CameraController* pCameraController = new CameraController(&mBroker, &mHub);
 
     mSystems.push_back(pRenderer);
+    mSystems.push_back(pCameraController);
 
     // assign to hub
     mHub.mpRenderer = pRenderer;
+    mHub.mpCameraController = pCameraController;
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -48,6 +52,12 @@ void Engine::update()
 
     for (auto s : mSystems)
         s->postUpdate();
+
+    // important
+    // after all systems have been updated, we swapbuffers, this will sync with the screen refresh rate
+    //
+    Reactor::Renderer& r = getHubRef().getRendererRef();
+    r.swapBuffers();
 }
 
 ////---------------------------------------------------------------------------------------------------------------------
@@ -57,6 +67,12 @@ void Engine::update()
 ////---------------------------------------------------------------------------------------------------------------------
 //void Engine::stop()
 //{}
+
+//---------------------------------------------------------------------------------------------------------------------
+void Engine::setNativeWindowsGlContext(HDC iHDC, HGLRC iHGLRC)
+{
+    mHub.getRendererRef().setNativeWindowsGlContext(iHDC, iHGLRC);
+}
 
 //---------------------------------------------------------------------------------------------------------------------
 void Engine::terminate()
