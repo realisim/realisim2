@@ -1,8 +1,11 @@
-project(MathLib)
+project(InterfaceLib)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib/${PROJECT_NAME})
 
-add_component("./" "Math")
+include("../../CMakeModules/OpenAL.cmake")
+
+add_component("./" "Interface")
+add_component("./Audio" "Interface/Audio")
 
 #------------------------
 # Add and link library

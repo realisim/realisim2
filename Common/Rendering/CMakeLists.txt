@@ -1,13 +1,21 @@
-project(MathLib)
+project(RenderingLib)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib/${PROJECT_NAME})
 
-add_component("./" "Math")
+INCLUDE( "../../CMakeModules/Half.cmake" )
+INCLUDE( "../../CMakeModules/OpenGL.cmake" )
+
+add_component("./" "Rendering")
+add_component( "Gpu" "Rendering/Gpu")
 
 #------------------------
 # Add and link library
 #------------------------
 add_library( ${PROJECT_NAME} STATIC ${SOURCE_FILES} ${INCLUDE_FILES} )
+target_link_libraries( ${PROJECT_NAME} 
+    GeometryLib
+    ${OPENGL_LIBRARIES}
+    )
 
 #------------------------
 # install target

@@ -88,7 +88,10 @@ endif(MSVC)
 #------------------------------------------------------------------------------
 if(BUILD_REALISIM_AS_STATIC_LIBS)
     ADD_SUBDIRECTORY(Common/Core)
+    ADD_SUBDIRECTORY(Common/Geometry)
+    ADD_SUBDIRECTORY(Common/Interface)
     ADD_SUBDIRECTORY(Common/Math)
+    ADD_SUBDIRECTORY(Common/Rendering)
 endif()
 
 if( BUILD_PROJECT_LIGHTBEAM )

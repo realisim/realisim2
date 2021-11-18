@@ -17,11 +17,9 @@ add_component( "./" "Reactor")
 add_component( "./Systems" "Reactor/Systems")
 add_component( "./Systems/Renderer" "Reactor/Systems/Renderer")
 add_component( "./DataStructures" "Reactor/DataStructures")
-add_component( "../../Common/Rendering" "Common/Rendering")
-add_component( "../../Common/Rendering/Gpu" "Common/Rendering/Gpu")
 
 # create library target
 add_library( ${PROJECT_NAME} ${SOURCE_FILES} ${INCLUDE_FILES} )
 target_link_libraries( ${PROJECT_NAME}
-    ${OPENGL_LIBRARIES}
+    RenderingLib
     )

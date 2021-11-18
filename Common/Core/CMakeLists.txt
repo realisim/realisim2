@@ -1,4 +1,4 @@
-project(RealisimCoreLib)
+project(CoreLib)
 
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib/${PROJECT_NAME})
 
@@ -7,6 +7,8 @@ include(../../CMakeModules/LodePng.cmake)
 include(../../CMakeModules/Tga.cmake)
 
 add_component("./" "Core")
+add_component( "${PLATFORM_SPECIFIC_FOLDER}" "Core/${PLATFORM_SPECIFIC_FOLDER}")
+add_component( "ImageSupport" "Core/ImageSupport")
 
 #------------------------
 # Add and link library

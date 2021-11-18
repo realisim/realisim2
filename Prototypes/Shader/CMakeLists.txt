@@ -11,24 +11,22 @@ INCLUDE( "../../CMakeModules/Qt5.cmake" )
 INCLUDE( "../../CMakeModules/Tga.cmake" )
 
 include_directories("..")
+include_directories("../../Common/")
 
 set( SOURCE_FILES ${SOURCE_FILES} CMakeLists.txt )
 add_component( "./" "application")
 add_component( "../GlPrototyping" "GlPrototyping")
 add_component( "../GlPrototyping/assets" "GlPrototyping/assets")
-add_component( "../../Common/Math" "Math")
-add_component( "../../Common/Rendering" "Rendering")
-add_component( "../../Common/Rendering/Gpu" "Rendering/Gpu")
-add_component( "../../Common/Core" "Core")
-add_component( "../../Common/Core/${PLATFORM_SPECIFIC_FOLDER}" "Core/${PLATFORM_SPECIFIC_FOLDER}")
-add_component( "../../Common/Core/ImageSupport" "Core/ImageSupport")
-add_component( "../../Common/Geometry" "Geometry")
 
 qt_automoc()
 
 # create executable
 add_executable( ${PROJECT_NAME} ${SOURCE_FILES} ${INCLUDE_FILES} )
-target_link_libraries( ${PROJECT_NAME} Qt5::Widgets Qt5::OpenGL ${OPENGL_LIBRARIES} )
+target_link_libraries( ${PROJECT_NAME} 
+    CoreLib
+    MathLib
+    RenderingLib
+    Qt5::Widgets Qt5::OpenGL )
 
 # install directive
 qt5_install( ${CMAKE_SOURCE_DIR}/bin/${PROJECT_NAME} )
