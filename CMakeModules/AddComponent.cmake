@@ -3,7 +3,9 @@ macro( add_component iPath iDisplayedName)
 #message( "Globbing: " ${CMAKE_CURRENT_BINARY_DIR}/${iPath} )
 
 file( GLOB iPATH_SOURCE_FILES
-  ${iPath}/*.cpp )
+  ${iPath}/*.cpp
+  ${iPath}/*.frag
+  ${iPath}/*.vert )
 
 file( GLOB iPATH_INCLUDE_FILES
   ${iPath}/*.h )

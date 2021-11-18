@@ -26,12 +26,11 @@ namespace
 string Path::getApplicationFilePath()
 {
     HMODULE hModule = GetModuleHandleW(NULL);
-    WCHAR path[MAX_PATH];
-    GetModuleFileNameW(hModule, path, MAX_PATH);
-    wstring w(path);
+    CHAR path[MAX_PATH];
+    GetModuleFileNameA(hModule, path, MAX_PATH);
+    string w(path);
 
-	// nasty destructive wchar to char convertion
-    return string((const char*)w.data(), w.size());
+	return w;
 }
 
 //-----------------------------------------------------------------------------

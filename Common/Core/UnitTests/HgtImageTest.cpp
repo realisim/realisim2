@@ -1,9 +1,9 @@
-#include "FileInfo.h"
+#include "Core/FileInfo.h"
+#include "Core/Path.h"
+#include "Core/ImageSupport/HgtImage.h"
 #include "gtest/gtest.h"
-#include "ImageSupport/HgtImage.h"
 #include "Math/IsEqual.h"
 #include "Math/Vector.h"
-#include "Path.h"
 
 using namespace Realisim;
 using namespace Core;

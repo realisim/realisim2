@@ -49,6 +49,11 @@ set(Prototype_to_build "" CACHE PATH "Path to prototype")
 # Compiler flags
 #------------------------------------------------------------------------------
 
+if(BUILD_UNIT_TESTS)
+    # gtest is a bit outdate and uses TR1
+    add_definitions(-D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
+endif()
+
 if(MSVC)  
     # Force to always compile with W4 (Max Error.)
     if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
@@ -65,6 +70,7 @@ if(MSVC)
 
     # enable M_PI and other math constants
     add_definitions(-D_USE_MATH_DEFINES)
+    add_definitions(-DNOMINMAX)
 
     # multi processor build
     add_definitions("/MP")

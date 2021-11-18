@@ -1,10 +1,5 @@
 project(CoreUnitTests)
 
-#------------------------------------------------------------------------------
-# set output apps directory to bin/"BuildConfiguration"/${PROJECT_NAME}
-#------------------------------------------------------------------------------
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/UnitTests)
-
 #------------------------
 # Include necessary CMakeModules
 #------------------------
@@ -12,11 +7,6 @@ include("../../../CMakeModules/Gtest.cmake")
 INCLUDE( "../../../CMakeModules/Lodepng.cmake" )
 INCLUDE( "../../../CMakeModules/Half.cmake" )
 INCLUDE( "../../../CMakeModules/Tga.cmake" )
-
-#------------------------
-# Add define
-#------------------------
-add_definitions(-D_USE_MATH_DEFINES)
 
 #------------------------
 # Add sources

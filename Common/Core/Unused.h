@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Simthetiq
+namespace Realisim
 {
 namespace Core
 {

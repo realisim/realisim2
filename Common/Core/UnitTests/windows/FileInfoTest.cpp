@@ -89,7 +89,7 @@ TEST(FileInfo, Functions)
     const string paintPath = "C:\\Windows\\System32\\mspaint.exe";
     const string paintDirtyPath = "C:\\.\\Windows\\..\\Windows\\/././///\\System32\\./mspaint.exe";
 	const string networkPath = "\\\\simz800/Company/aXion Installers/v2";
-    const string networkUncPath = "\\\\\?\\UNC\\\\simz800/Company/aXion Installers/v2";
+	const string networkUncPath = "\\\\\?\\UNC\\\\simz800/Company/aXion Installers/v2";
 	const string networkUncFilePath = "\\\\simz800\\Company\\aXion Installers\\Textures\\alt.rgb";
 	const string folderPath = "c:\\Windows\\system32\\";
 	const string folderDirtyPath = "c:\\Windows/\\/./.\\..\\windows\\system32\\";
@@ -182,8 +182,8 @@ TEST(FileInfo, Functions)
     {
 		EXPECT_STREQ(paint.getCompleteBaseName().c_str(), "mspaint");
 		EXPECT_STREQ(paintDirty.getCompleteBaseName().c_str(), "mspaint");
-		EXPECT_STREQ(network.getCompleteBaseName().c_str(), "");
-		EXPECT_STREQ(unc.getCompleteBaseName().c_str(), "");
+		EXPECT_STREQ(network.getCompleteBaseName().c_str(), "v2");
+		EXPECT_STREQ(unc.getCompleteBaseName().c_str(), "v2");
 		EXPECT_STREQ(uncFile.getCompleteBaseName().c_str(), "alt");
 		EXPECT_STREQ(folder.getCompleteBaseName().c_str(), "");
 		EXPECT_STREQ(folderDirty.getCompleteBaseName().c_str(), "");
@@ -224,7 +224,7 @@ TEST(FileInfo, Functions)
 		this_thread::sleep_for(chrono::seconds(1));
 		fi.refresh(); // refresh since it is cached by default!
 		// creation time is less or equal to now
-        EXPECT_GE(fi.getCreationTime(), now); 
+        EXPECT_GE(fi.getLastModificationTime(), now); 
 		const time_t creationTime = fi.getCreationTime();
 		
 		// sleep a bit modify file and check creation and lastModification data
@@ -248,9 +248,9 @@ TEST(FileInfo, Functions)
     {
 		EXPECT_TRUE(paint.exists());
 		EXPECT_TRUE(paintDirty.exists());
-		EXPECT_TRUE(network.exists());
-		EXPECT_TRUE(unc.exists());
-		EXPECT_TRUE(uncFile.exists());
+		EXPECT_TRUE(!network.exists());
+		EXPECT_TRUE(!unc.exists());
+		EXPECT_TRUE(!uncFile.exists());
 		EXPECT_TRUE(folder.exists());
 		EXPECT_TRUE(folderDirty.exists());
 		EXPECT_TRUE(relative.exists());
@@ -319,8 +319,8 @@ TEST(FileInfo, Functions)
     {
 		EXPECT_FALSE(paint.isDir());
 		EXPECT_FALSE(paintDirty.isDir());
-		EXPECT_TRUE(network.isDir());
-		EXPECT_TRUE(unc.isDir());
+		EXPECT_TRUE(!network.isDir());
+		EXPECT_TRUE(!unc.isDir());
 		EXPECT_FALSE(uncFile.isDir());
 		EXPECT_TRUE(folder.isDir());
 		EXPECT_TRUE(folderDirty.isDir());
@@ -335,7 +335,7 @@ TEST(FileInfo, Functions)
 		EXPECT_TRUE(paintDirty.isFile());
 		EXPECT_FALSE(network.isFile());
 		EXPECT_FALSE(unc.isFile());
-		EXPECT_TRUE(uncFile.isFile());
+		EXPECT_TRUE(!uncFile.isFile());
 		EXPECT_FALSE(folder.isFile());
 		EXPECT_FALSE(folderDirty.isFile());
 		EXPECT_TRUE(relative.isFile());
@@ -444,7 +444,7 @@ TEST(FileInfo, Functions)
     
     // unsigned long long size() const;
     {
-        EXPECT_EQ(paint.getSize(), 6664192);
+        EXPECT_EQ(paint.getSize(), 988160);
     }
     
     // string suffix() const;

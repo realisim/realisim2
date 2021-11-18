@@ -9,6 +9,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin/${PROJECT_NAME})
 add_definitions(-D_USE_MATH_DEFINES)
 add_definitions(-DNOMINMAX)
 
+INCLUDE( "../../CMakeModules/Half.cmake" )
 INCLUDE( "../../CMakeModules/OpenGL.cmake" )
 
 set( SOURCE_FILES ${SOURCE_FILES} CMakeLists.txt )
