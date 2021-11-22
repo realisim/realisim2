@@ -234,7 +234,6 @@ void Viewer::paintGL()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     Matrix4 modelMatrix(Vector3(0.0, 0.0, 0.0));
-    //modelMatrix.setAsScaling(Vector3(100, 100, 100));
 
     glUseProgram(mShadedMaterialShader.getProgramId());
 
@@ -260,6 +259,7 @@ void Viewer::resizeGL(int iW, int iH)
     Viewport v(iW, iH);
     
     mCamera.setViewport(v);
+    glViewport(0, 0, iW, iH);
 }
 
 //-----------------------------------------------------------------------------

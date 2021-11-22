@@ -154,18 +154,15 @@ void Painter::createCube()
     };
 
     //--- define the buffer objects
-    BufferObject* vboVerticesNormals, /**vboColors,*/ *vboIndices;
+    BufferObject* vboVerticesNormals, *vboColors, *vboIndices;
     vboVerticesNormals = new BufferObject();
-    //vboColors = new BufferObject();
+    vboColors = new BufferObject();
     vboIndices = new BufferObject();
 
     //--- define the BufferObject internal data structure
     Rendering::BufferObjectData* vertexNormalStructure = new Rendering::BufferObjectDataInterleaved();
     vertexNormalStructure->addAttribute(DataType::dtFloat, 3, BufferObject::lliVertex);
     vertexNormalStructure->addAttribute(DataType::dtFloat, 3, BufferObject::lliNormal);
-
-    /*Rendering::BufferObjectData* colorStructure = new Rendering::BufferObjectDataPlain();
-    colorStructure->addAttribute(DataType::dtFloat, 4, BufferObject::lliColor);*/
 
     Rendering::BufferObjectData* indicesStructure = new Rendering::BufferObjectDataPlain();
     indicesStructure->addAttribute(DataType::dtUnsignedShort, 1, 0);
