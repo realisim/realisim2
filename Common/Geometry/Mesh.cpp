@@ -114,44 +114,67 @@ void Mesh::cutIntoSmallerMeshes(const Mesh& iMesh,
     std::vector<Mesh> *opMeshes)
 {
     assert(opMeshes != nullptr);
+    const int numberOfIndices = iMesh.getNumberOfFaces() * iMesh.getNumberOfVerticesPerFace();
 
-    int numberOfVerticesPerFace = iMesh.getNumberOfVerticesPerFace();
-    int numFaces = iMesh.getNumberOfFaces();
-    uint32_t indexCount = 0;
-
-    // add a mesh in the vector
-    opMeshes->push_back(Geometry::Mesh());
-    Mesh *pCurrentMesh = &(*opMeshes).back();
-    pCurrentMesh->setNumberOfVerticesPerFace( numberOfVerticesPerFace );
-    for (int faceIndex = 0; faceIndex < numFaces; ++faceIndex)
+    if (numberOfIndices > (int)iMaxNumberOfIndices)
     {
-        if ((indexCount + numberOfVerticesPerFace) >= iMaxNumberOfIndices)
-        {
-            indexCount = 0;
-            // add a new mesh
-            opMeshes->push_back(Geometry::Mesh());
-            pCurrentMesh = &(*opMeshes).back();
-            pCurrentMesh->setNumberOfVerticesPerFace( numberOfVerticesPerFace );
-        }
+        int numberOfVerticesPerFace = iMesh.getNumberOfVerticesPerFace();
+        int numFaces = iMesh.getNumberOfFaces();
+        uint32_t indexCount = 0;
 
-        // copy all vertexData on current face
-        for (int i = 0; i < numberOfVerticesPerFace; ++i)
+        // add a mesh in the vector
+        opMeshes->push_back(Geometry::Mesh());
+        Mesh* pCurrentMesh = &(*opMeshes).back();
+        pCurrentMesh->setNumberOfVerticesPerFace(numberOfVerticesPerFace);
+        for (int faceIndex = 0; faceIndex < numFaces; ++faceIndex)
         {
-            pCurrentMesh->getVerticesRef().push_back( iMesh.getVertexOnFace(i, faceIndex) );
-        }
+            if ((indexCount + numberOfVerticesPerFace) >= iMaxNumberOfIndices)
+            {
+                indexCount = 0;
+                // add a new mesh
+                opMeshes->push_back(Geometry::Mesh());
+                pCurrentMesh = &(*opMeshes).back();
+                pCurrentMesh->setNumberOfVerticesPerFace(numberOfVerticesPerFace);
+            }
 
-        //make a face out of this data
-        vector<uint32_t> vertexIndicesForFace(numberOfVerticesPerFace);
-        for (int i = 0; i < numberOfVerticesPerFace; ++i)
-        {
-            vertexIndicesForFace[i] = indexCount + i;
-        }
-        pCurrentMesh->makeFace( vertexIndicesForFace );
-        
+            // copy all vertexData on current face
+            for (int i = 0; i < numberOfVerticesPerFace; ++i)
+            {
+                pCurrentMesh->getVerticesRef().push_back(iMesh.getVertexOnFace(i, faceIndex));
+            }
 
-        indexCount += numberOfVerticesPerFace;
+            //make a face out of this data
+            vector<uint32_t> vertexIndicesForFace(numberOfVerticesPerFace);
+            for (int i = 0; i < numberOfVerticesPerFace; ++i)
+            {
+                vertexIndicesForFace[i] = indexCount + i;
+            }
+            pCurrentMesh->makeFaceB(vertexIndicesForFace);
+
+
+            indexCount += numberOfVerticesPerFace;
+        }
     }
+    else {
+        opMeshes->push_back(iMesh);
+    }    
 }
+
+//-----------------------------------------------------------------------------
+// WARNING - this method is somehow destructive. 
+//      For a flat shade, each face must have 3 indices and 3 separate normals
+//      This means we have to duplicate each vertex data.
+//
+void Mesh::generateFlatNormals() {
+
+}
+
+//-----------------------------------------------------------------------------
+//
+void Mesh::generateSmoothNormals() {
+
+}
+
 
 //-----------------------------------------------------------------------------
 Vector3 Mesh::getCenterPositionOfFace(int iFaceIndex) const
@@ -366,62 +389,73 @@ bool Mesh::hasTextureCoordinateLayer(int iLayerIndex) const
 
 //-----------------------------------------------------------------------------
 // This is a convenient method to create a face and compute a normal for that
-// face...
+// face... In order to compute the normal, iDuplicateVertex must be true
 // Returns a face from 3 vertex indices. The convention for normal is right hand.
 //
-int Mesh::makeFace(const vector<uint32_t>& iVertexIndices, bool iDuplicateVertex /*=false*/)
-{
-    vector<uint32_t> vertexIndices = iVertexIndices;
-    vector<Mesh::VertexData>& vertices = getVerticesRef();
-    if (iDuplicateVertex)
-    {
-        // search in current faces if the vertex index is currently in use,
-        // if so, duplicate the vertex
-        for (size_t i = 0; i < iVertexIndices.size(); ++i)
-        {
-            bool foundInCurrentFaces = false;
-            for (int faceIndex = 0; faceIndex < mFaces.size() && !foundInCurrentFaces; ++faceIndex)
-            {
-                for (int vertexIndex = 0; vertexIndex < mFaces[faceIndex].mVertexIndices.size() && !foundInCurrentFaces; ++vertexIndex)
-                {
-                    foundInCurrentFaces = iVertexIndices[i] == mFaces[faceIndex].mVertexIndices[vertexIndex];
-                }
-            }
-
-            if(foundInCurrentFaces)
-            {
-                vertexIndices[i] = (uint16_t)mVertexData.size();
-                mVertexData.push_back( VertexData(vertices[iVertexIndices[i]]) );
-            }
-        }
-    }
-
-    Mesh::Face face;
-    face.mVertexIndices = vertexIndices;
-       
-    VertexData& v0 = vertices[face.mVertexIndices[0]];
-    VertexData& v1 = vertices[face.mVertexIndices[1]];
-    VertexData& v2 = vertices[face.mVertexIndices[2]];
-
-    Math::Vector3 normal = ((v1.mVertex - v0.mVertex) ^ (v2.mVertex - v0.mVertex)).normalize();
-
-    //assign the same normal to each vertices of the face.
-   const uint16_t numVertices = (uint16_t)face.mVertexIndices.size();
-   for (uint16_t i = 0; i < numVertices; ++i)
-   {
-       vertices[face.mVertexIndices[i]].mNormal = normal;
-   }
-
-   mFaces.push_back(face);
-
-   //returns the face index
-   return (int)mFaces.size() - 1;
-}
+//int Mesh::makeFace(const vector<uint32_t>& iVertexIndices, bool iDuplicateVertex /*=false*/)
+//{
+//    vector<uint32_t> vertexIndices = iVertexIndices;
+//    vector<Mesh::VertexData>& vertices = getVerticesRef();
+//    if (iDuplicateVertex)
+//    {
+//        // search in current faces if the vertex index is currently in use,
+//        // if so, duplicate the vertex
+//        for (size_t i = 0; i < iVertexIndices.size(); ++i)
+//        {
+//            bool foundInCurrentFaces = false;
+//            for (int faceIndex = 0; faceIndex < mFaces.size() && !foundInCurrentFaces; ++faceIndex)
+//            {
+//                for (int vertexIndex = 0; vertexIndex < mFaces[faceIndex].mVertexIndices.size() && !foundInCurrentFaces; ++vertexIndex)
+//                {
+//                    foundInCurrentFaces = iVertexIndices[i] == mFaces[faceIndex].mVertexIndices[vertexIndex];
+//                }
+//            }
+//
+//            if(foundInCurrentFaces)
+//            {
+//                vertexIndices[i] = (uint16_t)mVertexData.size();
+//                mVertexData.push_back( VertexData(vertices[iVertexIndices[i]]) );
+//            }
+//        }
+//    }
+//
+//    Mesh::Face face;
+//    face.mVertexIndices = vertexIndices;
+//       
+//    VertexData& v0 = vertices[face.mVertexIndices[0]];
+//    VertexData& v1 = vertices[face.mVertexIndices[1]];
+//    VertexData& v2 = vertices[face.mVertexIndices[2]];
+//
+//    Math::Vector3 normal = ((v1.mVertex - v0.mVertex) ^ (v2.mVertex - v0.mVertex)).normalize();
+//
+//    //assign the same normal to each vertices of the face.
+//    const uint16_t numVertices = (uint16_t)face.mVertexIndices.size();
+//    for (uint16_t i = 0; i < numVertices; ++i)
+//    {
+//        vertices[face.mVertexIndices[i]].mNormal = normal;
+//    }
+//    
+//    mFaces.push_back(face);
+//
+//   //returns the face index
+//   return (int)mFaces.size() - 1;
+//}
+//
+////-----------------------------------------------------------------------------
+//int Mesh::makeFace(uint32_t i0, uint32_t i1, uint32_t i2, bool iDuplicateVertex /*= false*/)
+//{
+//    return makeFace({i0, i1, i2}, iDuplicateVertex);
+//}
 
 //-----------------------------------------------------------------------------
-int Mesh::makeFace(uint32_t i0, uint32_t i1, uint32_t i2, bool iDuplicateVertex /*= false*/)
+int Mesh::makeFaceB(const vector<uint32_t>& iVertexIndices)
 {
-    return makeFace({i0, i1, i2}, iDuplicateVertex);
+    Mesh::Face face;
+    face.mVertexIndices = iVertexIndices;
+    mFaces.push_back(face);
+
+    //returns the face index
+    return (int)mFaces.size() - 1;
 }
 
 //-----------------------------------------------------------------------------

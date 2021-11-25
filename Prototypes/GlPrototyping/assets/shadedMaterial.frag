@@ -6,8 +6,8 @@ uniform bool uUseSampler = false;
 uniform sampler2D uDiffuseSampler;
 uniform float uAlphaFactor; //mutiplies the alpha channel of color.
 
-const dvec3 lightColor = dvec3(1.0, 1.0, 1.0);
-const float ambientFactor = 0.4f;
+const dvec3 lightColor = dvec3(0.8, 0.8, 0.8);
+const float ambientFactor = 0.05f;
 
 // Interpolated values from the vertex shaders
 in vec3 oVertex;
@@ -41,9 +41,9 @@ void main()
     
     finalColor.a *= uAlphaFactor;
 
-	// apply gamma correction
-    float gamma = 2.2;
-    finalColor.rgb = pow(finalColor.rgb, vec3(1.0/gamma));
+    // apply gamma correction
+    //float gamma = 2.2;
+    //finalColor.rgb = pow(finalColor.rgb, vec3(1.0/gamma));
 
     frag_color = finalColor;
 }

@@ -34,7 +34,7 @@ protected:
     virtual void paintGL() override;
     virtual void resizeGL(int, int) override;
 
-    virtual void loadShader();
+    virtual void loadShaders();
     
     Realisim::Rendering::Camera mCamera;
     Realisim::Math::Vector3 mWorldUpVector;

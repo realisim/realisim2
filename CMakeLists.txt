@@ -87,6 +87,7 @@ endif(MSVC)
 # add subdirectories
 #------------------------------------------------------------------------------
 if(BUILD_REALISIM_AS_STATIC_LIBS)
+    ADD_SUBDIRECTORY(Common/3d)
     ADD_SUBDIRECTORY(Common/Core)
     ADD_SUBDIRECTORY(Common/Geometry)
     ADD_SUBDIRECTORY(Common/Interface)

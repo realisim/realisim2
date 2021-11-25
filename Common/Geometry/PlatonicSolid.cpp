@@ -52,12 +52,12 @@ void PlatonicSolid::bakeCube()
     vertices[6].mVertex = Vector3(1, 1, -1);   //6
     vertices[7].mVertex = Vector3(-1, 1, -1);  //7
 
-	mMesh.makeFace({ 0, 1, 2, 3 }, true); //0, 1, 2, 3
-	mMesh.makeFace({ 4, 7, 6, 5 }, true); //4, 5, 6, 7
-	mMesh.makeFace({ 5, 6, 2, 1 }, true); //8, 9, 10, 11  
-	mMesh.makeFace({ 0, 3, 7, 4 }, true); //12, 13, 14, 15
-	mMesh.makeFace({ 6, 7, 3, 2 }, true); //16, 17, 18, 19  
-	mMesh.makeFace({ 4, 5, 1, 0 }, true); //20 21 22 23
+	mMesh.makeFaceB({ 0, 1, 2, 3 }); //0, 1, 2, 3
+	mMesh.makeFaceB({ 4, 7, 6, 5 }); //4, 5, 6, 7
+	mMesh.makeFaceB({ 5, 6, 2, 1 }); //8, 9, 10, 11  
+	mMesh.makeFaceB({ 0, 3, 7, 4 }); //12, 13, 14, 15
+	mMesh.makeFaceB({ 6, 7, 3, 2 }); //16, 17, 18, 19  
+	mMesh.makeFaceB({ 4, 5, 1, 0 }); //20 21 22 23
 
     mMesh.triangulate();
 }
@@ -112,18 +112,18 @@ void PlatonicSolid::bakeDodecahedron()
     vertices[19].mVertex = Vector3( phi, -oneOverPhi, 0); //19
 
     //12 faces
-	mMesh.makeFace({ 1, 9, 10, 5, 19 }, true); // 0, 1, 2, 3, 4
-	mMesh.makeFace({ 1, 19, 16, 2, 12 }, true); //5 6 7 8 9
-	mMesh.makeFace({ 0, 9, 1, 12, 13 }, true); //10 11 12 13 14
-	mMesh.makeFace({ 0, 18, 4, 10, 9 }, true); //15 16 17 18 19
-	mMesh.makeFace({ 4, 14, 15, 5, 10}, true); //20 21 22 23 24
-	mMesh.makeFace({ 5, 15, 6, 16, 19}, true); //25 26, 27, 28, 29
-	mMesh.makeFace({ 3, 8, 11, 7, 17 }, true); //30 31 32 33 34
-	mMesh.makeFace({ 2, 8, 3, 13, 12 }, true); //35 36 37 38 39
-	mMesh.makeFace({ 3, 17, 18, 0, 13}, true); //40 41 42 43 44
-	mMesh.makeFace({ 4, 18, 17, 7, 14}, true); //15 46 47 48 49
-	mMesh.makeFace({ 15, 14, 7, 11, 6}, true); //50 51 52 53 54
-	mMesh.makeFace({ 2, 16, 6, 11, 8 }, true); //55 56 57 58 59 
+	mMesh.makeFaceB({ 1, 9, 10, 5, 19 }); // 0, 1, 2, 3, 4
+	mMesh.makeFaceB({ 1, 19, 16, 2, 12 }); //5 6 7 8 9
+	mMesh.makeFaceB({ 0, 9, 1, 12, 13 }); //10 11 12 13 14
+	mMesh.makeFaceB({ 0, 18, 4, 10, 9 }); //15 16 17 18 19
+	mMesh.makeFaceB({ 4, 14, 15, 5, 10}); //20 21 22 23 24
+	mMesh.makeFaceB({ 5, 15, 6, 16, 19}); //25 26, 27, 28, 29
+	mMesh.makeFaceB({ 3, 8, 11, 7, 17 }); //30 31 32 33 34
+	mMesh.makeFaceB({ 2, 8, 3, 13, 12 }); //35 36 37 38 39
+	mMesh.makeFaceB({ 3, 17, 18, 0, 13}); //40 41 42 43 44
+	mMesh.makeFaceB({ 4, 18, 17, 7, 14}); //15 46 47 48 49
+	mMesh.makeFaceB({ 15, 14, 7, 11, 6}); //50 51 52 53 54
+	mMesh.makeFaceB({ 2, 16, 6, 11, 8 }); //55 56 57 58 59 
 
     mMesh.triangulate();
 }
@@ -150,14 +150,14 @@ void PlatonicSolid::bakeOctahedron()
 
     // 8 faces with 3 vertex each... so 24 entries
 
-	mMesh.makeFace({ 0, 5, 3 }, true); // 0, 1, 2
-	mMesh.makeFace({ 1, 3, 5 }, true); // 3, 4, 5
-	mMesh.makeFace({ 1, 4, 3 }, true); // 6, 7, 8
-	mMesh.makeFace({ 0, 3, 4 }, true); //9, 10, 11
-	mMesh.makeFace({ 0, 2, 5 }, true); //12, 13, 14
-	mMesh.makeFace({ 1, 5, 2 }, true); //15, 16, 17
-	mMesh.makeFace({ 1, 2, 4 }, true); //18, 19, 20
-	mMesh.makeFace({ 0, 4, 2 }, true); //21, 22, 23
+	mMesh.makeFaceB({ 0, 5, 3 }); // 0, 1, 2
+	mMesh.makeFaceB({ 1, 3, 5 }); // 3, 4, 5
+	mMesh.makeFaceB({ 1, 4, 3 }); // 6, 7, 8
+	mMesh.makeFaceB({ 0, 3, 4 }); //9, 10, 11
+	mMesh.makeFaceB({ 0, 2, 5 }); //12, 13, 14
+	mMesh.makeFaceB({ 1, 5, 2 }); //15, 16, 17
+	mMesh.makeFaceB({ 1, 2, 4 }); //18, 19, 20
+	mMesh.makeFaceB({ 0, 4, 2 }); //21, 22, 23
 }
 
 //-----------------------------------------------------------------------------
@@ -179,10 +179,10 @@ void PlatonicSolid::bakeTetrahedron()
 	vertices[3].mVertex = Vector3(0, -1, 1 / square2);
 
     // 4 faces with 3 vertex each...
-	mMesh.makeFace({ 0, 1, 2 }, true);
-	mMesh.makeFace({ 1, 3, 2 }, true);
-	mMesh.makeFace({ 2, 3, 0 }, true);
-	mMesh.makeFace({ 0, 3, 1 }, true);
+	mMesh.makeFaceB({ 0, 1, 2 });
+	mMesh.makeFaceB({ 1, 3, 2 });
+	mMesh.makeFaceB({ 2, 3, 0 });
+	mMesh.makeFaceB({ 0, 3, 1 });
     
 }
 

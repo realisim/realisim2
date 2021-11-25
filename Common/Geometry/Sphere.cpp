@@ -83,15 +83,14 @@ void Sphere::makeFaces(Mesh *ipMesh, int iN, int iVertexOffset, bool iReverseOrd
 
             if (!iReverseOrder)
             {
-                ipMesh->makeFace( {(uint16_t)llIndex, (uint16_t)lrIndex, (uint16_t)urIndex} );
-                ipMesh->makeFace( {(uint16_t)llIndex, (uint16_t)urIndex, (uint16_t)ulIndex} );
+                ipMesh->makeFaceB( {(uint16_t)llIndex, (uint16_t)lrIndex, (uint16_t)urIndex} );
+                ipMesh->makeFaceB( {(uint16_t)llIndex, (uint16_t)urIndex, (uint16_t)ulIndex} );
             }
             else
             {
-                ipMesh->makeFace( {(uint16_t)llIndex, (uint16_t)ulIndex, (uint16_t)urIndex} );
-                ipMesh->makeFace( {(uint16_t)llIndex, (uint16_t)urIndex, (uint16_t)lrIndex} );
+                ipMesh->makeFaceB( {(uint16_t)llIndex, (uint16_t)ulIndex, (uint16_t)urIndex} );
+                ipMesh->makeFaceB( {(uint16_t)llIndex, (uint16_t)urIndex, (uint16_t)lrIndex} );
             }
-            
         }
 }
 

@@ -60,7 +60,7 @@ void ObjLoader::createAsset(const tinyobj::attrib_t &iAttrib,
 
         // get the mesh guts, so we can fill the structures...
         vector<Mesh::VertexData>& vds = pMesh->getVerticesRef();
-        vector<Mesh::Face>& faces = pMesh->getFacesRef();
+        //vector<Mesh::Face>& faces = pMesh->getFacesRef();
 
         size_t index_offset = 0;
         bool generateNormal = true;
@@ -114,13 +114,14 @@ void ObjLoader::createAsset(const tinyobj::attrib_t &iAttrib,
             }
 
             // add face to mesh
-            if (generateNormal){
-                pMesh->makeFace(face.mVertexIndices, false);
-            }
-            else {
-                
-                faces.push_back(face);
-            }
+            pMesh->makeFaceB(face.mVertexIndices);
+            //if (generateNormal){
+            //    // generate a normal, and duplicate vertex to have a nice flat shade.
+            //    pMesh->makeFace(face.mVertexIndices, false);
+            //}
+            //else {
+            //    faces.push_back(face);
+            //}
 
             // check material
             if(materialIndex == -1 )

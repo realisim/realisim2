@@ -72,7 +72,7 @@ void GeometricGrid::bakeMesh()
 	{
 		const int vertexIndex = (i % numLongStacks) + 1;
 		const int nextVertexIndex = ((i + 1) % numLongStacks) + 1;
-		mMesh.makeFace((uint16_t)northPoleIndex, (uint16_t)vertexIndex, (uint16_t)nextVertexIndex, true);
+		mMesh.makeFaceB({ (uint16_t)northPoleIndex, (uint16_t)vertexIndex, (uint16_t)nextVertexIndex } );
 	}
 
 	// all rings in between
@@ -92,9 +92,9 @@ void GeometricGrid::bakeMesh()
 			const int lowerStackVertexIndex = lowerStackIndexOffset + (j % numLongStacks);
 			const int lowerStackNextVertexIndex = lowerStackIndexOffset + ((j + 1) % numLongStacks);
 			
-			mMesh.makeFace((uint16_t)upperStackVertexIndex, (uint16_t)lowerStackVertexIndex, (uint16_t)lowerStackNextVertexIndex, true);
+			mMesh.makeFaceB({ (uint16_t)upperStackVertexIndex, (uint16_t)lowerStackVertexIndex, (uint16_t)lowerStackNextVertexIndex });
 
-			mMesh.makeFace((uint16_t)upperStackNextVertexIndex, (uint16_t)upperStackVertexIndex, (uint16_t)lowerStackNextVertexIndex, true);
+			mMesh.makeFaceB({ (uint16_t)upperStackNextVertexIndex, (uint16_t)upperStackVertexIndex, (uint16_t)lowerStackNextVertexIndex });
 		}
 	}
 
@@ -105,7 +105,7 @@ void GeometricGrid::bakeMesh()
 		const int upperStackVertexIndex = upperStackIndexOffset + (i % numLongStacks);
 		const int upperStackNextVertexIndex = upperStackIndexOffset + ((i + 1) % numLongStacks);
 
-	    mMesh.makeFace((uint16_t)southPoleIndex, (uint16_t)upperStackNextVertexIndex, (uint16_t)upperStackVertexIndex, true);
+		mMesh.makeFaceB({ (uint16_t)southPoleIndex, (uint16_t)upperStackNextVertexIndex, (uint16_t)upperStackVertexIndex });
 	}	
 }
 

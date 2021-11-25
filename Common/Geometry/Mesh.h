@@ -65,6 +65,9 @@ namespace Geometry
         void computeTangentBasis();
         static void cutIntoSmallerMeshes(const Mesh& iMesh, const uint32_t iMaxNumberOfIndices, std::vector<Mesh> *opMeshes);
         
+        void generateFlatNormals();
+        void generateSmoothNormals();
+
         Math::Vector3 getCenterPositionOfFace(int iFaceIndex) const;
 		std::vector<Face>& getFacesRef();
 		const std::vector<Face>& getFaces() const;
@@ -90,8 +93,9 @@ namespace Geometry
         bool hasTextureCoordinateLayers() const;
         bool hasTextureCoordinateLayer(int iLayerIndex) const;
 
-        int makeFace(const std::vector<uint32_t>& iVertexIndices, bool iDuplicateVertex = false);
-        int makeFace(uint32_t i0, uint32_t i1, uint32_t i2, bool iDuplicateVertex = false);
+        int makeFaceB(const std::vector<uint32_t>& iVertexIndices);
+        /*int makeFace(const std::vector<uint32_t>& iVertexIndices, bool iDuplicateVertex = false);
+        int makeFace(uint32_t i0, uint32_t i1, uint32_t i2, bool iDuplicateVertex = false);*/
 		void setNumberOfVerticesPerFace(int iN);
         void triangulate();
 

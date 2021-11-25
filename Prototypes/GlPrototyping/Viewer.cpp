@@ -139,7 +139,8 @@ void Viewer::handleUserInput()
     setCamera(c);
 }
 
-void Viewer::loadShader()
+//-----------------------------------------------------------------------------
+void Viewer::loadShaders()
 {
     mShadedMaterialShader.clear();
 
@@ -177,7 +178,7 @@ void Viewer::initializeGL()
 	}
 #endif // WIN32
 
-    loadShader();    
+    loadShaders();
 }
 
 //-----------------------------------------------------------------------------
@@ -197,7 +198,7 @@ void Viewer::keyReleaseEvent(QKeyEvent* ipE)
     if ((ipE->modifiers()==Qt::ControlModifier) && (ipE->key()==Qt::Key_R))
     {
         std::cout << "Reload shaders" << std::endl;
-        loadShader();
+        loadShaders();
     }
 }
 
