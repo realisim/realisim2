@@ -5,7 +5,7 @@
 #include <memory>
 #include <regex>
 #include "Scene.h"
-#include "SceneNode.h"
+#include "3d/Scene/SceneNode.h"
 
 // temporary until we can read scene from files...
 #include "DataStructure/Scene/GeometryNodes.h"

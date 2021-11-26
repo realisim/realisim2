@@ -1,7 +1,7 @@
 
 #include "Core/Unused.h"
 #include "Interfaces.h"
-#include "IntersectionResult.h"
+#include "DataStructure/IntersectionResult.h"
 #include "Math/CommonMath.h"
 
 using namespace Realisim;

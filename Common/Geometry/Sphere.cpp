@@ -83,13 +83,13 @@ void Sphere::makeFaces(Mesh *ipMesh, int iN, int iVertexOffset, bool iReverseOrd
 
             if (!iReverseOrder)
             {
-                ipMesh->makeFaceB( {(uint16_t)llIndex, (uint16_t)lrIndex, (uint16_t)urIndex} );
-                ipMesh->makeFaceB( {(uint16_t)llIndex, (uint16_t)urIndex, (uint16_t)ulIndex} );
+                ipMesh->makeFace( {(uint16_t)llIndex, (uint16_t)lrIndex, (uint16_t)urIndex} );
+                ipMesh->makeFace( {(uint16_t)llIndex, (uint16_t)urIndex, (uint16_t)ulIndex} );
             }
             else
             {
-                ipMesh->makeFaceB( {(uint16_t)llIndex, (uint16_t)ulIndex, (uint16_t)urIndex} );
-                ipMesh->makeFaceB( {(uint16_t)llIndex, (uint16_t)urIndex, (uint16_t)lrIndex} );
+                ipMesh->makeFace( {(uint16_t)llIndex, (uint16_t)ulIndex, (uint16_t)urIndex} );
+                ipMesh->makeFace( {(uint16_t)llIndex, (uint16_t)urIndex, (uint16_t)lrIndex} );
             }
         }
 }
@@ -203,6 +203,8 @@ Mesh Sphere::makeMesh() const
     // make faces
     makeFaces(&mesh, gridSize, vertexOffsetForFaces, false);
     vertexOffsetForFaces += numVerticesPerPlane;
+
+    mesh.generateFlatNormals();
 
     return mesh;
 }

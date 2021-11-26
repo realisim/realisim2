@@ -3,7 +3,7 @@
 #include "GeometryNodes.h"
 #include "Geometry/AxisAlignedBoundingBox.h"
 #include "Geometry/Intersections.h"
-#include "IntersectionResult.h"
+#include "DataStructure/IntersectionResult.h"
 
 using namespace Realisim;
     using namespace Geometry;

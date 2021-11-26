@@ -149,7 +149,7 @@ void Mesh::cutIntoSmallerMeshes(const Mesh& iMesh,
             {
                 vertexIndicesForFace[i] = indexCount + i;
             }
-            pCurrentMesh->makeFaceB(vertexIndicesForFace);
+            pCurrentMesh->makeFace(vertexIndicesForFace);
 
 
             indexCount += numberOfVerticesPerFace;
@@ -163,18 +163,48 @@ void Mesh::cutIntoSmallerMeshes(const Mesh& iMesh,
 //-----------------------------------------------------------------------------
 // WARNING - this method is somehow destructive. 
 //      For a flat shade, each face must have 3 indices and 3 separate normals
-//      This means we have to duplicate each vertex data.
+//      This means that the model vertices will be duplicated and this is not
+//      reversible.
+//      This method is meant to be user when no normals have been provided to
+//      the mesh.
+//
+// THIS METHOD WORKS ONLY ON TRIANGULATED MESH
 //
 void Mesh::generateFlatNormals() {
+    Mesh tempMesh;
+    vector<VertexData>& vds = tempMesh.getVerticesRef();
+    
+    assert(getNumberOfVerticesPerFace() == 3 && "MESH MUST BE TRIANGULATED");
 
+    uint32_t vertexIndex = 0;
+    const int numFaces = getNumberOfFaces();
+    for (int iFaceIndex = 0; iFaceIndex < numFaces; ++iFaceIndex) {
+        const VertexData &v0 = getVertexOnFace(0, iFaceIndex);
+        const VertexData &v1 = getVertexOnFace(1, iFaceIndex);
+        const VertexData &v2 = getVertexOnFace(2, iFaceIndex);
+
+        Math::Vector3 normal = ((v1.mVertex - v0.mVertex) ^ (v2.mVertex - v0.mVertex)).normalize();
+
+        VertexData newVd0(v0);
+        VertexData newVd1(v1);
+        VertexData newVd2(v2);
+        newVd0.mNormal = normal;
+        newVd1.mNormal = normal;
+        newVd2.mNormal = normal;
+
+        vds.push_back(newVd0);
+        vds.push_back(newVd1);
+        vds.push_back(newVd2);
+
+        tempMesh.makeFace({ vertexIndex + 0,
+            vertexIndex + 1,
+            vertexIndex + 2 });
+
+        vertexIndex += 3;
+    }
+
+    *this = tempMesh;
 }
-
-//-----------------------------------------------------------------------------
-//
-void Mesh::generateSmoothNormals() {
-
-}
-
 
 //-----------------------------------------------------------------------------
 Vector3 Mesh::getCenterPositionOfFace(int iFaceIndex) const
@@ -448,7 +478,7 @@ bool Mesh::hasTextureCoordinateLayer(int iLayerIndex) const
 //}
 
 //-----------------------------------------------------------------------------
-int Mesh::makeFaceB(const vector<uint32_t>& iVertexIndices)
+int Mesh::makeFace(const vector<uint32_t>& iVertexIndices)
 {
     Mesh::Face face;
     face.mVertexIndices = iVertexIndices;

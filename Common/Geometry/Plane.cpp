@@ -102,8 +102,8 @@ Mesh Plane::makeMesh(const Vector2& iSizeInMeter) const
     vector<Mesh::VertexData>& vertices = mesh.getVerticesRef();
     vertices = { vd0, vd1, vd2, vd3 };
     
-    mesh.makeFaceB({ 0, 1, 2 });
-    mesh.makeFaceB({ 2, 3, 0 });
+    mesh.makeFace({ 0, 1, 2 });
+    mesh.makeFace({ 2, 3, 0 });
 
     return mesh;
 }

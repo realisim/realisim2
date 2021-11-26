@@ -298,12 +298,12 @@ Mesh RectangularPrism::makeMesh() const
     vertices[7].mVertex = Vector3(bl.x(), tr.y(), tr.z());
 
     // 6 faces with 4 vertex each... so 24 entries
-    mesh.makeFaceB({ 0, 1, 2, 3 }); //0, 1, 2, 3
-    mesh.makeFaceB({ 4, 5, 6 ,7 }); //4, 5, 6, 7
-    mesh.makeFaceB({ 5, 1, 2, 6 }); //8, 9, 10, 11  
-    mesh.makeFaceB({ 0, 4, 7, 3 }); //12, 13, 14, 15
-    mesh.makeFaceB({ 6, 2, 3, 7 }); //16, 17, 18, 19  
-    mesh.makeFaceB({ 0, 1, 5, 4 }); //20 21 22 23
+    mesh.makeFace({ 0, 3, 2, 1 }); //0, 1, 2, 3
+    mesh.makeFace({ 4, 5, 6 ,7 }); //4, 5, 6, 7
+    mesh.makeFace({ 5, 1, 2, 6 }); //8, 9, 10, 11  
+    mesh.makeFace({ 0, 4, 7, 3 }); //12, 13, 14, 15
+    mesh.makeFace({ 6, 2, 3, 7 }); //16, 17, 18, 19  
+    mesh.makeFace({ 0, 1, 5, 4 }); //20 21 22 23
 
     mesh.triangulate();
     mesh.generateFlatNormals();

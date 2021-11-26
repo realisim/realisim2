@@ -4,7 +4,7 @@
 #include "Core/Timer.h"
 #include "Core/Unused.h"
 #include "Geometry/Intersections.h"
-#include "IntersectionResult.h"
+#include "DataStructure/IntersectionResult.h"
 #include "Math/Vector.h"
 #include "Math/VectorI.h"
 #include "RayTracer.h"

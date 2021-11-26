@@ -114,14 +114,7 @@ void ObjLoader::createAsset(const tinyobj::attrib_t &iAttrib,
             }
 
             // add face to mesh
-            pMesh->makeFaceB(face.mVertexIndices);
-            //if (generateNormal){
-            //    // generate a normal, and duplicate vertex to have a nice flat shade.
-            //    pMesh->makeFace(face.mVertexIndices, false);
-            //}
-            //else {
-            //    faces.push_back(face);
-            //}
+            pMesh->makeFace(face.mVertexIndices);
 
             // check material
             if(materialIndex == -1 )
@@ -131,6 +124,9 @@ void ObjLoader::createAsset(const tinyobj::attrib_t &iAttrib,
             
             index_offset += fnum;
         }
+
+        if (generateNormal == true)
+            pMesh->generateFlatNormals();
 
         // add name and mesh to asset
         //

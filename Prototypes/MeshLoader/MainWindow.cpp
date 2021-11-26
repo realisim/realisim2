@@ -41,7 +41,6 @@ Viewer3d::~Viewer3d()
     mModelVaoPtrs.clear();
 }
 
-#include "Geometry/RectangularPrism.h"
 //-----------------------------------------------------------------------------
 void Viewer3d::initializeGL()
 {
@@ -59,31 +58,25 @@ void Viewer3d::initializeGL()
     FileInfo appPath(Path::getApplicationFilePath());
     string assetsPath = Path::join(appPath.getAbsolutePath(), "../assets");
 
-    //ObjLoader loader;
-    //ObjLoader::Asset asset = loader.load(assetsPath + "/monkey_smooth.obj");
-    ////ObjLoader::Asset asset = loader.load("D:/Models/standford models/monkey.obj");
-    ////ObjLoader::Asset asset = loader.load("D:/Models/standford models/horse.obj");
-    ////ObjLoader::Asset asset = loader.load("D:/Models/standford models/xyzrgb_dragon_smooth.obj");
-    ////ObjLoader::Asset asset = loader.load("D:/Models/standford models/Sponza-master/sponza.obj");
-    ////ObjLoader::Asset asset = loader.load("D:/Models/Nefertiti.obj");
-    ////ObjLoader::Asset asset = loader.load("D:/Models/Dragon_1_rotated.obj");
-    ////ObjLoader::Asset asset = loader.load("D:/Models/bressant_statue.obj");
-    //
-    //for (const auto assetMesh : asset.mMeshes)
-    //{
-    //    std::vector<Geometry::Mesh> cutMeshes;
-    //    Geometry::Mesh::cutIntoSmallerMeshes(*assetMesh, 65535, &cutMeshes);
-
-    //    for (const auto& m : cutMeshes) {
-    //        mModelVaoPtrs.push_back(makeVao(m));
-    //    }
-    //}
+    ObjLoader loader;
+    ObjLoader::Asset asset = loader.load(assetsPath + "/monkey_smooth.obj");
+    //ObjLoader::Asset asset = loader.load("D:/Models/standford models/monkey.obj");
+    //ObjLoader::Asset asset = loader.load("D:/Models/standford models/horse.obj");
+    //ObjLoader::Asset asset = loader.load("D:/Models/standford models/xyzrgb_dragon_smooth.obj");
+    //ObjLoader::Asset asset = loader.load("D:/Models/standford models/Sponza-master/sponza.obj");
+    //ObjLoader::Asset asset = loader.load("D:/Models/Nefertiti.obj");
+    //ObjLoader::Asset asset = loader.load("D:/Models/Dragon_1_rotated.obj");
+    //ObjLoader::Asset asset = loader.load("D:/Models/bressant_statue.obj");
     
+    for (const auto assetMesh : asset.mMeshes)
+    {
+        std::vector<Geometry::Mesh> cutMeshes;
+        Geometry::Mesh::cutIntoSmallerMeshes(*assetMesh, 65535, &cutMeshes);
 
-    Geometry::RectangularPrism prism;
-    prism.set(Vector3(-0.5), 1.0, 1.0, 1.0);
-    mModelVaoPtrs.push_back(makeVao(prism.makeMesh()));
-    
+        for (const auto& m : cutMeshes) {
+            mModelVaoPtrs.push_back(makeVao(m));
+        }
+    }
 
 	mpMainWindow->updateUi();
 }
