@@ -1,7 +1,9 @@
 
+#include "OpenGlHeaders.h"
+
 #include "Device.h"
 
-#include "OpenGlHeaders.h"
+
 
 using namespace Realisim;
 using namespace Rendering;

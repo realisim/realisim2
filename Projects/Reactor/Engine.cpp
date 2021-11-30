@@ -44,6 +44,9 @@ bool Engine::init()
 //---------------------------------------------------------------------------------------------------------------------
 void Engine::update()
 {
+    Broker& b = getBrokerRef();
+    b.setStartOfFrameTime();
+
     for (auto s : mSystems)
         s->preUpdate();
 

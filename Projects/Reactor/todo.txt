@@ -1,6 +1,9 @@
-ToDo list
+--- ToDo list
 
-ObjLoader/Mesh
+
+--- DONE list
+
+ObjLoader/Mesh -
 La generation des normals sur un mesh se fait au moment ou on charge la face...
 Ca serait mieux de generer les normals apres que le model ait ete charge completement
 Ainsi un method, generateFlatNormals() / generateSmoothNormals

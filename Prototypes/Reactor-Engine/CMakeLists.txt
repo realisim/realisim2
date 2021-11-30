@@ -31,8 +31,10 @@ target_link_libraries( ${PROJECT_NAME}
     CoreLib
     InterfaceLib
     MathLib
+    ThreeDLib
     Qt5::Widgets Qt5::OpenGL )
 
 # install directive
 qt5_install( ${CMAKE_SOURCE_DIR}/bin/${PROJECT_NAME} )
 opengl_install( ${CMAKE_SOURCE_DIR}/bin/${PROJECT_NAME} )
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/Projects/Reactor/Assets DESTINATION ${CMAKE_SOURCE_DIR}/bin/${PROJECT_NAME} )

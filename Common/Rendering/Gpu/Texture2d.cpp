@@ -1,6 +1,6 @@
 
-#include "Math/CommonMath.h"
 #include "Rendering/Gpu/OpenGlHeaders.h"
+#include "Math/CommonMath.h"
 #include "Rendering/Gpu/Texture2d.h"
 #include "Rendering/Gpu/Utilities.h"
 

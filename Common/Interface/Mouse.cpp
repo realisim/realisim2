@@ -40,9 +40,25 @@ Math::Vector2i Mouse::getAndClearDelta()
 }
 
 //-------------------------------------------------------------------------
+// Return the mouse movement delta and then clears the delta.
+//
+Math::Vector2i Mouse::getAndClearWheelDelta()
+{
+    Math::Vector2i r = mWheelDeltaInDegrees;
+    mWheelDeltaInDegrees = Math::Vector2i(0);
+    return r;
+}
+
+//-------------------------------------------------------------------------
 Math::Vector2i Mouse::getDelta() const
 {
     return mDelta; 
+}
+
+//-------------------------------------------------------------------------
+Math::Vector2i Mouse::getWheelDelta() const
+{
+    return mWheelDeltaInDegrees;
 }
 
 //-------------------------------------------------------------------------
@@ -138,6 +154,11 @@ void Mouse::setPosition(const Math::Vector2i& iPos)
 void Mouse::setPosition(int iX, int iY)
 {
     setPosition(Math::Vector2i(iX, iY));
+}
+
+//-------------------------------------------------------------------------
+void Mouse::setWheelDeltaInDegrees(int iX, int iY) {
+    mWheelDeltaInDegrees.set(iX, iY);
 }
 
 //-------------------------------------------------------------------------

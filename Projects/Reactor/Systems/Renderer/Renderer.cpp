@@ -1,19 +1,34 @@
 #include "Rendering/Gpu/OpenGlHeaders.h"
 
+
 #include "Broker.h"
+#include <cassert>
+#include "Core/FileInfo.h"
+#include "Core/Path.h"
 #include "Hub.h"
 #include "Renderer.h"
 #include "Rendering/Camera.h"
 #include "Rendering/Viewport.h"
 
+//-- temporary
+#include "DataStructures/Scene/ModelNode.h"
+#include "DataStructures/Scene/SceneNodeEnum.h"
+#include "Geometry/RectangularPrism.h"
+#include "Rendering/Gpu/VertexArrayObjectMaker.h"
+#include "Systems/Renderer/ModelRenderable.h"
 
+using namespace std;
 using namespace Realisim;
+    using namespace Core;
     using namespace Math;
     using namespace Reactor;
     using namespace Rendering;
+    using namespace ThreeD;
 
 //---------------------------------------------------------------------------------------------------------------------
-Renderer::Renderer(Broker* ipBroker, Hub* ipHub) : ISystem(ipBroker, ipHub)
+Renderer::Renderer(Broker* ipBroker, Hub* ipHub) : ISystem(ipBroker, ipHub),
+    mpScene(nullptr),
+    mpVbo(nullptr)
 {}
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -23,72 +38,53 @@ Renderer::~Renderer()
 }
 
 //---------------------------------------------------------------------------------------------------------------------
+void Renderer::addRenderable(ThreeD::SceneNode* ipNode, IRenderable* ipRenderable)
+{
+    const uint32_t id = ipNode->getId();
+    const auto itSceneNode = mIdToSceneNode.find(id);
+    assert(itSceneNode == mIdToSceneNode.end() && "Inserting the same id more than once is problematic as we loose track of some renderables...");
+
+    mIdToSceneNode[id] = ipNode;
+    mIdToRenderable[id] = ipRenderable;
+}
+
+//---------------------------------------------------------------------------------------------------------------------
 void Renderer::clear()
 {
-    
+    if (mpVbo != nullptr)
+    {
+        delete mpVbo;
+        mpVbo = nullptr;
+    }
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 void Renderer::draw()
 {
     const Camera& cam = getBroker().getMainCamera();
-    glMatrixMode(GL_PROJECTION);
-    glLoadMatrixd(cam.getProjectionMatrix().getDataPointer());
-    glMatrixMode(GL_MODELVIEW);
-    glLoadMatrixd(cam.getViewMatrix().getDataPointer());
 
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glDisable(GL_LIGHTING);
+    Matrix4 modelMatrix(Vector3(0.0, 0.0, 0.0));
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    glUseProgram(mModelShader.getProgramId());
 
-    const double s = 1.0 / 2;
+    mModelShader.setUniform("uProjectionMatrix", cam.getProjectionMatrix());
+    mModelShader.setUniform("uViewMatrix", cam.getViewMatrix());
+    mModelShader.setUniform("uApplyLighting", true);
+    mModelShader.setUniform("uLightPosition", Math::Vector3(-1, 0.7, 0.3));
+    
+    ModelRenderable* pModelRenderable = nullptr;
+    for (auto itRenderable : mIdToRenderable) {
+        pModelRenderable = (ModelRenderable *)itRenderable.second;
 
-    glBegin(GL_QUADS);
+        ModelNode* pNode = pModelRenderable->getModelNode();
+        mModelShader.setUniform("uModelMatrix", pNode->getWorldTransform());
 
-    //+z
-    glColor3ub(255, 0, 0);
-    glVertex3d(-s, -s, s);
-    glVertex3d(s, -s, s);
-    glVertex3d(s, s, s);
-    glVertex3d(-s, s, s);
+        pModelRenderable->draw();
+    }
 
-    //-z
-    glColor3ub(255, 0, 0);
-    glVertex3d(-s, -s, -s);
-    glVertex3d(-s, s, -s);
-    glVertex3d(s, s, -s);
-    glVertex3d(s, -s, -s);
-
-    //+x
-    glColor3ub(0, 255, 0);
-    glVertex3d(s, -s, -s);
-    glVertex3d(s, s, -s);
-    glVertex3d(s, s, s);
-    glVertex3d(s, -s, s);
-
-    //-x
-    glColor3ub(0, 255, 0);
-    glVertex3d(-s, -s, -s);
-    glVertex3d(-s, -s, s);
-    glVertex3d(-s, s, s);
-    glVertex3d(-s, s, -s);
-
-    //+y
-    glColor3ub(0, 0, 255);
-    glVertex3d(-s, s, -s);
-    glVertex3d(-s, s, s);
-    glVertex3d(s, s, s);
-    glVertex3d(s, s, -s);
-
-    //-y
-    glColor3ub(0, 0, 255);
-    glVertex3d(-s, -s, -s);
-    glVertex3d(s, -s, -s);
-    glVertex3d(s, -s, s);
-    glVertex3d(-s, -s, s);
-
-    glEnd();
+    glUseProgram(0);
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -131,9 +127,88 @@ bool Renderer::initializeGl()
     const int swapInterval = 1; // mConfig.isVSyncEnabled() ? 1 : 0;
     wglSwapIntervalEXT(swapInterval);
 
+    //
+    loadShaders();
+
+    // init vbo
+    Geometry::RectangularPrism prism;
+    prism.set(Vector3(-5), Vector3(5));
+    mpVbo = makeVao(prism.makeMesh());
+
+
+    // init scene
+    // init scene
+    if (mpScene)
+    {
+        initializeSceneNode(&(mpScene->getRootRef()));
+    }
+
     mContext.doneCurrent();
 
     return r;
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+void Renderer::initializeSceneNode(SceneNode* ipNode)
+{
+    const Broker& b = getBroker();
+
+    ipNode->update(b.getTimeInSecondsOfStartOfFrame());
+    for (int i = 0; i < ipNode->getNumberOfChilds(); ++i)
+    {
+        initializeSceneNode(ipNode->getChild(i));
+    }
+    makeAndAddRenderable(ipNode);
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+void Renderer::handleKeyboard()
+{
+    const Broker& b = getBroker();
+    const Interface::Keyboard& k = b.getKeyboard();
+
+    if (k.isKeyPressed(Key::Key_Control) && k.isKeyPressed(Key::Key_R)) {
+        loadShaders();
+    }
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+void Renderer::loadShaders()
+{
+    printf("Loading Shaders...\n");
+
+    mModelShader.clear();
+
+    //--- shaders
+    FileInfo appPath(Path::getApplicationFilePath());
+    string assetsPath = Path::join(appPath.getAbsolutePath(), "../Assets");
+
+    mModelShader.setName("modelShader");
+    mModelShader.addSourceFromFile(stVertex, Path::join(assetsPath, "Shaders/model.vert"));
+    mModelShader.addSourceFromFile(stFragment, Path::join(assetsPath, "Shaders/modelWithMaterial.frag"));
+    mModelShader.compile();
+    mModelShader.link();
+
+    if (mModelShader.hasErrors())
+    {
+        cout << mModelShader.getAndClearLastErrors();
+    }
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+void Renderer::makeAndAddRenderable(SceneNode* ipNode)
+{
+    switch ((int)ipNode->getNodeType())
+    {
+    case (int)SceneNodeEnum::sneModelNode: {
+        ModelNode* n = (ModelNode*)ipNode;
+        ModelRenderable* r = new ModelRenderable(n);
+        r->initializeGpuRessources();
+
+        addRenderable(ipNode, r);
+    } break;
+    default: break;
+    }
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -145,9 +220,9 @@ void Renderer::update(){
     mContext.makeCurrent();
     
     // draw
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     draw();
 
+    handleKeyboard();
     mContext.doneCurrent();
 }
 
@@ -169,8 +244,12 @@ void Renderer::resizeGl(int iWidth, int iHeight)
 
 
 //---------------------------------------------------------------------------------------------------------------------
-void Renderer::setScene()
-{}
+void Renderer::setScene(Scene* ipScene)
+{
+    // flush all previous renderables
+
+    mpScene = ipScene;
+}
 
 //---------------------------------------------------------------------------------------------------------------------
 void Renderer::setNativeWindowsGlContext(HDC iHDC, HGLRC iHGLRC)

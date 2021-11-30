@@ -45,7 +45,8 @@ namespace Realisim
         virtual void mousePressEvent(QMouseEvent *e) override;
         virtual void mouseReleaseEvent(QMouseEvent *e) override;
         virtual void resizeEvent(QResizeEvent *e) override;
-        
+        virtual void wheelEvent(QWheelEvent* e) override;
+
         QOpenGLContext *mpContext;
         QOpenGLContext *mpSharedGlContext;
         Reactor::Engine &mEngine; //

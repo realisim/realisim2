@@ -1,9 +1,10 @@
 
+#include "Rendering/Gpu/OpenGlHeaders.h"
 
 #include <cassert>
 #include "Half/half.hpp"
 #include "Rendering/Gpu/DataType.h"
-#include "Rendering/Gpu/OpenGlHeaders.h"
+
 //#include "Core/ImageSupport/DdsImage.h"
 
 using namespace Realisim;

@@ -13,6 +13,10 @@
 #include "Reactor/Engine.h"
 #include <sstream>
 
+//-- temp for scene creation
+#include "Reactor/Systems/Renderer/Renderer.h"
+#include "DataStructures/Scene/Scene.h"
+
 using namespace Realisim;
 using namespace std;
 
@@ -59,6 +63,14 @@ mTimerId(0)
 
     // create menus
     createMenus();
+
+
+    Reactor::Broker& b = mEngine.getBrokerRef();
+    b.makeBasicScene();
+    
+    Reactor::Hub& h = mEngine.getHubRef();
+    Reactor::Renderer& renderer = h.getRendererRef();
+    renderer.setScene(&b.getSceneRef());
 }
 
 //-----------------------------------------------------------------------------

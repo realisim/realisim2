@@ -11,12 +11,12 @@ namespace ThreeD
 
 class SceneNode
 {
-    // WARNING:
-    //  Do not change the order of this enum as it is serialized.
-    //
-    enum class NodeType {ntSceneNode = 0, ntUserDefined=10000};
-
     public:
+        // WARNING:
+        //  Do not change the order of this enum as it is serialized.
+        //
+        enum class NodeType { ntSceneNode = 0, ntUserDefined = 10000 };
+
         SceneNode();
         explicit SceneNode(int iNt); // enables userdefine nodes
         SceneNode(const SceneNode&) = delete;
@@ -36,7 +36,6 @@ class SceneNode
         void getNodesOfType(NodeType, std::vector< SceneNode*>& listOfNodes);
         int getNumberOfChilds() const;
         SceneNode* getParent();
-        void initialize();
         SceneNode* removeChild(int iIndex);
         SceneNode* removeNode(uint32_t iId);
         void setName(const std::string& iName);
@@ -44,9 +43,6 @@ class SceneNode
         virtual void update(double iTimeSinceStartupInSeconds);
 
     protected:
-        virtual void initializeAfterChilds() {;}
-        virtual void initializeBeforeChilds() {;}
-
         //--- data
         static uint32_t mIdCounter;
         uint32_t mId;

@@ -10,7 +10,9 @@ using namespace Realisim;
     using namespace Reactor;
 
 //---------------------------------------------------------------------------------------------------------------------
-CameraController::CameraController(Broker* ipBroker, Hub* ipHub) : ISystem(ipBroker, ipHub) {
+CameraController::CameraController(Broker* ipBroker, Hub* ipHub) : ISystem(ipBroker, ipHub),
+    mCameraSpeedInMPerSec(2.0)
+{
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -21,11 +23,10 @@ CameraController::~CameraController(){
 void CameraController::handleKeyboard()
 {
     Broker& b = getBrokerRef();
-    Keyboard& k = b.getKeyboard();
+    Keyboard& k = b.getKeyboardRef();
     Rendering::Camera& cam = b.getMainCameraRef();
 
     const double kDeltaTime = 1 / 60.0f;
-    const double kSpeedInMPerSec = 2.0;
     Math::Vector3 displacement(0.0, 0.0, 0.0);
 
     if (k.isKeyPressed(Realisim::Key_W))
@@ -41,7 +42,7 @@ void CameraController::handleKeyboard()
     if (k.isKeyPressed(Realisim::Key_E))
         displacement -= cam.getUp();
 
-    displacement *= kSpeedInMPerSec * kDeltaTime;
+    displacement *= mCameraSpeedInMPerSec * kDeltaTime;
     cam.translate(displacement);
 }
 
@@ -64,6 +65,13 @@ void CameraController::handleMouse()
         cam.rotate(-d.x(), cam.getUp(), cam.getPosition());
         cam.rotate(-d.y(), cam.getLateralVector(), cam.getPosition());
         cam.set(cam.getPosition(), cam.getFocal(), Math::Vector3(0, 1, 0));
+    }
+
+    Math::Vector2i wheelDelta = m.getAndClearWheelDelta();
+    if (wheelDelta.y() != 0)
+    {
+        const double inc = wheelDelta.y() > 0.0 ? 0.1 : -0.1;
+        mCameraSpeedInMPerSec += mCameraSpeedInMPerSec*inc;
     }
 }
 

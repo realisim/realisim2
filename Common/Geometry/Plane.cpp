@@ -105,6 +105,8 @@ Mesh Plane::makeMesh(const Vector2& iSizeInMeter) const
     mesh.makeFace({ 0, 1, 2 });
     mesh.makeFace({ 2, 3, 0 });
 
+    mesh.generateFlatNormals();
+
     return mesh;
 }
 

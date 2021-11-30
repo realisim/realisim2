@@ -1,8 +1,9 @@
 
+#include "Rendering/Gpu/OpenGlHeaders.h"
 #include <cassert>
 #include "Math/CommonMath.h"
 #include "Rendering/Gpu/FrameBufferObject.h"
-#include "Rendering/Gpu/OpenGlHeaders.h"
+
 
 using namespace Realisim;
     using namespace Math;

@@ -1,4 +1,6 @@
 
+#include "Rendering/Gpu/OpenGlHeaders.h"
+
 #include <fstream>
 #include <algorithm>
 #include <regex>
@@ -918,6 +920,235 @@ void Shader::setUniformBlockBinding(const std::string& iUniformName, unsigned in
         setUniformBlockBinding(l, uboIndex);
     }
 }
+
+//-----------------------------------------------------------------------------------------------------------------
+//--- Actual OpenGl calls
+//-----------------------------------------------------------------------------
+int Shader::getProgramId() const
+{
+    return mProgramId;
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniform(int l, bool iV)
+{
+    glProgramUniform1i(getProgramId(), l, (int)iV);
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniform(int l, int iV)
+{
+    glProgramUniform1i(getProgramId(), l, iV);
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniform(int l, float iV)
+{
+    glProgramUniform1f(getProgramId(), l, iV);
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniform(int l, double iV)
+{
+    glProgramUniform1d(getProgramId(), l, iV);
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniform(int l, const Core::ColorRgbUint8& iV)
+{
+    static const float oneOver255 = 1.f / 255.0f;
+
+    glProgramUniform3f(getProgramId(), l, oneOver255 * iV.getRed(), oneOver255 * iV.getGreen(), oneOver255 * iV.getBlue());
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniform(int l, const Core::ColorRgbaUint8& iV)
+{
+    static const float oneOver255 = 1.0f / 255.0f;
+
+    glProgramUniform4f(getProgramId(), l, oneOver255 * iV.getRed(), oneOver255 * iV.getGreen(),
+        oneOver255 * iV.getBlue(), oneOver255 * iV.getAlpha());
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniform(int l, const Core::ColorRgbF32& iV)
+{
+    glProgramUniform3f(getProgramId(), l, iV.getRed(), iV.getGreen(), iV.getBlue());
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniform(int l, const Core::ColorRgbaF32& iV)
+{
+    glProgramUniform4f(getProgramId(), l, iV.getRed(), iV.getGreen(), iV.getBlue(), iV.getAlpha());
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniform(int l, const Math::Vector2& iV)
+{
+    glProgramUniform2d(getProgramId(), l, iV.x(), iV.y());
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniform(int l, const Math::Vector2i& iV)
+{
+    glProgramUniform2i(getProgramId(), l, iV.x(), iV.y());
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniform(int l, const Math::Vector3& iV)
+{
+    glProgramUniform3d(getProgramId(), l, iV.x(), iV.y(), iV.z());
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniform(int l, const Math::Vector3i& iV)
+{
+    glProgramUniform3i(getProgramId(), l, iV.x(), iV.y(), iV.z());
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniform(int l, const Math::Vector4& iV)
+{
+    glProgramUniform4d(getProgramId(), l, iV.x(), iV.y(), iV.z(), iV.w());
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniform(int l, const Math::Matrix4& iV)
+{
+    glProgramUniformMatrix4dv(getProgramId(), l, 1, false, iV.getDataPointer()); // no transposision
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniformAsFloat(int l, const double& iV)
+{
+    glProgramUniform1f(getProgramId(), l, (float)iV);
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniformAsFloat(int l, const Math::Vector2& iV)
+{
+    glProgramUniform2f(getProgramId(), l, (float)iV.x(), (float)iV.y());
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniformAsFloat(int l, const Math::Vector3& iV)
+{
+    glProgramUniform3f(getProgramId(), l, (float)iV.x(), (float)iV.y(), (float)iV.z());
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniformAsFloat(int l, const Math::Vector4& iV)
+{
+    glProgramUniform4f(getProgramId(), l, (float)iV.x(), (float)iV.y(), (float)iV.z(), (float)iV.w());
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniformAsFloat(int l, const Math::Matrix4& iV)
+{
+
+    // Here, we fill the float matrix in column major format needed by 
+    // openGL. Since Matrix4 presents a row major interface, the
+    // indices [i][j] are swapped to [j][i].
+    //
+
+    // we cast values to float
+    float f[16] = { 0.f };
+    for (int i = 0; i < 4; ++i)
+    {
+        for (int j = 0; j < 4; ++j)
+        {
+            f[i * 4 + j] = (float)iV(j, i);
+        }
+    }
+
+    glProgramUniformMatrix4fv(getProgramId(), l, 1, false, f);  // no transposision
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniformAsFloat(int l, const Math::Vector2* iV, const int& n)
+{
+    float* temp = new float[2 * n];
+    for (int i = 0; i < n; ++i)
+    {
+        temp[2 * i + 0] = (float)iV[i].x();
+        temp[2 * i + 1] = (float)iV[i].y();
+    }
+
+    glProgramUniform2fv(getProgramId(), l, n, (const float*)temp);
+
+    delete[] temp;
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniformAsFloat(int l, const Math::Vector3* iV, const int& n)
+{
+    float* temp = new float[3 * n];
+    for (int i = 0; i < n; ++i)
+    {
+        temp[3 * i + 0] = (float)iV[i].x();
+        temp[3 * i + 1] = (float)iV[i].y();
+        temp[3 * i + 2] = (float)iV[i].z();
+    }
+
+    glProgramUniform3fv(getProgramId(), l, n, (const float*)temp);
+
+    delete[] temp;
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniformAsFloat(int l, const Math::Vector4* iV, const int& n)
+{
+    float* temp = new float[4 * n];
+    for (int i = 0; i < n; ++i)
+    {
+        temp[4 * i + 0] = (float)iV[i].x();
+        temp[4 * i + 1] = (float)iV[i].y();
+        temp[4 * i + 2] = (float)iV[i].z();
+        temp[4 * i + 3] = (float)iV[i].w();
+    }
+
+    glProgramUniform4fv(getProgramId(), l, n, (const float*)temp);
+
+    delete[] temp;
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniformArray(int l, int iCount, const int* ipV)
+{
+    glProgramUniform1iv(getProgramId(), l, iCount, (GLint*)ipV);
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniformArray(int l, int iCount, const float* ipV)
+{
+    glProgramUniform1fv(getProgramId(), l, iCount, (GLfloat*)ipV);
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniformArray(int l, int iCount, const double* ipV)
+{
+    glProgramUniform1dv(getProgramId(), l, iCount, ipV);
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniformArrayAsFloat(int l, int iCount, const double* ipV)
+{
+
+    // do a copy as float
+    std::unique_ptr<float[]>    temp(new float[iCount]);
+    for (int i = 0; i < iCount; ++i)
+    {
+        temp[i] = (float)ipV[i];
+    }
+    glProgramUniform1fv(getProgramId(), l, iCount, temp.get());
+}
+
+//-----------------------------------------------------------------------------
+void Shader::setUniformBlockBinding(int l, unsigned int uboIndex)
+{
+    glUniformBlockBinding(getProgramId(), l, uboIndex);
+}
+
 
 //-----------------------------------------------------------------------------
 void    Shader::use()

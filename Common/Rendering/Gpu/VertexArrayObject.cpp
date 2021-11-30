@@ -1,6 +1,6 @@
 
-#include "Rendering/Gpu/DataType.h"
 #include "Rendering/Gpu/OpenGlHeaders.h"
+#include "Rendering/Gpu/DataType.h"
 #include "Rendering/Gpu/VertexArrayObject.h"
 
 using namespace Realisim;

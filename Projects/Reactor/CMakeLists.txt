@@ -14,12 +14,16 @@ INCLUDE( "../../CMakeModules/OpenGL.cmake" )
 
 set( SOURCE_FILES ${SOURCE_FILES} CMakeLists.txt )
 add_component( "./" "Reactor")
+add_component( "./Assets/Shaders" "Reactor/Assets/Shaders")
 add_component( "./Systems" "Reactor/Systems")
 add_component( "./Systems/Renderer" "Reactor/Systems/Renderer")
 add_component( "./DataStructures" "Reactor/DataStructures")
+add_component( "./DataStructures/Scene" "Reactor/DataStructures/Scene")
 
 # create library target
 add_library( ${PROJECT_NAME} ${SOURCE_FILES} ${INCLUDE_FILES} )
 target_link_libraries( ${PROJECT_NAME}
     RenderingLib
     )
+
+# install directives

@@ -22,6 +22,7 @@ namespace Reactor
         void handleMouse();
         void handleGamepad();
 
+        double mCameraSpeedInMPerSec;
     };
 }
 }

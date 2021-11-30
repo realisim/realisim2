@@ -101,7 +101,7 @@ HDC GlWindow::getOpenGlNativeDC() const
 //------------------------------------------------------------------------------
 void GlWindow::keyPressEvent(QKeyEvent *e)
 {
-    Interface::Keyboard& k = mEngine.getBrokerRef().getKeyboard();
+    Interface::Keyboard& k = mEngine.getBrokerRef().getKeyboardRef();
     k.setKeyPressed(fromQtKey(e->key()));
     
     e->ignore();
@@ -117,7 +117,7 @@ void GlWindow::keyReleaseEvent(QKeyEvent *e)
     default:  break;
     }
 
-    Interface::Keyboard& k = mEngine.getBrokerRef().getKeyboard();
+    Interface::Keyboard& k = mEngine.getBrokerRef().getKeyboardRef();
     k.setKeyReleased(fromQtKey(e->key()));
 
     e->ignore();
@@ -182,6 +182,18 @@ void GlWindow::resizeEvent(QResizeEvent *e)
     const Math::Vector2i s(w, h);
     //Rendering::FrameBufferObject::setDefaultFrameBufferId(getQOpenGlContext()->defaultFramebufferObject());
     //Rendering::FrameBufferObject::setDefaultFrameBufferViewport(o, s);
+
+    e->ignore();
+}
+
+//------------------------------------------------------------------------------
+void GlWindow::wheelEvent(QWheelEvent* e)
+{
+    using namespace Interface;
+    Mouse& m = mEngine.getBrokerRef().getMouse();
+
+    QPoint deltaInDegrees = e->angleDelta() / 8;
+    m.setWheelDeltaInDegrees(deltaInDegrees.x(), deltaInDegrees.y());
 
     e->ignore();
 }

@@ -194,26 +194,6 @@ SceneNode* SceneNode::getParent()
 }
 
 //---------------------------------------------------------------------------------------------------------------------
-void SceneNode::initialize()
-{
-    // call virtual method before all childs initialization
-    // Typically to initialize position or anything childs are dependant on.
-    //
-    initializeBeforeChilds();
-
-    const int numChilds = getNumberOfChilds();
-    for (int i = 0; i < numChilds; ++i)
-    {
-        getChild(i)->initialize();
-    }
-
-    // call virtual method after all childs initialization
-    // typically to initialize bouding boxes or anything parent requires from their childs.
-    // 
-    initializeAfterChilds();
-}
-
-//---------------------------------------------------------------------------------------------------------------------
 void SceneNode::getNodesOfType(NodeType type, std::vector< SceneNode*>& listOfNodes)
 {
     if (getNodeType() == type)
