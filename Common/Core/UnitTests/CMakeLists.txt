@@ -14,10 +14,6 @@ INCLUDE( "../../../CMakeModules/Tga.cmake" )
 
 add_component("./" "TestFiles")
 add_component("./${PLATFORM_SPECIFIC_FOLDER}" "TestFiles")
-add_component("../" "Core")
-add_component("../${PLATFORM_SPECIFIC_FOLDER}" "Core")
-add_component("../ImageSupport" "Core/ImageSupport")
-add_component("../../Math" "Math")
 
 #------------------------
 # Add and link executable
@@ -26,7 +22,9 @@ add_executable( ${PROJECT_NAME} ${SOURCE_FILES} ${INCLUDE_FILES} )
 
 # Link test executable against gtest & gtest_main
 target_link_libraries(${PROJECT_NAME} 
-    ${GTEST_BOTH_LIBRARIES} 
+    ${GTEST_BOTH_LIBRARIES}
+    CoreLib
+    MathLib
     )
 add_test( AllCoreUnitTests ${PROJECT_NAME} )
 

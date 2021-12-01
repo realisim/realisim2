@@ -12,6 +12,13 @@
 namespace Realisim
 {
     //---------------------------------------------------------------------------------------------------------------------
+    template<typename T>
+    static T clamp(T iV, T iMin, T iMax)
+    {
+        return std::min(std::max(iV, iMin), iMax);
+    }
+
+    //---------------------------------------------------------------------------------------------------------------------
     static inline const double radiansToDegrees(const double& d)
     {
         return d * (180. / M_PI);

@@ -20,6 +20,21 @@ namespace Core
         return r;
     }
 
+	//-------------------------------------------------------------------------
+	bool replaceAllOccurenceOf(string *ioString, char iCharToReplace, const std::string &iReplacement)
+	{
+		bool r = false;
+		string& s = *ioString;
+		// replace all : by _
+		size_t pos = s.find_first_of(iCharToReplace, 0);
+		while (pos != string::npos) {
+			r = true;
+			s.replace(pos, 1, iReplacement);
+			pos = s.find_first_of(iCharToReplace, pos);
+		}
+		return r;
+	}
+
     //-------------------------------------------------------------------------
     vector<string> toVector(const string& iInput, char iSeparator)
     {
