@@ -3,7 +3,7 @@
 2020-10-15
 
 Core
-    - Faire un logger plus decent...              spdLog?!?
+    - Faire un logger plus decent...                                DONE
     - ajouter un callback dans messageQueue pour                    DONE
         recevoir tous les messages d<un coup au lieu de 1 a la 
         fois... trop de mutex...
@@ -26,6 +26,9 @@ Geometry
         - doit retourner Meshes,Materials,Name...             DONE
         
 
+RENDERING
+    - FrameBufferObject. Enlever FrameBufferAttachement, pas un concept utile et
+        ca rend l'interface confu.
 
 
 LightBeam

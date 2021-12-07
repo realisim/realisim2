@@ -1,4 +1,5 @@
 
+#include "Core/Logger.h"
 #include "MainWindow.h"
 
 
@@ -16,8 +17,9 @@ using namespace std;
 
 //-----------------------------------------------------------------------------
 int main(int argc, char** argv)
-{
-   
+{    
+    LOG_TRACE(Core::Logger::llNormal, "Start of Reactor-EngineProto");
+
     QApplication app(argc, argv);
 
     // configure GL

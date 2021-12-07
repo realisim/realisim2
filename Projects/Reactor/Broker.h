@@ -18,6 +18,7 @@ namespace Reactor{
         Broker&operator=(const Broker&) = delete;
         ~Broker() = default;
         
+        const std::string& getAssetPath() const { return mAssetPath; }
         const Interface::Keyboard& getKeyboard() const { return mKeyboard; }
         Interface::Keyboard& getKeyboardRef() { return mKeyboard; }
         const Rendering::Camera& getMainCamera() const { return mMainCamera; }
@@ -38,6 +39,7 @@ namespace Reactor{
         Rendering::Camera mMainCamera;
         Interface::Mouse mMouse;
         Interface::Keyboard mKeyboard;
+        std::string mAssetPath;
 
         // stats
         Core::Timer mTimeSinceStartup;

@@ -1,6 +1,8 @@
 
 #include "Broker.h"
 
+#include "Core/FileInfo.h"
+#include "Core/Path.h"
 #include "DataStructures/Scene/ModelNode.h"
 
 #include "Geometry/Plane.h"
@@ -14,6 +16,9 @@ using namespace Reactor;
 //---------------------------------------------------------------------------------------------------------------------
 Broker::Broker()
 {
+    Core::FileInfo appPath(Core::Path::getApplicationFilePath());
+    mAssetPath = Core::Path::join(appPath.getAbsolutePath(), "../Assets");
+
     mTimeSinceStartup.start();
 }
 

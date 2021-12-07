@@ -12,6 +12,9 @@ namespace Realisim
     {
         //---------------------------------------------------------------------
         // use FrameBufferAttachement if you need to sample the results somewhere
+        //
+        // VIRER CE TRUC...
+        //
         struct FrameBufferAttachement
         {
             FrameBufferAttachementType  type;
@@ -135,7 +138,9 @@ namespace Realisim
             void pop();
             void resolveMultisample(FrameBufferObject* targetFBO, FrameBufferAttachementType targetAttachement, FrameBufferAttachementType sourceAttachement, bool manualStateManagement = false);
             void resize(unsigned int width, unsigned int height);
+            static void setDefaultFrameBufferId(int iDefaultId);
             static void setDefaultFrameBufferViewport(const Math::Vector2i& iOrigin, const Math::Vector2i& iSize );
+            
 
             // drawBufferIndex is in the same order as you have put the attachment on the FBO, example :
             //      addAttachementToRender(Simthetiq::Rendering::FrameBufferAttachementType::fbaColor4);    <- attachement 4 will be in draw buffer 0, so drawBufferIndex is 0

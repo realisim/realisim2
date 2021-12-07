@@ -6,10 +6,17 @@
 
 #define LOG_TRACE(iLogLevel, iFormat, ...) \
 do { \
-    Logger &_logTraceLogger = Logger::getInstance(); \
+    Realisim::Core::Logger &_logTraceLogger = Realisim::Core::Logger::getInstance(); \
     std::string format = std::string("[%s] ") + iFormat; \
     _logTraceLogger.log(iLogLevel, format.c_str(), __FUNCTION__, ##__VA_ARGS__); \
-} while(0)
+} while(0);
+
+#define LOG_TRACE_ERROR(iLogLevel, iFormat, ...) \
+do { \
+    Realisim::Core::Logger &_logTraceLogger = Realisim::Core::Logger::getInstance(); \
+    std::string format = std::string("-ERROR- [%s] ") + iFormat; \
+    _logTraceLogger.log(iLogLevel, format.c_str(), __FUNCTION__, ##__VA_ARGS__); \
+} while(0);
 
 
 namespace Realisim

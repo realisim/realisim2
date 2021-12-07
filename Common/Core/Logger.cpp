@@ -15,6 +15,10 @@ using namespace Realisim;
     using namespace Core;
 using namespace std;
 
+namespace {
+    const string kTimeFormat("%Y-%m-%d %H:%M:%S.zzz");
+}
+
 // static initialization
 Logger* Logger::mpInstance = nullptr;
 
@@ -91,14 +95,14 @@ void Logger::logInternal(int iLogLevel, const char* iFormat, va_list iArgs)
 
     if (mConfig.mLogToStdOut) {
         if (mConfig.mAddTimestampToLogEntry)
-            printf("%s - ", DateTime::currentDateTime().toString().c_str());
+            printf("%s - ", DateTime::currentDateTime().toString(kTimeFormat).c_str());
         vprintf(format.c_str(), iArgs);
         printf("\n");
     }
 
     if (mConfig.mLogToFile) {
         if (mConfig.mAddTimestampToLogEntry)
-            fprintf(mpLogFile, "%s - ", DateTime::currentDateTime().toString().c_str());
+            fprintf(mpLogFile, "%s - ", DateTime::currentDateTime().toString(kTimeFormat).c_str());
         vfprintf(mpLogFile, format.c_str(), iArgs);
         fprintf(mpLogFile, "\n");
     }

@@ -4,17 +4,19 @@
 #include "Broker.h"
 #include <cassert>
 #include "Core/FileInfo.h"
+#include "Core/Logger.h"
 #include "Core/Path.h"
 #include "Hub.h"
 #include "Renderer.h"
 #include "Rendering/Camera.h"
 #include "Rendering/Viewport.h"
+#include "Systems/Renderer/RenderPasses/OpaquePass.h"
+#include "Systems/Renderer/RenderPasses/ScreenBlitPass.h"
+
 
 //-- temporary
 #include "DataStructures/Scene/ModelNode.h"
 #include "DataStructures/Scene/SceneNodeEnum.h"
-#include "Geometry/RectangularPrism.h"
-#include "Rendering/Gpu/VertexArrayObjectMaker.h"
 #include "Systems/Renderer/ModelRenderable.h"
 
 using namespace std;
@@ -27,9 +29,16 @@ using namespace Realisim;
 
 //---------------------------------------------------------------------------------------------------------------------
 Renderer::Renderer(Broker* ipBroker, Hub* ipHub) : ISystem(ipBroker, ipHub),
-    mpScene(nullptr),
-    mpVbo(nullptr)
-{}
+    mpScene(nullptr)
+{
+    OpaquePass* pOpaquePass = new OpaquePass();
+    pOpaquePass->setName("OpaquePass");
+    addRenderPass(rpnOpaque, pOpaquePass);
+
+    ScreenBlitPass* pScreenBlit = new ScreenBlitPass();
+    pScreenBlit->setName("ScreenBlitPass");
+    addRenderPass(rpnScreenBlit, pScreenBlit);
+}
 
 //---------------------------------------------------------------------------------------------------------------------
 Renderer::~Renderer()
@@ -49,13 +58,40 @@ void Renderer::addRenderable(ThreeD::SceneNode* ipNode, IRenderable* ipRenderabl
 }
 
 //---------------------------------------------------------------------------------------------------------------------
+void Renderer::addRenderPass(int iRenderPassIndex, IRenderPass* ipPass)
+{
+    bool passAlreadyPresent = mRenderPassIdToRenderPassPtr.find(iRenderPassIndex) != mRenderPassIdToRenderPassPtr.end();
+    if (passAlreadyPresent)
+    {
+        LOG_TRACE(Logger::llNormal, "Trying to add render pass [name: %s, id: %d] but id %d is already in use. The pass will be deleted.",
+            ipPass->getName().c_str(), iRenderPassIndex, iRenderPassIndex);
+        delete ipPass;
+    }
+    else
+    {
+        LOG_TRACE(Logger::llNormal, "Adding render pass [name: %s, id: %d]", ipPass->getName().c_str(), iRenderPassIndex);
+        mRenderPassIdToRenderPassPtr[iRenderPassIndex] = ipPass;
+        mRenderPasses.push_back(ipPass);
+    }
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+void Renderer::addRenderPass(RenderPassId iId, IRenderPass* ipPass)
+{
+    addRenderPass((int)iId, ipPass);
+}
+
+//---------------------------------------------------------------------------------------------------------------------
 void Renderer::clear()
 {
-    if (mpVbo != nullptr)
+    // delete all render pass
+    for (auto itRenderPass : mRenderPassIdToRenderPassPtr)
     {
-        delete mpVbo;
-        mpVbo = nullptr;
+        delete itRenderPass.second;
     }
+    mRenderPassIdToRenderPassPtr.clear();
+    mRenderPasses.clear();
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -63,28 +99,12 @@ void Renderer::draw()
 {
     const Camera& cam = getBroker().getMainCamera();
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    Matrix4 modelMatrix(Vector3(0.0, 0.0, 0.0));
-
-    glUseProgram(mModelShader.getProgramId());
-
-    mModelShader.setUniform("uProjectionMatrix", cam.getProjectionMatrix());
-    mModelShader.setUniform("uViewMatrix", cam.getViewMatrix());
-    mModelShader.setUniform("uApplyLighting", true);
-    mModelShader.setUniform("uLightPosition", Math::Vector3(-1, 0.7, 0.3));
-    
-    ModelRenderable* pModelRenderable = nullptr;
-    for (auto itRenderable : mIdToRenderable) {
-        pModelRenderable = (ModelRenderable *)itRenderable.second;
-
-        ModelNode* pNode = pModelRenderable->getModelNode();
-        mModelShader.setUniform("uModelMatrix", pNode->getWorldTransform());
-
-        pModelRenderable->draw();
+    // draw all render pass
+    for (auto pPass : mRenderPasses) {
+        pPass->applyGlState();
+        pPass->render(cam, mIdToRenderable);
+        pPass->revertGlState();
     }
-
-    glUseProgram(0);
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -110,7 +130,7 @@ bool Renderer::initializeGl()
     GLenum err = glewInit();
     if (GLEW_OK != err)
     {
-        printf("Glew initialization failed... Context must be invalid.\n");
+        LOG_TRACE(Core::Logger::llNormal, "Glew initialization failed... Context must be invalid.");
         r = false;
     }
 
@@ -127,16 +147,9 @@ bool Renderer::initializeGl()
     const int swapInterval = 1; // mConfig.isVSyncEnabled() ? 1 : 0;
     wglSwapIntervalEXT(swapInterval);
 
-    //
-    loadShaders();
 
-    // init vbo
-    Geometry::RectangularPrism prism;
-    prism.set(Vector3(-5), Vector3(5));
-    mpVbo = makeVao(prism.makeMesh());
+    initializePasses();
 
-
-    // init scene
     // init scene
     if (mpScene)
     {
@@ -146,6 +159,24 @@ bool Renderer::initializeGl()
     mContext.doneCurrent();
 
     return r;
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+void Renderer::initializePasses() {
+    LOG_TRACE(Logger::llNormal, "Initializing render passes...");
+
+    // init all passes
+    for (auto pPass : mRenderPasses) {
+        pPass->initializeFbo();
+        pPass->loadShader(getBroker().getAssetPath());
+    }
+
+    // share fbos between pass and terminate initialization
+    for (auto pPass : mRenderPasses) {
+        pPass->defineInputOutputs();
+        pPass->sharePasses(mRenderPassIdToRenderPassPtr);
+        pPass->connectInputOutputs();
+    }
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -168,31 +199,20 @@ void Renderer::handleKeyboard()
     const Interface::Keyboard& k = b.getKeyboard();
 
     if (k.isKeyPressed(Key::Key_Control) && k.isKeyPressed(Key::Key_R)) {
-        loadShaders();
+        reloadShaders();
     }
 }
 
 //---------------------------------------------------------------------------------------------------------------------
-void Renderer::loadShaders()
+void Renderer::reloadShaders()
 {
-    printf("Loading Shaders...\n");
+    LOG_TRACE(Logger::llNormal, "Reloading render pass shaders...");
 
-    mModelShader.clear();
-
-    //--- shaders
-    FileInfo appPath(Path::getApplicationFilePath());
-    string assetsPath = Path::join(appPath.getAbsolutePath(), "../Assets");
-
-    mModelShader.setName("modelShader");
-    mModelShader.addSourceFromFile(stVertex, Path::join(assetsPath, "Shaders/model.vert"));
-    mModelShader.addSourceFromFile(stFragment, Path::join(assetsPath, "Shaders/modelWithMaterial.frag"));
-    mModelShader.compile();
-    mModelShader.link();
-
-    if (mModelShader.hasErrors())
-    {
-        cout << mModelShader.getAndClearLastErrors();
+    for (auto pPass : mRenderPasses) {
+        pPass->loadShader(getBroker().getAssetPath());
     }
+
+    LOG_TRACE(Logger::llNormal, "done loading render pass shaders.");
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -238,6 +258,11 @@ void Renderer::resizeGl(int iWidth, int iHeight)
     // reset camera viewport
     cam.setViewport(v);
     glViewport(0, 0, iWidth, iHeight);
+
+    // resize all renderpass
+    for (auto pPass : mRenderPasses) {
+        pPass->resize(iWidth, iHeight);
+    }
 
     mContext.doneCurrent();
 }

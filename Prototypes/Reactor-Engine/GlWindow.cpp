@@ -180,8 +180,8 @@ void GlWindow::resizeEvent(QResizeEvent *e)
 
     const Math::Vector2i o(0, 0);
     const Math::Vector2i s(w, h);
-    //Rendering::FrameBufferObject::setDefaultFrameBufferId(getQOpenGlContext()->defaultFramebufferObject());
-    //Rendering::FrameBufferObject::setDefaultFrameBufferViewport(o, s);
+    Rendering::FrameBufferObject::setDefaultFrameBufferId(getQOpenGlContext()->defaultFramebufferObject());
+    Rendering::FrameBufferObject::setDefaultFrameBufferViewport(o, s);
 
     e->ignore();
 }

@@ -25,7 +25,7 @@ void main(){
     gl_Position =  vec4( uProjectionMatrix * uViewMatrix * uModelMatrix * dvec4(vertexPosition_modelspace, 1) ); 
 
     oVertex = vec3(uModelMatrix * dvec4(vertexPosition_modelspace, 1.0));
-    oNormal = vec3(uModelMatrix * dvec4(vertexNormal_modelspace, 1.0));;
+    oNormal = vec3(uModelMatrix * dvec4(vertexNormal_modelspace, 0.0));
     oTexCoords = vertexTexCoord;
     oColor = vertexColor;
 }

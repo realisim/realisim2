@@ -17,6 +17,7 @@ add_component( "./" "Reactor")
 add_component( "./Assets/Shaders" "Reactor/Assets/Shaders")
 add_component( "./Systems" "Reactor/Systems")
 add_component( "./Systems/Renderer" "Reactor/Systems/Renderer")
+add_component( "./Systems/Renderer/RenderPasses" "Reactor/Systems/Renderer/RenderPasses")
 add_component( "./DataStructures" "Reactor/DataStructures")
 add_component( "./DataStructures/Scene" "Reactor/DataStructures/Scene")
 

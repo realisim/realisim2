@@ -131,6 +131,7 @@ namespace Core
 
         int64_t toMillisecondsSinceEpoch() const;
         std::string toString() const;
+        std::string toString(const std::string& iFormat) const;
         time_t toUtcTime_t() const;
         DateTime toTimeZone( double iTimeZoneInHours ) const;
         DateTime toUtc() const;

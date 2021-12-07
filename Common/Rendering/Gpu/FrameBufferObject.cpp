@@ -227,7 +227,7 @@ Texture2d*  FrameBufferObject::createAttachementTexture(TextureInternalFormat iI
     texture->setWrapSMode(wrapModeS);
     texture->setWrapTMode(wrapModeT);
 
-    texture->setFboTexture((m_nbSamples > 1) ? TextureTarget::tt2dMultisampled : TextureTarget::tt2d,iInternalFormat,m_width,m_height,iFormat,dataType,m_nbSamples);
+    texture->setFboTexture((m_nbSamples > 1) ? TextureTarget::tt2dMultisampled : TextureTarget::tt2d, iInternalFormat, m_width, m_height, iFormat, dataType, m_nbSamples);
 
     return texture;
 }
@@ -475,6 +475,19 @@ int FrameBufferObject::searchAttachement(FrameBufferAttachementType type) const
     return res;
 }
 
+//--------------------------------------------------------------------
+// see method initializeDefaultFrameBufferId for an explanation
+//
+void FrameBufferObject::setDefaultFrameBufferId(int iDefaultId)
+{
+    if (mDefaultDrawBufferId == -1 || mDefaultReadBufferId == -1)
+    {
+        mDefaultDrawBufferId = iDefaultId;
+        mDefaultReadBufferId = iDefaultId;
+    }
+}
+
+//--------------------------------------------------------------------
 void FrameBufferObject::setDefaultFrameBufferViewport(const Math::Vector2i& iOrigin,
     const Math::Vector2i& iSize)
 {

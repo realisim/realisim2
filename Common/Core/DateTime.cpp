@@ -501,6 +501,29 @@ string DateTime::toString() const
 }
 
 //---------------------------------------------------------------------------------------------------------------------
+// iFormat is defined by http://www.cplusplus.com/reference/ctime/strftime/
+//
+// for milliseconds, add zzz to format
+//
+string DateTime::DateTime::toString(const std::string& iFormat) const 
+{
+    char buffer[80];
+    strftime(buffer, 80, iFormat.c_str(), &mLocalTimeInfo);
+    string t(buffer);
+
+    // add milliseconds
+    const size_t pos = t.find("zzz", 0);
+    if (pos != string::npos)
+    {
+        char millis[4];
+        sprintf(millis, "%03d", mMilliseconds);
+        t.replace(pos, 3, millis);
+    }
+
+    return t;
+}
+
+//---------------------------------------------------------------------------------------------------------------------
 time_t DateTime::toUtcTime_t() const
 {
     return mUtcTime;
