@@ -284,12 +284,17 @@ Mesh RectangularPrism::makeMesh() const
     const Vector3 bl(getFarBottomLeft());
     const Vector3 tr(getNearTopRight());
 
-    vertices.resize(8, Mesh::VertexData());
+    vertices.resize(24, Mesh::VertexData());
     //-Z
     vertices[0].mVertex = Vector3(bl.x(), bl.y(), bl.z());
     vertices[1].mVertex = Vector3(tr.x(), bl.y(), bl.z());
     vertices[2].mVertex = Vector3(tr.x(), tr.y(), bl.z());
     vertices[3].mVertex = Vector3(bl.x(), tr.y(), bl.z());
+
+    vertices[0].mLayerIndexToTextureCoordinates[0] = Vector2(0.0, 0.0);
+    vertices[1].mLayerIndexToTextureCoordinates[0] = Vector2(1.0, 0.0);
+    vertices[2].mLayerIndexToTextureCoordinates[0] = Vector2(1.0, 1.0);
+    vertices[3].mLayerIndexToTextureCoordinates[0] = Vector2(0.0, 1.0);
 
     //+Z
     vertices[4].mVertex = Vector3(bl.x(), bl.y(), tr.z());
@@ -297,13 +302,63 @@ Mesh RectangularPrism::makeMesh() const
     vertices[6].mVertex = Vector3(tr.x(), tr.y(), tr.z());
     vertices[7].mVertex = Vector3(bl.x(), tr.y(), tr.z());
 
+    vertices[4].mLayerIndexToTextureCoordinates[0] = Vector2(0.0, 0.0);
+    vertices[5].mLayerIndexToTextureCoordinates[0] = Vector2(1.0, 0.0);
+    vertices[6].mLayerIndexToTextureCoordinates[0] = Vector2(1.0, 1.0);
+    vertices[7].mLayerIndexToTextureCoordinates[0] = Vector2(0.0, 1.0);
+
+    //X
+    vertices[8].mVertex = vertices[5].mVertex;
+    vertices[9].mVertex = vertices[1].mVertex;
+    vertices[10].mVertex = vertices[2].mVertex;
+    vertices[11].mVertex = vertices[6].mVertex;
+
+    vertices[8].mLayerIndexToTextureCoordinates[0] = Vector2(0.0, 0.0);
+    vertices[9].mLayerIndexToTextureCoordinates[0] = Vector2(1.0, 0.0);
+    vertices[10].mLayerIndexToTextureCoordinates[0] = Vector2(1.0, 1.0);
+    vertices[11].mLayerIndexToTextureCoordinates[0] = Vector2(0.0, 1.0);
+
+    //-X
+    vertices[12].mVertex = vertices[0].mVertex;
+    vertices[13].mVertex = vertices[4].mVertex;
+    vertices[14].mVertex = vertices[7].mVertex;
+    vertices[15].mVertex = vertices[3].mVertex;
+
+    vertices[12].mLayerIndexToTextureCoordinates[0] = Vector2(0.0, 0.0);
+    vertices[13].mLayerIndexToTextureCoordinates[0] = Vector2(1.0, 0.0);
+    vertices[14].mLayerIndexToTextureCoordinates[0] = Vector2(1.0, 1.0);
+    vertices[15].mLayerIndexToTextureCoordinates[0] = Vector2(0.0, 1.0);
+
+    //Y
+    vertices[16].mVertex = vertices[6].mVertex;
+    vertices[17].mVertex = vertices[2].mVertex;
+    vertices[18].mVertex = vertices[3].mVertex;
+    vertices[19].mVertex = vertices[7].mVertex;
+
+    vertices[16].mLayerIndexToTextureCoordinates[0] = Vector2(0.0, 0.0);
+    vertices[17].mLayerIndexToTextureCoordinates[0] = Vector2(1.0, 0.0);
+    vertices[18].mLayerIndexToTextureCoordinates[0] = Vector2(1.0, 1.0);
+    vertices[19].mLayerIndexToTextureCoordinates[0] = Vector2(0.0, 1.0);
+
+    //-Y
+    vertices[20].mVertex = vertices[0].mVertex;
+    vertices[21].mVertex = vertices[1].mVertex;
+    vertices[22].mVertex = vertices[5].mVertex;
+    vertices[23].mVertex = vertices[4].mVertex;
+
+    vertices[20].mLayerIndexToTextureCoordinates[0] = Vector2(0.0, 0.0);
+    vertices[21].mLayerIndexToTextureCoordinates[0] = Vector2(1.0, 0.0);
+    vertices[22].mLayerIndexToTextureCoordinates[0] = Vector2(1.0, 1.0);
+    vertices[23].mLayerIndexToTextureCoordinates[0] = Vector2(0.0, 1.0);
+
     // 6 faces with 4 vertex each... so 24 entries
     mesh.makeFace({ 0, 3, 2, 1 }); //0, 1, 2, 3
     mesh.makeFace({ 4, 5, 6 ,7 }); //4, 5, 6, 7
-    mesh.makeFace({ 5, 1, 2, 6 }); //8, 9, 10, 11  
-    mesh.makeFace({ 0, 4, 7, 3 }); //12, 13, 14, 15
-    mesh.makeFace({ 6, 2, 3, 7 }); //16, 17, 18, 19  
-    mesh.makeFace({ 0, 1, 5, 4 }); //20 21 22 23
+
+    mesh.makeFace({ 8, 9, 10, 11 }); //8, 9, 10, 11  
+    mesh.makeFace({ 12, 13, 14, 15 }); //12, 13, 14, 15
+    mesh.makeFace({ 16, 17, 18, 19 }); //16, 17, 18, 19  
+    mesh.makeFace({ 20, 21, 22, 23 }); //20 21 22 23
 
     mesh.triangulate();
     mesh.generateFlatNormals();

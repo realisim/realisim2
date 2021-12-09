@@ -11,7 +11,8 @@ using namespace std;
 
 //---------------------------------------------------------------------------------------------------------------------
 ModelRenderable::ModelRenderable(ModelNode* ipNode) : IRenderable(ipNode),
-    mpNode(ipNode)
+    mpNode(ipNode),
+    mpTexture(nullptr)
 {
     assert(mpNode != nullptr);
 }
@@ -20,6 +21,14 @@ ModelRenderable::ModelRenderable(ModelNode* ipNode) : IRenderable(ipNode),
 ModelRenderable::~ModelRenderable()
 {
     releaseGpuRessources();
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+void ModelRenderable::draw()
+{
+    for (auto pVao : mVaoPtrs) {
+        pVao->draw();
+    }
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -36,12 +45,9 @@ void ModelRenderable::initializeGpuRessources()
 }
 
 //---------------------------------------------------------------------------------------------------------------------
-void ModelRenderable::draw()
+const Texture2d* ModelRenderable::getTexture() const
 {
-    for (auto pVao : mVaoPtrs)
-    {
-        pVao->draw();
-    }
+    return mpTexture;
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -52,4 +58,10 @@ void ModelRenderable::releaseGpuRessources()
         pVao->clear();
     }
     mVaoPtrs.clear();
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+void ModelRenderable::setTexture(const Texture2d* ipTexture)
+{
+    mpTexture = ipTexture;
 }

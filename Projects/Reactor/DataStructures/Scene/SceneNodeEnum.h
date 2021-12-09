@@ -8,6 +8,8 @@ namespace Realisim
     {
         enum class SceneNodeEnum {
             sneModelNode = (int)ThreeD::SceneNode::NodeType::ntUserDefined,
+            sneImageNode,
+            sneMaterialNode,
             sneLightNode
         };
 

@@ -114,6 +114,7 @@ void OpaquePass::render(const Rendering::Camera& iCam, const std::map<uint32_t, 
     mShader.setUniform("uProjectionMatrix", iCam.getProjectionMatrix());
     mShader.setUniform("uViewMatrix", iCam.getViewMatrix());
     mShader.setUniform("uApplyLighting", true);
+    mShader.setUniform("uUseSampler", false);
     mShader.setUniform("uLightPosition", Math::Vector3(-1, 0.7, 0.3));
 
     ModelRenderable* pModelRenderable = nullptr;
@@ -123,7 +124,21 @@ void OpaquePass::render(const Rendering::Camera& iCam, const std::map<uint32_t, 
         ModelNode* pNode = pModelRenderable->getModelNode();
         mShader.setUniform("uModelMatrix", pNode->getWorldTransform());
 
+        const Rendering::Texture2d* pDiffuseTex = pModelRenderable->getTexture();
+        if (pDiffuseTex)
+        {
+            mShader.setUniform("uUseSampler", true);
+            mShader.setUniform("uDiffuseSampler", 0);
+            pDiffuseTex->bind(0);
+        }
+        else {
+            mShader.setUniform("uUseSampler", false);
+        }
+
         pModelRenderable->draw();
+
+        if (pDiffuseTex){
+            pDiffuseTex->unbind(); }
     }
 
     glUseProgram(0);

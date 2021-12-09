@@ -14,13 +14,25 @@ namespace Reactor
         Scene& operator=(const Scene&) = delete;
         ~Scene();
 
+        //void addImage(ImageNode* pImage);
+        //void addMaterial(MaterialNode* pMat);
         void clear();
         const ThreeD::SceneNode& getRoot() const { return *mpRoot; }
         ThreeD::SceneNode& getRootRef() { return *mpRoot; }
 
-    protected:
-        ThreeD::SceneNode* mpRoot; // never null
+        const ThreeD::SceneNode& getImageLibrary() const { return *mpImageLibrary; }
+        ThreeD::SceneNode& getImageLibraryRef() { return *mpImageLibrary; }
 
+        const ThreeD::SceneNode& getMaterialLibrary() const { return *mpMaterialLibrary; }
+        ThreeD::SceneNode& getMaterialLibraryRef() { return *mpMaterialLibrary; }
+
+    protected:
+        void makeNewScene();
+
+        ThreeD::SceneNode* mpRoot; // owned never null
+
+        ThreeD::SceneNode* mpMaterialLibrary; //owned never null
+        ThreeD::SceneNode* mpImageLibrary; //owned never null
     };
 
 }

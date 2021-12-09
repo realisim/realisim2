@@ -7,9 +7,11 @@ using namespace Realisim;
 
 //---------------------------------------------------------------------------------------------------------------------
 Scene::Scene() :
-    mpRoot(new SceneNode())
+    mpRoot(nullptr),
+    mpImageLibrary(nullptr),
+    mpMaterialLibrary(nullptr)
 {
-    mpRoot->setName("Root");
+    makeNewScene();
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -22,6 +24,21 @@ Scene::~Scene()
 //---------------------------------------------------------------------------------------------------------------------
 void Scene::clear() {
     delete mpRoot;
+    makeNewScene();    
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+void Scene::makeNewScene()
+{
     mpRoot = new SceneNode();
     mpRoot->setName("Root");
+
+    mpImageLibrary = new SceneNode();
+    mpImageLibrary->setName("ImageLibrary");
+
+    mpMaterialLibrary = new SceneNode();
+    mpMaterialLibrary->setName("MaterialLibrary");
+
+    mpRoot->addChild(mpImageLibrary);
+    mpRoot->addChild(mpMaterialLibrary);
 }

@@ -467,6 +467,7 @@ bool Image::load(Format iFormat, bool iHeaderOnly)
     
     clear();
 
+    bool flipVertical = false;
     IImageReader *reader = nullptr;
     switch (iFormat)
     {
@@ -477,6 +478,7 @@ bool Image::load(Format iFormat, bool iHeaderOnly)
     case fPng: 
 #ifdef REALISIM_THIRDPARTIES_LODEPNG
         reader = new PngImage();
+        flipVertical = true;
 #endif // REALISIM_THIRDPARTIES_LODEPNG
         break;
         //	case fTiff: r = loadTiffImage(getFilenamePath(), false); break;
@@ -490,7 +492,7 @@ bool Image::load(Format iFormat, bool iHeaderOnly)
 
     if (reader)
     {
-        r = load(reader, iHeaderOnly);
+        r = load(reader, iHeaderOnly, flipVertical);
     }
     else
     {
@@ -502,7 +504,7 @@ bool Image::load(Format iFormat, bool iHeaderOnly)
 }
 
 //----------------------------------------------------------------------------
-bool Image::load(IImageReader *ipReader, bool iHeaderOnly)
+bool Image::load(IImageReader *ipReader, bool iHeaderOnly, bool iFlipVertical)
 {
     bool r = false;
     const string &iFilename = getFilenamePath();
@@ -517,6 +519,8 @@ bool Image::load(IImageReader *ipReader, bool iHeaderOnly)
         mInternalFormat = ipReader->getInternalFormat();
         mSizeInBytes = ipReader->getSizeInBytes();
 
+        if (iFlipVertical)
+            flipVertical();
         r = true;
     }
     return r;

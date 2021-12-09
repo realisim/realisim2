@@ -58,7 +58,6 @@ namespace ThreeD
         float mShininess;
         float mAlpha;
 
-
         std::array<std::string, ilNumberOfLayers> mImageLayerToImagePath;
     };
 }

@@ -10,7 +10,8 @@ using namespace std;
 //---------------------------------------------------------------------------------------------------------------------
 ModelNode::ModelNode() : SceneNode((int)SceneNodeEnum::sneModelNode),
     IPositionableNode(),
-    mMeshPtrs()
+    mMeshPtrs(),
+    mpMaterialNode(nullptr)
 {}
 
 //---------------------------------------------------------------------------------------------------------------------

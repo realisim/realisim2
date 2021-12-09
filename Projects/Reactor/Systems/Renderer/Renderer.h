@@ -4,7 +4,6 @@
 #include "Rendering/Gpu/Context.h"
 #include "Rendering/Gpu/Device.h"
 #include "Systems/ISystem.h"
-#include "Systems/Renderer/IRenderable.h"
 #include "Systems/Renderer/RenderPasses/IRenderPass.h"
 
 //--- temporary while no render passes.
@@ -17,6 +16,11 @@ namespace Reactor
 {
     class Broker;
     class Hub;
+
+    class ImageNode;
+
+    class IRenderable;
+    class TextureRenderable;
 
     class Renderer : public ISystem {
     public:
@@ -44,7 +48,8 @@ namespace Reactor
         void swapBuffers();
 
     protected:
-        void addRenderable(ThreeD::SceneNode* ipNode, IRenderable* ipRenderable);
+        void addDrawable(ThreeD::SceneNode* ipNode, IRenderable* ipRenderable); // renommer a addDrawable
+        void addTextureRenderable(ImageNode* ipNode, TextureRenderable* ipRenderable); // renommer a addDrawable
         bool initializeGl();
         void initializePasses();
         void initializeSceneNode(ThreeD::SceneNode* ipNode);
@@ -60,8 +65,10 @@ namespace Reactor
         Scene* mpScene;   // not owned
 
         //-- Data
-        std::map<uint32_t, ThreeD::SceneNode*> mIdToSceneNode;
-        std::map<uint32_t, IRenderable*> mIdToRenderable;
+        std::map<uint32_t, ThreeD::SceneNode*> mIdToSceneNode; // not owned
+        std::map<uint32_t, IRenderable*> mIdToRenderable; // all renderables ever created, owned
+        std::map<uint32_t, IRenderable*> mIdToDrawable; //  all drawables, not owned
+        std::map<uint32_t, TextureRenderable*> mIdToTexture; // all textures not owned
         std::map<int, IRenderPass*> mRenderPassIdToRenderPassPtr; // owned
         std::vector<IRenderPass*> mRenderPasses;
     };

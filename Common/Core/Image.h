@@ -155,7 +155,7 @@ namespace Core
         void flipVertical(ByteArray& iBa);
         Format guessFormatFromFileName() const;
         bool load(Format, bool iHeaderOnly);
-        bool load(IImageReader *ipReader, bool iHeaderOnly);
+        bool load(IImageReader *ipReader, bool iHeaderOnly, bool iFlipVertical);
         bool savePngImage(const std::string& iFilenamePath);
         bool saveRawImage(const std::string& iFilenamePath);
 

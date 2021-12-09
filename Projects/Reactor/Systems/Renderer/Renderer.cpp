@@ -10,6 +10,9 @@
 #include "Renderer.h"
 #include "Rendering/Camera.h"
 #include "Rendering/Viewport.h"
+#include "Systems/Renderer/IRenderable.h"
+#include "Systems/Renderer/ModelRenderable.h"
+#include "Systems/Renderer/TextureRenderable.h"
 #include "Systems/Renderer/RenderPasses/OpaquePass.h"
 #include "Systems/Renderer/RenderPasses/ScreenBlitPass.h"
 
@@ -17,7 +20,7 @@
 //-- temporary
 #include "DataStructures/Scene/ModelNode.h"
 #include "DataStructures/Scene/SceneNodeEnum.h"
-#include "Systems/Renderer/ModelRenderable.h"
+
 
 using namespace std;
 using namespace Realisim;
@@ -47,14 +50,31 @@ Renderer::~Renderer()
 }
 
 //---------------------------------------------------------------------------------------------------------------------
-void Renderer::addRenderable(ThreeD::SceneNode* ipNode, IRenderable* ipRenderable)
+void Renderer::addDrawable(ThreeD::SceneNode* ipNode, IRenderable* ipRenderable)
 {
     const uint32_t id = ipNode->getId();
     const auto itSceneNode = mIdToSceneNode.find(id);
-    assert(itSceneNode == mIdToSceneNode.end() && "Inserting the same id more than once is problematic as we loose track of some renderables...");
+    assert(itSceneNode == mIdToSceneNode.end());
+    if (itSceneNode != mIdToSceneNode.end())
+        LOG_TRACE_ERROR(Logger::llNormal, "Inserting the same id more than once is problematic as we loose track of some renderables...");
 
     mIdToSceneNode[id] = ipNode;
     mIdToRenderable[id] = ipRenderable;
+    mIdToDrawable[id] = ipRenderable;
+}
+
+// -------------------------------------------------------------------------------------------------------------------- -
+void Renderer::addTextureRenderable(ImageNode* ipNode, TextureRenderable* ipTexture)
+{
+    const uint32_t id = ipNode->getId();
+    const auto itSceneNode = mIdToSceneNode.find(id);
+    assert(itSceneNode == mIdToSceneNode.end());
+    if (itSceneNode != mIdToSceneNode.end())
+        LOG_TRACE_ERROR(Logger::llNormal, "Inserting the same id more than once is problematic as we loose track of some renderables...");
+
+    mIdToSceneNode[id] = ipNode;
+    mIdToRenderable[id] = ipTexture;
+    mIdToTexture[id] = ipTexture;
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -85,6 +105,17 @@ void Renderer::addRenderPass(RenderPassId iId, IRenderPass* ipPass)
 //---------------------------------------------------------------------------------------------------------------------
 void Renderer::clear()
 {
+    // clear all renderables
+    mIdToSceneNode.clear();
+
+    for (auto itRenderable : mIdToRenderable) {
+        delete itRenderable.second;
+    }
+    mIdToRenderable.clear();
+
+    mIdToDrawable.clear();
+    mIdToTexture.clear();
+
     // delete all render pass
     for (auto itRenderPass : mRenderPassIdToRenderPassPtr)
     {
@@ -102,7 +133,7 @@ void Renderer::draw()
     // draw all render pass
     for (auto pPass : mRenderPasses) {
         pPass->applyGlState();
-        pPass->render(cam, mIdToRenderable);
+        pPass->render(cam, mIdToDrawable);
         pPass->revertGlState();
     }
 }
@@ -221,11 +252,38 @@ void Renderer::makeAndAddRenderable(SceneNode* ipNode)
     switch ((int)ipNode->getNodeType())
     {
     case (int)SceneNodeEnum::sneModelNode: {
-        ModelNode* n = (ModelNode*)ipNode;
-        ModelRenderable* r = new ModelRenderable(n);
-        r->initializeGpuRessources();
 
-        addRenderable(ipNode, r);
+        //init model
+        ModelNode* n = (ModelNode*)ipNode;
+        ModelRenderable* mr = new ModelRenderable(n);
+        mr->initializeGpuRessources();
+
+        //init or find textures
+        MaterialNode* matNode = n->getMaterialNode();
+        for (int i = 0; i < ThreeD::Material::ilNumberOfLayers && matNode; ++i) {
+            TextureRenderable* tr = nullptr;
+            ImageNode * imageNode = matNode->getImageNode((ThreeD::Material::ImageLayer)i);
+            if (imageNode != nullptr)
+            {
+                Image& im = imageNode->getImageRef();
+                if (!im.hasImageData())
+                {
+                    im.load();
+                    tr = new TextureRenderable(imageNode);
+                    tr->initializeGpuRessources();
+                    addTextureRenderable(imageNode, tr);
+                }
+                else {
+                    // find the associated TextureRenderable
+                    auto itTex = mIdToTexture.find(imageNode->getId());
+                    assert(itTex != mIdToTexture.end());
+                    tr = itTex->second;
+                }
+                mr->setTexture(&tr->getTexture()/*, (ThreeD::Material::ImageLayer)i*/);
+            }
+        }
+        
+        addDrawable(ipNode, mr);
     } break;
     default: break;
     }
