@@ -24,7 +24,7 @@ namespace Reactor
         virtual void defineInputOutputs() override final;
         virtual void connectInputOutputs() override final;
         virtual void applyGlState() final;
-        virtual void render(const Rendering::Camera&, const std::map<uint32_t, IRenderable*> ipRenderables) final;
+        virtual void render(const Rendering::Camera&, const std::vector<IRenderable*> iRenderables) final;
         virtual void revertGlState() final;
     };
 

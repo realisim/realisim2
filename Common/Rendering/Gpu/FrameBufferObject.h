@@ -126,6 +126,7 @@ namespace Realisim
             int getDefaultReadBufferId() const { return mDefaultReadBufferId; }
             unsigned int getHeight() const;
             unsigned int getId() const;
+            FrameBufferAttachementType getNextAvailableColorAttachement() const;
             int getNumberOfAttachements() const;
 			unsigned int getNumberOfSamples() const;			
             unsigned int getWidth() const;

@@ -186,7 +186,7 @@ void    FrameBufferObject::bake()
     else
     {
         glDeleteFramebuffers(1,&m_openglId);
-        m_openglId = 0;
+        glGenFramebuffers(1, &m_openglId);
     }
 
     push();
@@ -370,6 +370,23 @@ void FrameBufferObject::pop()
             glViewport(o.x(), o.y(), s.x(), s.y());
         }
     }
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+FrameBufferAttachementType FrameBufferObject::getNextAvailableColorAttachement() const
+{
+    FrameBufferAttachementType r = fbaUnknown;
+
+    for (int i = fbaColor0; i < fbaColor15; ++i)
+    {
+        if (!getAttachement((FrameBufferAttachementType)i).isValid())
+        {
+            r = (FrameBufferAttachementType)i;
+            break;
+        }
+    }
+
+    return r;
 }
 
 unsigned int FrameBufferObject::getNumberOfSamples() const

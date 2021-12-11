@@ -16,14 +16,13 @@ namespace Reactor
         virtual ~ScreenBlitPass();
 
     protected:
-        void initFullScreenQuad();
         virtual void loadShader(const std::string& iAssetPath);
         virtual void sharePasses(const std::map<int, IRenderPass*> ipRenderPassNameToRenderPass);
         virtual void defineInputOutputs() override final;
         virtual void connectInputOutputs() override final;
         virtual void releaseGlRessources() override final;
         virtual void applyGlState() final;
-        virtual void render(const Rendering::Camera&, const std::map<uint32_t, IRenderable*> ipRenderables) final;
+        virtual void render(const Rendering::Camera&, const std::vector<IRenderable*> iRenderables) final;
         virtual void revertGlState() final;
 
         Rendering::Camera mFullScreen2dCam;

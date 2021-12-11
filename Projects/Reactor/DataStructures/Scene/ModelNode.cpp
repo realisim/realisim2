@@ -1,6 +1,7 @@
 
 #include "DataStructures/Scene/ModelNode.h"
 #include "DataStructures/Scene/SceneNodeEnum.h"
+#include "Systems/Renderer/RenderPasses/RenderPassId.h"
 
 using namespace Realisim;
 using namespace Geometry;
@@ -13,7 +14,9 @@ ModelNode::ModelNode() : SceneNode((int)SceneNodeEnum::sneModelNode),
     mMeshPtrs(),
     mpMaterialNode(nullptr),
     mTextureScaling(1, 1)
-{}
+{
+    mRegisteredRenderPasses = { rpiOpaque };
+}
 
 //---------------------------------------------------------------------------------------------------------------------
 ModelNode::~ModelNode()
@@ -67,6 +70,18 @@ void ModelNode::initializeModelSpaceAABB()
             mOriginalModelSpaceAABB.addPoint(v.mVertex);
         }
     }
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+// sets which passes will render this model Node.
+// It is to note, that once the model has been added to the renderer, it is not possible to change the render passes
+// via this function.
+//
+// In order to change render passes once the objects have been passed to the renderer, you must call methods on the
+// renderer to do so. If the renderer modifies the registeredRenderPasses, the modification will also affect the ModelNode.
+//
+void ModelNode::setRegisteredRenderPasses(const std::vector<int>& iV) {
+    mRegisteredRenderPasses = iV;
 }
 
 //---------------------------------------------------------------------------------------------------------------------

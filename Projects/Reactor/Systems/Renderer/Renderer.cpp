@@ -14,6 +14,7 @@
 #include "Systems/Renderer/ModelRenderable.h"
 #include "Systems/Renderer/TextureRenderable.h"
 #include "Systems/Renderer/RenderPasses/OpaquePass.h"
+#include "Systems/Renderer/RenderPasses/GlowPass.h"
 #include "Systems/Renderer/RenderPasses/ScreenBlitPass.h"
 
 
@@ -36,17 +37,68 @@ Renderer::Renderer(Broker* ipBroker, Hub* ipHub) : ISystem(ipBroker, ipHub),
 {
     OpaquePass* pOpaquePass = new OpaquePass();
     pOpaquePass->setName("OpaquePass");
-    addRenderPass(rpnOpaque, pOpaquePass);
+    addRenderPass(rpiOpaque, pOpaquePass);
+
+    GlowPass* pGlowPass = new GlowPass();
+    pGlowPass->setName("GlowPass");
+    addRenderPass(rpiGlow, pGlowPass);
 
     ScreenBlitPass* pScreenBlit = new ScreenBlitPass();
     pScreenBlit->setName("ScreenBlitPass");
-    addRenderPass(rpnScreenBlit, pScreenBlit);
+    addRenderPass(rpiScreenBlit, pScreenBlit);
 }
 
 //---------------------------------------------------------------------------------------------------------------------
 Renderer::~Renderer()
 {
     clear();
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+void Renderer::addAndMakeRenderable(SceneNode* ipNode)
+{
+    switch ((int)ipNode->getNodeType())
+    {
+    case (int)SceneNodeEnum::sneModelNode: {
+
+        //init model
+        ModelNode* n = (ModelNode*)ipNode;
+        ModelRenderable* mr = new ModelRenderable(n);
+        mr->initializeGpuRessources();
+
+        //init or find textures
+        MaterialNode* matNode = n->getMaterialNode();
+        for (int i = 0; i < ThreeD::Material::ilNumberOfLayers && matNode; ++i) {
+            TextureRenderable* tr = nullptr;
+            ImageNode* imageNode = matNode->getImageNode((ThreeD::Material::ImageLayer)i);
+            if (imageNode != nullptr)
+            {
+                Image& im = imageNode->getImageRef();
+                if (!im.hasImageData())
+                {
+                    im.load();
+                    tr = new TextureRenderable(imageNode);
+                    tr->initializeGpuRessources();
+                    addTextureRenderable(imageNode, tr);
+                }
+                else {
+                    // find the associated TextureRenderable
+                    auto itTex = mIdToTexture.find(imageNode->getId());
+                    assert(itTex != mIdToTexture.end());
+                    tr = itTex->second;
+                }
+                mr->setTexture(&tr->getTexture(), (ThreeD::Material::ImageLayer)i);
+            }
+        }
+
+        addDrawable(ipNode, mr);
+        for (auto passId : n->getRegisteredRenderPasses()) {
+            mPassIdToDrawables[passId].push_back(mr);
+        }
+
+    } break;
+    default: break;
+    }
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -133,7 +185,7 @@ void Renderer::draw()
     // draw all render pass
     for (auto pPass : mRenderPasses) {
         pPass->applyGlState();
-        pPass->render(cam, mIdToDrawable);
+        pPass->render(cam, mPassIdToDrawables[pPass->getId()]);
         pPass->revertGlState();
     }
 }
@@ -166,7 +218,7 @@ bool Renderer::initializeGl()
     }
 
     // set glClearColor
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glEnable(GL_FRAMEBUFFER_SRGB);
 
     // basic opengl states.
@@ -204,10 +256,13 @@ void Renderer::initializePasses() {
 
     // share fbos between pass and terminate initialization
     for (auto pPass : mRenderPasses) {
-        pPass->defineInputOutputs();
-        pPass->sharePasses(mRenderPassIdToRenderPassPtr);
-        pPass->connectInputOutputs();
-    }
+        pPass->defineInputOutputs(); }
+
+    for (auto pPass : mRenderPasses) {
+        pPass->sharePasses(mRenderPassIdToRenderPassPtr); }
+
+    for (auto pPass : mRenderPasses) {
+        pPass->connectInputOutputs(); }
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -220,7 +275,7 @@ void Renderer::initializeSceneNode(SceneNode* ipNode)
     {
         initializeSceneNode(ipNode->getChild(i));
     }
-    makeAndAddRenderable(ipNode);
+    addAndMakeRenderable(ipNode);
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -244,49 +299,6 @@ void Renderer::reloadShaders()
     }
 
     LOG_TRACE(Logger::llNormal, "done loading render pass shaders.");
-}
-
-//---------------------------------------------------------------------------------------------------------------------
-void Renderer::makeAndAddRenderable(SceneNode* ipNode)
-{
-    switch ((int)ipNode->getNodeType())
-    {
-    case (int)SceneNodeEnum::sneModelNode: {
-
-        //init model
-        ModelNode* n = (ModelNode*)ipNode;
-        ModelRenderable* mr = new ModelRenderable(n);
-        mr->initializeGpuRessources();
-
-        //init or find textures
-        MaterialNode* matNode = n->getMaterialNode();
-        for (int i = 0; i < ThreeD::Material::ilNumberOfLayers && matNode; ++i) {
-            TextureRenderable* tr = nullptr;
-            ImageNode * imageNode = matNode->getImageNode((ThreeD::Material::ImageLayer)i);
-            if (imageNode != nullptr)
-            {
-                Image& im = imageNode->getImageRef();
-                if (!im.hasImageData())
-                {
-                    im.load();
-                    tr = new TextureRenderable(imageNode);
-                    tr->initializeGpuRessources();
-                    addTextureRenderable(imageNode, tr);
-                }
-                else {
-                    // find the associated TextureRenderable
-                    auto itTex = mIdToTexture.find(imageNode->getId());
-                    assert(itTex != mIdToTexture.end());
-                    tr = itTex->second;
-                }
-                mr->setTexture(&tr->getTexture(), (ThreeD::Material::ImageLayer)i);
-            }
-        }
-        
-        addDrawable(ipNode, mr);
-    } break;
-    default: break;
-    }
 }
 
 //---------------------------------------------------------------------------------------------------------------------

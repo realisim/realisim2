@@ -17,7 +17,7 @@ using namespace Realisim;
 using namespace std;
 
 //---------------------------------------------------------------------------------------------------------------------
-ScreenBlitPass::ScreenBlitPass() :
+ScreenBlitPass::ScreenBlitPass() : IRenderPass(rpiScreenBlit),
     mpOutputToBlit(nullptr)
 {}
 
@@ -50,72 +50,13 @@ void ScreenBlitPass::defineInputOutputs()
 }
 
 //---------------------------------------------------------------------------------------------------------------------
-void ScreenBlitPass::initFullScreenQuad()
-{
-    // init full screen 2d cam
-    Projection proj;
-    proj.setProjection(-1, 1, -1, 1, -10, 10, Projection::Type::tOrthogonal);
-    mFullScreen2dCam.setProjection(proj);
-    mFullScreen2dCam.set(Vector3(0.0, 0.0, 1.0), Vector3(0.0, 0.0, 0.0), Vector3(0.0, 1.0, 0.0));
-
-    //init fullscreen quad
-    BufferObject* pVboVertex, * pVboTex, * pVboIndices;
-    pVboVertex = new BufferObject();
-    pVboTex = new BufferObject();
-    pVboIndices = new BufferObject();
-
-    float vertices[8] = {
-        -1.0, -1.0,
-         1.0, -1.0,
-         1.0,  1.0,
-        -1.0,  1.0 };
-    BufferObjectDataPlain* pVertexDataStructure = new BufferObjectDataPlain();
-    pVertexDataStructure->addAttribute(Rendering::dtFloat, 2, BufferObject::lliVertex);
-    pVboVertex->setDataStructure(pVertexDataStructure);
-    pVboVertex->assignData(BufferBindingTarget::bbtArrayBuffer, BufferDataUsage::bduStaticDraw, 8, &vertices[0]);
-
-    float texCoords[8] = {
-        0.0, 0.0,
-        1.0, 0.0,
-        1.0, 1.0,
-        0.0, 1.0 };
-    BufferObjectDataPlain* pTexDataStructure = new BufferObjectDataPlain();
-    pTexDataStructure->addAttribute(Rendering::dtFloat, 2, BufferObject::lliTexture);
-    pVboTex->setDataStructure(pTexDataStructure);
-    pVboTex->assignData(BufferBindingTarget::bbtArrayBuffer, BufferDataUsage::bduStaticDraw, 8, &texCoords[0]);
-
-    uint16_t indices[6] = {
-        0, 1, 2,
-        0, 2, 3 };
-    BufferObjectDataPlain* pIndicesDataStructure = new BufferObjectDataPlain();
-    pIndicesDataStructure->addAttribute(Rendering::dtUnsignedShort, 1, 0);
-    pVboIndices->setDataStructure(pIndicesDataStructure);
-    pVboIndices->assignData(BufferBindingTarget::bbtElementArrayBuffer, BufferDataUsage::bduStaticDraw, 6, &indices[0]);
-
-    mFullScreenQuad.addAndTakeOwnership(pVboVertex);
-    mFullScreenQuad.addAndTakeOwnership(pVboTex);
-    mFullScreenQuad.addAndTakeOwnership(pVboIndices);
-    mFullScreenQuad.bake(DrawMode::dmTriangles);
-}
-
-//---------------------------------------------------------------------------------------------------------------------
 void ScreenBlitPass::loadShader(const std::string& iAssetPath)
 { 
     LOG_TRACE(Logger::llNormal, "Loading ScreenBlitPass shader...");
 
-    mShader.clear();
-
-    //--- shaders   
-    mShader.setName("ScreenBlitPassShader");
-    mShader.addSourceFromFile(stVertex, Path::join(iAssetPath, "Shaders/screenBlitPass.vert"));
-    mShader.addSourceFromFile(stFragment, Path::join(iAssetPath, "Shaders/screenBlitPass.frag"));
-    mShader.compile();
-    mShader.link();
-
-    if (mShader.hasErrors())
-    {
-        LOG_TRACE_ERROR(Logger::llNormal, "Error while loading: \n%s", mShader.getAndClearLastErrors().c_str());
-    }
+    const string vertPath = Path::join(iAssetPath, "Shaders/screenBlitPass.vert");
+    const string fragPath = Path::join(iAssetPath, "Shaders/screenBlitPass.frag");
+    IRenderPass::compileAndLinkShader(&mShader, "ScreenBlitPassShader", vertPath, fragPath);
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -126,10 +67,10 @@ void ScreenBlitPass::releaseGlRessources()
 }
 
 //---------------------------------------------------------------------------------------------------------------------
-void ScreenBlitPass::render(const Rendering::Camera& iCam, const std::map<uint32_t, IRenderable*> ipRenderables)
+void ScreenBlitPass::render(const Rendering::Camera& iCam, const std::vector<IRenderable*> iRenderables)
 {
     (void)iCam;
-    (void)ipRenderables;
+    (void)iRenderables;
 
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -158,18 +99,27 @@ void ScreenBlitPass::revertGlState()
 //---------------------------------------------------------------------------------------------------------------------
 void ScreenBlitPass::sharePasses(const std::map<int, IRenderPass*> ipRenderPassNameToRenderPass)
 {
-    initFullScreenQuad();
+    IRenderPass::makeFullScreenQuadAnd2dCamera(&mFullScreenQuad, &mFullScreen2dCam);
 
     // get the opaque pass fbo
-    auto itOpaque = ipRenderPassNameToRenderPass.find(Renderer::rpnOpaque);
+    auto itOpaque = ipRenderPassNameToRenderPass.find(rpiOpaque);
+    auto itGlow = ipRenderPassNameToRenderPass.find(rpiGlow);
 
-    assert(itOpaque != ipRenderPassNameToRenderPass.end());
+    assert(itOpaque != ipRenderPassNameToRenderPass.end() &&
+        itGlow != ipRenderPassNameToRenderPass.end());
     if (itOpaque == ipRenderPassNameToRenderPass.end()) {
         LOG_TRACE_ERROR(Logger::llNormal, "Could not find the opaque pass...");
-    } else {
-        IRenderPass* pPass = itOpaque->second;
+    }
+    else if (itGlow == ipRenderPassNameToRenderPass.end()) {
+        LOG_TRACE_ERROR(Logger::llNormal, "Could not find the glow pass...");
+    }
+    else {
+        IRenderPass* pOpaquePass = itOpaque->second;
+        //IRenderPass* pGlowPass = itGlow->second;
 
-        mpOutputToBlit = &pPass->getOutput("colorOut");
+        mpOutputToBlit = &pOpaquePass->getOutput("colorOut");
+        //mpOutputToBlit = &pOpaquePass->getOutput("glowTexturedOut");
+        //mpOutputToBlit = &pGlowPass->getOutput("glow1Out");
     }
 }
 

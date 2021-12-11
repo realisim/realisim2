@@ -6,6 +6,7 @@
 #include "DataStructures/Scene/ModelNode.h"
 #include "Systems/Renderer/ModelRenderable.h"
 #include "Systems/Renderer/RenderPasses/OpaquePass.h"
+#include "Systems/Renderer/RenderPasses/RenderPassId.h"
 
 
 
@@ -19,7 +20,7 @@ using namespace Realisim;
 using namespace std;
 
 //---------------------------------------------------------------------------------------------------------------------
-OpaquePass::OpaquePass()
+OpaquePass::OpaquePass() : IRenderPass(rpiOpaque)
 {}
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -42,11 +43,9 @@ void OpaquePass::connectInputOutputs()
 void OpaquePass::defineInputOutputs()
 {
     Output colorOut("colorOut", mpFbo, fbaColor0);
-    //output depthStencilOut("depthStencilOut", mpFbo, fbaDepthStencil);
     Output depthOutput("depthOut", mpFbo, fbaDepthOnly);
     
     addOutput(colorOut);
-    //addOutput(depthStencilOut);
     addOutput(depthOutput);
 }
 
@@ -85,23 +84,13 @@ void OpaquePass::initializeFbo()
 void OpaquePass::loadShader(const std::string& iAssetPath) {
     LOG_TRACE(Logger::llNormal, "Loading opaquePass shader...");
 
-    mShader.clear();
-
-    //--- shaders   
-    mShader.setName("opaquePassShader");
-    mShader.addSourceFromFile(stVertex, Path::join(iAssetPath, "Shaders/model.vert"));
-    mShader.addSourceFromFile(stFragment, Path::join(iAssetPath, "Shaders/modelWithMaterial.frag"));
-    mShader.compile();
-    mShader.link();
-
-    if (mShader.hasErrors())
-    {
-        LOG_TRACE_ERROR(Logger::llNormal, "Error while loading: \n%s", mShader.getAndClearLastErrors().c_str());
-    }
+    const string vertPath = Path::join(iAssetPath, "Shaders/model.vert");
+    const string fragPath = Path::join(iAssetPath, "Shaders/modelWithMaterial.frag");
+    IRenderPass::compileAndLinkShader(&mShader, "opaquePassShader", vertPath, fragPath);
 }
 
 //---------------------------------------------------------------------------------------------------------------------
-void OpaquePass::render(const Rendering::Camera& iCam, const std::map<uint32_t, IRenderable*> ipRenderables)
+void OpaquePass::render(const Rendering::Camera& iCam, const std::vector<IRenderable*> iRenderables)
 {
     mpFbo->push();
     mpFbo->drawTo(fbaColor0);
@@ -119,9 +108,9 @@ void OpaquePass::render(const Rendering::Camera& iCam, const std::map<uint32_t, 
     mShader.setUniform("uLightPosition", Math::Vector3(-1, 0.7, 0.3));
     
     ModelRenderable* pModelRenderable = nullptr;
-    for (auto itRenderable : ipRenderables) {
+    for (int i = 0; i < iRenderables.size(); ++i) {
         int samplerIndex = 0;
-        pModelRenderable = (ModelRenderable *)itRenderable.second;
+        pModelRenderable = (ModelRenderable *)iRenderables[i];
 
         ModelNode* pNode = pModelRenderable->getModelNode();
         mShader.setUniform("uModelMatrix", pNode->getWorldTransform());
@@ -155,9 +144,4 @@ void OpaquePass::revertGlState()
 {
 }
 
-//---------------------------------------------------------------------------------------------------------------------
-void sharePasses(const std::map<int, IRenderPass*> ipRenderPassNameToRenderPass)
-{
-    ;
-}
 

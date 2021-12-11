@@ -5,6 +5,7 @@
 #include "Rendering/Gpu/Device.h"
 #include "Systems/ISystem.h"
 #include "Systems/Renderer/RenderPasses/IRenderPass.h"
+#include "Systems/Renderer/RenderPasses/RenderPassId.h"
 
 //--- temporary while no render passes.
 #include "Rendering/Gpu/Shader.h"
@@ -27,9 +28,7 @@ namespace Reactor
         Renderer(Broker* ipBroker, Hub* ipHub);
         virtual ~Renderer();
 
-        // do not change the order of this enum, as it drives the rendering order.
-        enum RenderPassId {rpnPreDepth = 0, rpnOpaque, rpnScreenBlit, rpnUserDefined = 10000};
-
+        void addAndMakeRenderable(ThreeD::SceneNode* ipNode);
         void addRenderPass(int iRenderPassIndex, IRenderPass *ipPass);
         void addRenderPass(RenderPassId iIndex, IRenderPass* ipPass);
 
@@ -56,7 +55,6 @@ namespace Reactor
         void draw();
         void handleKeyboard();
         void reloadShaders();
-        void makeAndAddRenderable(ThreeD::SceneNode* ipNode);
 
         Rendering::Device mDevice;
         Rendering::Context mContext;
@@ -70,7 +68,9 @@ namespace Reactor
         std::map<uint32_t, IRenderable*> mIdToDrawable; //  all drawables, not owned
         std::map<uint32_t, TextureRenderable*> mIdToTexture; // all textures not owned
         std::map<int, IRenderPass*> mRenderPassIdToRenderPassPtr; // owned
-        std::vector<IRenderPass*> mRenderPasses;
+        std::vector<IRenderPass*> mRenderPasses; // defines the draw order
+
+        std::map<int, std::vector<IRenderable*>> mPassIdToDrawables; // the list of drawable per pass should be IDrawable
     };
 
 }

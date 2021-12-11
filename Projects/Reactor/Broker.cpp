@@ -15,6 +15,8 @@
 
 #include "Rendering/Gpu/DataType.h"
 
+#include "Systems/Renderer/RenderPasses/RenderPassId.h"
+
 using namespace Realisim;
 using namespace Math;
 using namespace Reactor;
@@ -87,6 +89,7 @@ void Broker::makeBasicScene()
     prism0Node->setMaterialNode(pGlowMatNode);
     transfo.setAsTranslation(Vector3(0, 3, 0));
     prism0Node->setParentTransform(transfo);
+    prism0Node->setRegisteredRenderPasses({ rpiOpaque, rpiGlow });
 
     ModelNode* prism1Node = new ModelNode();
     prism1Node->setName("prism1");
@@ -95,6 +98,7 @@ void Broker::makeBasicScene()
     prism1Node->setMaterialNode(pGlowMatNode);
     transfo.setAsTranslation(Vector3(8, 2, 4));
     prism1Node->setParentTransform(transfo);
+    prism1Node->setRegisteredRenderPasses({ rpiOpaque, rpiGlow });
 
 
     ModelNode* sphereNode = new ModelNode();
