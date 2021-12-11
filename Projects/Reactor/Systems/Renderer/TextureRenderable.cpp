@@ -50,6 +50,7 @@ void TextureRenderable::initializeGpuRessources()
 
     mTexture.setMagnificationFilter(Rendering::TextureFilter::tfLinearMipmapLinear);
     mTexture.setMinificationFilter(Rendering::TextureFilter::tfLinearMipmapLinear);
+    mTexture.setWrapMode(mpNode->getTextureWrapMode());
 }
 
 //---------------------------------------------------------------------------------------------------------------------

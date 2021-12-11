@@ -5,6 +5,7 @@ uniform dvec3 uLightPosition = dvec3(1.0, 1.0, 1.0);
 uniform bool uUseSampler = false;
 uniform sampler2D uDiffuseSampler;
 uniform float uAlphaFactor; //mutiplies the alpha channel of color.
+uniform vec2 uTextureScaling = vec2(1.0, 1.0);
 
 const dvec3 lightColor = dvec3(1.0, 1.0, 1.0);
 const float ambientFactor = 0.05f;
@@ -23,7 +24,7 @@ void main()
     vec4 finalColor = oColor;
     if(uUseSampler == true)
     {
-        finalColor = texture(uDiffuseSampler, oTexCoords);
+        finalColor = texture(uDiffuseSampler, oTexCoords * uTextureScaling);
     }
 
     if(uApplyLighting == true)
@@ -42,8 +43,8 @@ void main()
     finalColor.a *= uAlphaFactor;
 
     // apply gamma correction
-    float gamma = 2.2;
-    finalColor.rgb = pow(finalColor.rgb, vec3(1.0/gamma));
+    //float gamma = 2.2;
+    //finalColor.rgb = pow(finalColor.rgb, vec3(1.0/gamma));
 
     frag_color = finalColor;
 }

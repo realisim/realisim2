@@ -99,6 +99,11 @@ Mesh Plane::makeMesh(const Vector2& iSizeInMeter) const
     vd2.mVertex = p + (someX * halfSize.x()) + (someY * halfSize.y());
     vd3.mVertex = p - (someX * halfSize.x()) + (someY * halfSize.y());
 
+    vd0.mLayerIndexToTextureCoordinates[0] = Vector2(0.0, 0.0);
+    vd1.mLayerIndexToTextureCoordinates[0] = Vector2(1.0, 0.0);
+    vd2.mLayerIndexToTextureCoordinates[0] = Vector2(1.0, 1.0);
+    vd3.mLayerIndexToTextureCoordinates[0] = Vector2(0.0, 1.0);
+
     vector<Mesh::VertexData>& vertices = mesh.getVerticesRef();
     vertices = { vd0, vd1, vd2, vd3 };
     

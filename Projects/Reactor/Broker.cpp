@@ -8,9 +8,12 @@
 #include "DataStructures/Scene/MaterialNode.h"
 #include "DataStructures/Scene/ModelNode.h"
 
+#include "Geometry/GeometricGrid.h"
 #include "Geometry/Plane.h"
 #include "Geometry/PlatonicSolid.h"
 #include "Geometry/RectangularPrism.h"
+
+#include "Rendering/Gpu/DataType.h"
 
 using namespace Realisim;
 using namespace Math;
@@ -35,22 +38,47 @@ void Broker::makeBasicScene()
     Plane plane(Vector3(0), Vector3(0, 1, 0));
     RectangularPrism prism0(Vector3(0, 0, 0), 2, 3, 4);
     RectangularPrism prism1(Vector3(0, 0, 0), 4, 5, 6);
+    GeometricGrid geoGrid; geoGrid.set(Vector3(2, 2, 2), 32, 64);
 
     Matrix4 transfo;
+    // Glow Mat
+    ImageNode* pGlowDiffuseImageNode = new ImageNode();
+    pGlowDiffuseImageNode->setName("glowDiffuseImage");
+    pGlowDiffuseImageNode->setFilenamePath(Core::Path::join(getAssetPath(), "Textures/glowTest1.png"));    
 
     ImageNode* pGlowImageNode = new ImageNode();
     pGlowImageNode->setName("glowImage");
-    Core::Image& glowImage = pGlowImageNode->getImageRef();
-    glowImage.set(Core::Path::join(getAssetPath(), "Textures/glowTest1.png"));
+    pGlowImageNode->setFilenamePath(Core::Path::join(getAssetPath(), "Textures/glowTest1_glow.png"));
+
+    ImageNode* pEarthDayMap = new ImageNode();
+    pEarthDayMap->setName("pEarthDayMap");
+    pEarthDayMap->setFilenamePath(Core::Path::join(getAssetPath(), "Textures/earth_daymap.png"));
 
     MaterialNode* pGlowMatNode = new MaterialNode();
     pGlowMatNode->setName("glowMat");
-    pGlowMatNode->addImageNode(pGlowImageNode, Material::ilDiffuse);
+    pGlowMatNode->addImageNode(pGlowDiffuseImageNode, Material::ilDiffuse);
+    pGlowMatNode->addImageNode(pGlowImageNode, Material::ilAdditional0);
+
+    MaterialNode* pEarthMah = new MaterialNode();
+    pEarthMah->setName("pEarthMath");
+    pEarthMah->addImageNode(pEarthDayMap, Material::ilDiffuse);
+
+    //blackGrid Mat
+    ImageNode* pBlackGridCellDiffuseNode = new ImageNode();
+    pBlackGridCellDiffuseNode->setName("blackGridCellDiffuse");
+    pBlackGridCellDiffuseNode->setFilenamePath(Core::Path::join(getAssetPath(), "Textures/blackGridCell.png"));
+    pBlackGridCellDiffuseNode->setTextureWrapMode(Rendering::TextureWrapMode::twmRepeat);
+
+    MaterialNode* pBlackGridCellMatNode = new MaterialNode();
+    pBlackGridCellMatNode->setName("pBlackGridCellMatNode");
+    pBlackGridCellMatNode->addImageNode(pBlackGridCellDiffuseNode, Material::ilDiffuse);
 
     ModelNode *planeNode = new ModelNode();
     planeNode->setName("plane");
     Mesh m = plane.makeMesh(Vector2(50, 50));
     planeNode->addMesh(m);
+    planeNode->setMaterialNode(pBlackGridCellMatNode);
+    planeNode->setTextureScaling(20, 20);
 
     ModelNode* prism0Node = new ModelNode();
     prism0Node->setName("prism0");
@@ -69,15 +97,32 @@ void Broker::makeBasicScene()
     prism1Node->setParentTransform(transfo);
 
 
+    ModelNode* sphereNode = new ModelNode();
+    sphereNode->setName("sphere");
+    m = geoGrid.getMesh();
+    sphereNode->addMesh(m);
+    sphereNode->setMaterialNode(pEarthMah);
+    transfo.setAsTranslation(Vector3(-3, 4, 6));
+    sphereNode->setParentTransform(transfo);
+
+
     // parent all these nodes to the roots
     ThreeD::SceneNode& rootNode = mScene.getRootRef();
     rootNode.addChild(planeNode);
     rootNode.addChild(prism0Node);
     rootNode.addChild(prism1Node);
+    rootNode.addChild(sphereNode);
+    
 
     ThreeD::SceneNode& matLibrary = mScene.getMaterialLibraryRef();
     matLibrary.addChild(pGlowMatNode);
+    matLibrary.addChild(pBlackGridCellMatNode);
+    matLibrary.addChild(pEarthMah);
+   
 
     ThreeD::SceneNode& imageLibrary = mScene.getImageLibraryRef();
+    imageLibrary.addChild(pGlowDiffuseImageNode);
     imageLibrary.addChild(pGlowImageNode);
+    imageLibrary.addChild(pBlackGridCellDiffuseNode);
+    imageLibrary.addChild(pEarthDayMap);
 }

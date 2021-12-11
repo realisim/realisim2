@@ -26,13 +26,16 @@ namespace Reactor
         int getNumberOfMeshes() const { return (int)mMeshPtrs.size(); }
         MaterialNode* getMaterialNode() { return mpMaterialNode; }
         const std::vector<Geometry::Mesh*>& getMeshes() const { return mMeshPtrs; }
+        const Math::Vector2& getTextureScaling() const { return mTextureScaling; }
         virtual void initializeModelSpaceAABB() override;
         void setMaterialNode(MaterialNode* ipNode) { mpMaterialNode = ipNode; }
+        void setTextureScaling(double iX, double iY) { mTextureScaling.set(iX, iY); }
         virtual void update(double iTimeSinceStartupInSeconds) override;
 
     protected:
         std::vector<Geometry::Mesh*> mMeshPtrs; //owned
         MaterialNode* mpMaterialNode; // not owned
+        Math::Vector2 mTextureScaling;
     };
 
 }

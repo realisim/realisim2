@@ -279,7 +279,7 @@ void Renderer::makeAndAddRenderable(SceneNode* ipNode)
                     assert(itTex != mIdToTexture.end());
                     tr = itTex->second;
                 }
-                mr->setTexture(&tr->getTexture()/*, (ThreeD::Material::ImageLayer)i*/);
+                mr->setTexture(&tr->getTexture(), (ThreeD::Material::ImageLayer)i);
             }
         }
         

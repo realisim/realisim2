@@ -14,6 +14,7 @@ using namespace Realisim;
     using namespace Math;
     using namespace Reactor;
     using namespace Rendering;
+    using namespace ThreeD;
 
 using namespace std;
 
@@ -116,19 +117,21 @@ void OpaquePass::render(const Rendering::Camera& iCam, const std::map<uint32_t, 
     mShader.setUniform("uApplyLighting", true);
     mShader.setUniform("uUseSampler", false);
     mShader.setUniform("uLightPosition", Math::Vector3(-1, 0.7, 0.3));
-
+    
     ModelRenderable* pModelRenderable = nullptr;
     for (auto itRenderable : ipRenderables) {
+        int samplerIndex = 0;
         pModelRenderable = (ModelRenderable *)itRenderable.second;
 
         ModelNode* pNode = pModelRenderable->getModelNode();
         mShader.setUniform("uModelMatrix", pNode->getWorldTransform());
+        mShader.setUniformAsFloat("uTextureScaling", pNode->getTextureScaling());
 
-        const Rendering::Texture2d* pDiffuseTex = pModelRenderable->getTexture();
+        const Rendering::Texture2d* pDiffuseTex = pModelRenderable->getTexture(Material::ilDiffuse);
         if (pDiffuseTex)
         {
             mShader.setUniform("uUseSampler", true);
-            mShader.setUniform("uDiffuseSampler", 0);
+            mShader.setUniform("uDiffuseSampler", samplerIndex++);
             pDiffuseTex->bind(0);
         }
         else {

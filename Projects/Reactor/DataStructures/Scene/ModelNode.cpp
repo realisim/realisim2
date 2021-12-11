@@ -11,7 +11,8 @@ using namespace std;
 ModelNode::ModelNode() : SceneNode((int)SceneNodeEnum::sneModelNode),
     IPositionableNode(),
     mMeshPtrs(),
-    mpMaterialNode(nullptr)
+    mpMaterialNode(nullptr),
+    mTextureScaling(1, 1)
 {}
 
 //---------------------------------------------------------------------------------------------------------------------

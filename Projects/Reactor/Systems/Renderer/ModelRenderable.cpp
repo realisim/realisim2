@@ -11,8 +11,7 @@ using namespace std;
 
 //---------------------------------------------------------------------------------------------------------------------
 ModelRenderable::ModelRenderable(ModelNode* ipNode) : IRenderable(ipNode),
-    mpNode(ipNode),
-    mpTexture(nullptr)
+    mpNode(ipNode)
 {
     assert(mpNode != nullptr);
 }
@@ -45,9 +44,14 @@ void ModelRenderable::initializeGpuRessources()
 }
 
 //---------------------------------------------------------------------------------------------------------------------
-const Texture2d* ModelRenderable::getTexture() const
+const Texture2d* ModelRenderable::getTexture(ThreeD::Material::ImageLayer iLayer) const
 {
-    return mpTexture;
+    const Texture2d* r = nullptr;
+    const auto it = mImageLayerToTexture.find(iLayer);
+    if (it != mImageLayerToTexture.end())
+        r = it->second;
+    return r;
+    
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -61,7 +65,7 @@ void ModelRenderable::releaseGpuRessources()
 }
 
 //---------------------------------------------------------------------------------------------------------------------
-void ModelRenderable::setTexture(const Texture2d* ipTexture)
+void ModelRenderable::setTexture(const Texture2d* ipTexture, ThreeD::Material::ImageLayer iLayer)
 {
-    mpTexture = ipTexture;
+    mImageLayerToTexture[iLayer] = ipTexture;
 }

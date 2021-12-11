@@ -31,3 +31,9 @@ const Core::Image& ImageNode::getImage() const {
 Core::Image& ImageNode::getImageRef() {
     return mImage;
 }
+
+//---------------------------------------------------------------------------------------------------------------------
+void ImageNode::setFilenamePath(const std::string& iF)
+{
+    mImage.set(iF);
+}

@@ -22,7 +22,7 @@ namespace ThreeD
         Material& operator=(const Material&) = default;
         virtual ~Material();
 
-        enum ImageLayer {ilAmbient=0, ilDiffuse, ilSpecular, ilNormal, ilNumberOfLayers, ilundefined};
+        enum ImageLayer {ilAmbient=0, ilDiffuse, ilSpecular, ilNormal, ilAdditional0, ilNumberOfLayers, ilundefined};
         enum ReflectanceModel {rmDiffuse = 1 << 0, 
             rmGlossySpecular = 1 << 1,
             rmPerfectSpecular = 1 << 2, 
