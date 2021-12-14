@@ -13,6 +13,7 @@
 #include "Systems/Renderer/IRenderable.h"
 #include "Systems/Renderer/ModelRenderable.h"
 #include "Systems/Renderer/TextureRenderable.h"
+#include "Systems/Renderer/RenderPasses/CompositingPass.h"
 #include "Systems/Renderer/RenderPasses/OpaquePass.h"
 #include "Systems/Renderer/RenderPasses/GlowPass.h"
 #include "Systems/Renderer/RenderPasses/ScreenBlitPass.h"
@@ -42,6 +43,10 @@ Renderer::Renderer(Broker* ipBroker, Hub* ipHub) : ISystem(ipBroker, ipHub),
     GlowPass* pGlowPass = new GlowPass();
     pGlowPass->setName("GlowPass");
     addRenderPass(rpiGlow, pGlowPass);
+
+    CompositingPass* pCompositingPass = new CompositingPass();
+    pCompositingPass->setName("CompositingPass");
+    addRenderPass(rpiCompositing, pCompositingPass);
 
     ScreenBlitPass* pScreenBlit = new ScreenBlitPass();
     pScreenBlit->setName("ScreenBlitPass");
@@ -155,6 +160,20 @@ void Renderer::addRenderPass(RenderPassId iId, IRenderPass* ipPass)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
+void Renderer::connectBuiltInPasses()
+{
+    OpaquePass* pOpaquePass = (OpaquePass*)mRenderPassIdToRenderPassPtr[rpiOpaque];
+    GlowPass* pGlowPass = (GlowPass*)mRenderPassIdToRenderPassPtr[rpiGlow];
+    CompositingPass* pCompositingPass = (CompositingPass*)mRenderPassIdToRenderPassPtr[rpiCompositing];
+    ScreenBlitPass* pScreenBlitPass = (ScreenBlitPass*)mRenderPassIdToRenderPassPtr[rpiScreenBlit];
+
+    pCompositingPass->connect(pOpaquePass, "colorOut", "samplerBase");
+    pCompositingPass->connect(pGlowPass, "glow1Out", "samplerToAdd");
+
+    pScreenBlitPass->connect(pCompositingPass, "composedOut", "screenBlitInput");
+}
+
+//---------------------------------------------------------------------------------------------------------------------
 void Renderer::clear()
 {
     // clear all renderables
@@ -219,7 +238,7 @@ bool Renderer::initializeGl()
 
     // set glClearColor
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glEnable(GL_FRAMEBUFFER_SRGB);
+    //glEnable(GL_FRAMEBUFFER_SRGB);
 
     // basic opengl states.
     glEnable(GL_DEPTH_TEST);
@@ -232,6 +251,7 @@ bool Renderer::initializeGl()
 
 
     initializePasses();
+    connectBuiltInPasses();
 
     // init scene
     if (mpScene)
@@ -254,15 +274,13 @@ void Renderer::initializePasses() {
         pPass->loadShader(getBroker().getAssetPath());
     }
 
-    // share fbos between pass and terminate initialization
-    for (auto pPass : mRenderPasses) {
-        pPass->defineInputOutputs(); }
-
+    // share fbos between pass and terminate initialization    
     for (auto pPass : mRenderPasses) {
         pPass->sharePasses(mRenderPassIdToRenderPassPtr); }
 
     for (auto pPass : mRenderPasses) {
-        pPass->connectInputOutputs(); }
+        pPass->defineInputOutputs();
+    }
 }
 
 //---------------------------------------------------------------------------------------------------------------------

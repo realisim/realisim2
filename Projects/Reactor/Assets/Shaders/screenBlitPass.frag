@@ -9,7 +9,13 @@ out vec4 frag_color;
 
 void main()
 {
-    frag_color = texture(uInput, oTexCoords); 
+    vec4 finalColor = texture(uInput, oTexCoords); 
+
+    // apply gamma correction
+    //float gamma = 2.2;
+    //finalColor.rgb = pow(finalColor.rgb, vec3(1.0/gamma));
+
+    frag_color = finalColor; 
 }
 
 

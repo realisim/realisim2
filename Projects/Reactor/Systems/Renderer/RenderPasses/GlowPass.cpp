@@ -71,12 +71,6 @@ void GlowPass::applyGlState()
     glDepthMask(GL_FALSE);
 }
 
-
-//---------------------------------------------------------------------------------------------------------------------
-void GlowPass::connectInputOutputs()
-{
-}
-
 //---------------------------------------------------------------------------------------------------------------------
 void GlowPass::defineInputOutputs()
 {
@@ -84,6 +78,10 @@ void GlowPass::defineInputOutputs()
     Output glow0Out("glow0Out", mpFbo, fbaColor0);
     Output glow1Out("glow1Out", mpFbo, fbaColor1);
 
+    // add new output to opaque pass
+    mOpaqueGlowTexturedOut = Output("opaqueGlowTexturedOut", mpOpaquePassFbo, mGlowTexturedModelFba);
+
+    addOutput(mOpaqueGlowTexturedOut);
     addOutput(glow0Out);
     addOutput(glow1Out);
 }
@@ -199,14 +197,14 @@ void GlowPass::revertGlState()
 }
 
 //---------------------------------------------------------------------------------------------------------------------
-void GlowPass::sharePasses(const std::map<int, IRenderPass*> ipRenderPassNameToRenderPass)
+void GlowPass::sharePasses(const std::map<int, IRenderPass*>& iRenderPassNameToRenderPass)
 {
     // grab the opaque pass FBO;
-    auto itOpaque = ipRenderPassNameToRenderPass.find(rpiOpaque);
+    auto itOpaque = iRenderPassNameToRenderPass.find(rpiOpaque);
 
     IRenderPass* pOpaquePass = nullptr;
-    assert(itOpaque != ipRenderPassNameToRenderPass.end());
-    if (itOpaque == ipRenderPassNameToRenderPass.end()) {
+    assert(itOpaque != iRenderPassNameToRenderPass.end());
+    if (itOpaque == iRenderPassNameToRenderPass.end()) {
         LOG_TRACE_ERROR(Logger::llNormal, "Could not find the opaque pass...");
     }
     else {
@@ -229,12 +227,6 @@ void GlowPass::sharePasses(const std::map<int, IRenderPass*> ipRenderPassNameToR
                 Rendering::TextureWrapMode::twmClampToBorder);
             mpOpaquePassFbo->addAttachement(mGlowTexturedModelFba, pGlowTexture);
             mpOpaquePassFbo->bake();
-
-            // add new output to opaque pass
-            Output glowTexturedOut("glowTexturedOut", mpOpaquePassFbo, mGlowTexturedModelFba);
-            pOpaquePass->addOutput(glowTexturedOut);
-
-            mOpaqueGlowTexturedOut = pOpaquePass->getOutput("glowTexturedOut");
         }
         else {
             LOG_TRACE_ERROR(Logger::llNormal, "Opaque pass fbo has no available color attachment.");

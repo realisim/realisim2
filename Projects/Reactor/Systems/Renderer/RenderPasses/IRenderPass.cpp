@@ -45,6 +45,20 @@ void IRenderPass::addOutput(const Output& iOutput)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
+void IRenderPass::bindConnections()
+{
+    int samplerIndex = 0;
+    for (auto& c : mConnections)
+    {
+        const Rendering::Texture2d& t = c.mOutput.mpFbo->getAttachement(c.mOutput.mAttachment);
+        t.bind(samplerIndex);
+        Input& input = getInputRef(c.mInputIndex);
+        input.mpShader->setUniform(input.mUniformName, samplerIndex);
+        samplerIndex++;
+    }
+}
+
+//---------------------------------------------------------------------------------------------------------------------
 void IRenderPass::compileAndLinkShader(Rendering::Shader* ipShader, const std::string& iName, const std::string& iVertPath, const std::string& iFragPath)
 {
     Shader& shader = *ipShader;
@@ -71,11 +85,14 @@ void IRenderPass::connect(IRenderPass* ipParentPass, const std::string& iOutputN
        
 
     if (outputIndex != -1 && inputIndex != -1) {
-        Connection c(outputIndex, inputIndex);
+        Connection c;
+        c.mOutput = ipParentPass->getOutput(outputIndex);
+        c.mInputIndex = inputIndex;
         mConnections.push_back(c);
     } else {
-        LOG_TRACE_ERROR(Core::Logger::llNormal, "Could not connect output [%s] to input [%s] in renderpass [%s].",
-            iOutputName.c_str(), iInputName.c_str(), getName().c_str());
+        LOG_TRACE_ERROR(Core::Logger::llNormal, "Could not connect output [%s:%s] to input [%s:%s].",
+            ipParentPass->getName().c_str(), iOutputName.c_str(),
+            getName().c_str(), iInputName.c_str());
     }
 }
 
@@ -261,5 +278,15 @@ void IRenderPass::resize(int iWidth, int iHeight)
     if (mFboIsOwned && mpFbo)
     {
         mpFbo->resize(iWidth, iHeight);
+    }
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+void IRenderPass::unbindConnections()
+{
+    for (auto& c : mConnections)
+    {
+        const Rendering::Texture2d& t = c.mOutput.mpFbo->getAttachement(c.mOutput.mAttachment);
+        t.unbind();
     }
 }

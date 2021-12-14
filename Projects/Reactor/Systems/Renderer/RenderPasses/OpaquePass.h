@@ -20,9 +20,8 @@ namespace Reactor
     protected:
         virtual void initializeFbo() override final;
         virtual void loadShader(const std::string& iAssetPath) override final;
-        virtual void sharePasses(const std::map<int, IRenderPass*> ipRenderPassNameToRenderPass) { ; }
+        //virtual void sharePasses(const std::map<int, IRenderPass*>& iRenderPassNameToRenderPass) override final { ; }
         virtual void defineInputOutputs() override final;
-        virtual void connectInputOutputs() override final;
         virtual void applyGlState() final;
         virtual void render(const Rendering::Camera&, const std::vector<IRenderable*> iRenderables) final;
         virtual void revertGlState() final;

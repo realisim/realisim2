@@ -17,8 +17,7 @@ using namespace Realisim;
 using namespace std;
 
 //---------------------------------------------------------------------------------------------------------------------
-ScreenBlitPass::ScreenBlitPass() : IRenderPass(rpiScreenBlit),
-    mpOutputToBlit(nullptr)
+ScreenBlitPass::ScreenBlitPass() : IRenderPass(rpiScreenBlit)
 {}
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -34,17 +33,9 @@ void ScreenBlitPass::applyGlState()
 }
 
 //---------------------------------------------------------------------------------------------------------------------
-void ScreenBlitPass::connectInputOutputs()
-{
-}
-
-//---------------------------------------------------------------------------------------------------------------------
 void ScreenBlitPass::defineInputOutputs()
 {
-    Input uInput;
-    uInput.mName = "screenBlitInput";
-    uInput.mpShader = &mShader;
-    uInput.mUniformName = "uInput";
+    Input uInput("screenBlitInput", &mShader, "uInput");
     
     addInput(uInput);
 }
@@ -77,13 +68,10 @@ void ScreenBlitPass::render(const Rendering::Camera& iCam, const std::vector<IRe
     glUseProgram(mShader.getProgramId());
 
     mShader.setUniform("uProjectionMatrix", mFullScreen2dCam.getProjectionMatrix());
-    mShader.setUniform("uInput", 0);
 
-    const Texture2d &output0Tex = mpOutputToBlit->mpFbo->getAttachement(mpOutputToBlit->mAttachment);
-
-    output0Tex.bind(0);
+    bindConnections();
     mFullScreenQuad.draw();
-    output0Tex.unbind();
+    unbindConnections();
 
     glUseProgram(0);
 
@@ -97,29 +85,9 @@ void ScreenBlitPass::revertGlState()
 }
 
 //---------------------------------------------------------------------------------------------------------------------
-void ScreenBlitPass::sharePasses(const std::map<int, IRenderPass*> ipRenderPassNameToRenderPass)
+void ScreenBlitPass::sharePasses(const std::map<int, IRenderPass*>& iRenderPassNameToRenderPass)
 {
+    (void)iRenderPassNameToRenderPass;
     IRenderPass::makeFullScreenQuadAnd2dCamera(&mFullScreenQuad, &mFullScreen2dCam);
-
-    // get the opaque pass fbo
-    auto itOpaque = ipRenderPassNameToRenderPass.find(rpiOpaque);
-    auto itGlow = ipRenderPassNameToRenderPass.find(rpiGlow);
-
-    assert(itOpaque != ipRenderPassNameToRenderPass.end() &&
-        itGlow != ipRenderPassNameToRenderPass.end());
-    if (itOpaque == ipRenderPassNameToRenderPass.end()) {
-        LOG_TRACE_ERROR(Logger::llNormal, "Could not find the opaque pass...");
-    }
-    else if (itGlow == ipRenderPassNameToRenderPass.end()) {
-        LOG_TRACE_ERROR(Logger::llNormal, "Could not find the glow pass...");
-    }
-    else {
-        IRenderPass* pOpaquePass = itOpaque->second;
-        //IRenderPass* pGlowPass = itGlow->second;
-
-        mpOutputToBlit = &pOpaquePass->getOutput("colorOut");
-        //mpOutputToBlit = &pOpaquePass->getOutput("glowTexturedOut");
-        //mpOutputToBlit = &pGlowPass->getOutput("glow1Out");
-    }
 }
 

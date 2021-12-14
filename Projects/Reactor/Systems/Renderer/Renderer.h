@@ -36,6 +36,7 @@ namespace Reactor
         // clearRenderPasses();
 
         virtual bool init() override final;
+        void initializePasses();
 
         virtual void preUpdate() override final;
         virtual void update() override final;
@@ -49,8 +50,8 @@ namespace Reactor
     protected:
         void addDrawable(ThreeD::SceneNode* ipNode, IRenderable* ipRenderable); // renommer a addDrawable
         void addTextureRenderable(ImageNode* ipNode, TextureRenderable* ipRenderable); // renommer a addDrawable
+        void connectBuiltInPasses();
         bool initializeGl();
-        void initializePasses();
         void initializeSceneNode(ThreeD::SceneNode* ipNode);
         void draw();
         void handleKeyboard();

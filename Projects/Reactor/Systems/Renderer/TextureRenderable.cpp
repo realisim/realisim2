@@ -32,8 +32,8 @@ void TextureRenderable::initializeGpuRessources()
     const Core::Image& image = mpNode->getImage();
     assert(image.isValid() && image.hasImageData());
 
-    bool gammeCorrected = true; //unless a linear data such as normal or specular
-    Rendering::TextureFormatDefinition tfd = Rendering::toTextureFormatDefinition(image.getInternalFormat(), gammeCorrected);
+    bool needsGammaCorrection = false; //unless a linear data such as normal or specular
+    Rendering::TextureFormatDefinition tfd = Rendering::toTextureFormatDefinition(image.getInternalFormat(), needsGammaCorrection);
 
     mTexture.set(Rendering::tt2d,
         0,

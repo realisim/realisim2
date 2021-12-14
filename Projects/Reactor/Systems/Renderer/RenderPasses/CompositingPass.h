@@ -7,17 +7,17 @@ namespace Realisim
 {
 namespace Reactor
 {
-    class ScreenBlitPass : public IRenderPass
+    class CompositingPass : public IRenderPass
     {
     public:
-        ScreenBlitPass();
-        ScreenBlitPass(const ScreenBlitPass&) = delete;
-        ScreenBlitPass& operator=(const ScreenBlitPass&) = delete;
-        virtual ~ScreenBlitPass();
+        CompositingPass();
+        CompositingPass(const CompositingPass&) = delete;
+        CompositingPass& operator=(const CompositingPass&) = delete;
+        virtual ~CompositingPass();
 
     protected:
-        virtual void loadShader(const std::string& iAssetPath);
-        virtual void sharePasses(const std::map<int, IRenderPass*>& iRenderPassNameToRenderPass) override final;
+        virtual void loadShader(const std::string& iAssetPath) final;
+        virtual void sharePasses(const std::map<int, IRenderPass*>& ipRenderPassNameToRenderPass) final;
         virtual void defineInputOutputs() override final;
         virtual void releaseGlRessources() override final;
         virtual void applyGlState() final;
@@ -26,6 +26,8 @@ namespace Reactor
 
         Rendering::Camera mFullScreen2dCam;
         Rendering::VertexArrayObject mFullScreenQuad;
+
+        Rendering::FrameBufferAttachementType mAdditionResultFba;
     };
 
 }

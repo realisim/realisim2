@@ -28,6 +28,7 @@ namespace Reactor
 
         struct Input {
             Input() : mName("noName"), mpShader(nullptr), mUniformName("noName") {}
+            Input(const std::string& iName, Rendering::Shader* ipShader, const std::string& iUniformName) : mName(iName), mpShader(ipShader), mUniformName(iUniformName) { ; }
             std::string mName;
             Rendering::Shader* mpShader; // not owned
             std::string mUniformName;
@@ -42,9 +43,8 @@ namespace Reactor
         };
 
         struct Connection {
-            Connection() : mOutputIndex(-1), mInputIndex(-1) { ; }
-            Connection(int iO, int iI) : mOutputIndex(iO), mInputIndex(iI) { ; }
-            int mOutputIndex;
+            Connection() : mInputIndex(-1) { ; }
+            Output mOutput;
             int mInputIndex;
         };
 
@@ -78,15 +78,16 @@ namespace Reactor
         void setName(const std::string& iV) { mName = iV; }
 
     protected:
+        void bindConnections();
         virtual void initializeFbo() { ; }
         virtual void loadShader(const std::string& iAssetPath) { (void)iAssetPath; }
-        virtual void sharePasses(const std::map<int, IRenderPass*> ipRenderPassNameToRenderPass) { ; }
+        virtual void sharePasses(const std::map<int, IRenderPass*>& iRenderPassNameToRenderPass) { (void)iRenderPassNameToRenderPass; }
         virtual void defineInputOutputs() = 0;
-        virtual void connectInputOutputs() = 0;
         virtual void applyGlState() = 0;
         virtual void render(const Rendering::Camera&, const std::vector<IRenderable*> iRenderables) = 0;
         virtual void revertGlState() = 0;
         virtual void releaseGlRessources();
+        void unbindConnections();
 
         static Input mDummyInput;
         static Output mDummyOutput;

@@ -27,7 +27,7 @@ int main(int argc, char** argv)
     format.setRenderableType(QSurfaceFormat::OpenGL);
 	format.setSwapInterval(1);
 	format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
-    format.setSamples(1);
+    format.setSamples(4);
 	//format.setSwapBehavior(QSurfaceFormat::TripleBuffer);
     format.setDepthBufferSize(24);
     format.setStencilBufferSize(8);
