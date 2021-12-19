@@ -17,11 +17,12 @@ namespace Reactor{
     class Engine
     {
     public:
-        Engine() = default;
+        Engine();
         Engine(const Engine&) = delete;
         Engine& operator=(const Engine&) = delete;
-        ~Engine() = default;
+        ~Engine();
 
+        void addUserSystem(int iSystemId, ISystem*);
         bool init();
         const Broker& getBroker() const { return mBroker; }
         Broker& getBrokerRef() { return mBroker; }
@@ -31,6 +32,7 @@ namespace Reactor{
         void update();
         //void start();
         //void stop();
+        ISystem* removeUserSystem(int iSystemId);
         void setNativeWindowsGlContext(HDC iHDC, HGLRC iHGLRC);
         void terminate();
 

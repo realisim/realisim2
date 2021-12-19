@@ -1,0 +1,1 @@
+Build with CMake, vs2019 x64. Very staightforward.

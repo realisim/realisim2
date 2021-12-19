@@ -22,14 +22,11 @@ namespace Reactor{
         Hub&operator=(const Hub&) = delete;
         ~Hub() = default;
         
-        enum System {sRenderer = 0, sNumberOfSystems, sUserDefined = 10000};
-
-        CameraController& getCameraController() { return *mpCameraController; }
+        enum UserSystemId {usiCameraController = 0, usiUserDefinedSystems = 10000};
 
         const Renderer& getRenderer() const { return *mpRenderer; }
         Renderer& getRendererRef() const { return *mpRenderer; };
 
-        ISystem* getSystem(System);
         ISystem* getUserDefinedSystem(int iSystem);
 
     protected:
@@ -37,9 +34,8 @@ namespace Reactor{
 
         // not owned pointers to all core systems
         Renderer *mpRenderer;
-        CameraController *mpCameraController;
 
-        // owned pointer to all userDefined systems
+        // not owned pointer to all userDefined systems
         std::map<int, ISystem*> mUserDefinedSystems;
     };
 }

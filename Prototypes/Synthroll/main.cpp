@@ -33,14 +33,14 @@ void configureGlSurface()
 
 //-----------------------------------------------------------------------------
 int main(int argc, char** argv)
-{
+{    
     LOG_TRACE(Core::Logger::llNormal, "Start of Reactor-EngineProto");
 
     QApplication app(argc, argv);
 
     // configure GLSurface
     configureGlSurface();
-
+    
     //
     Reactor::Engine engine;
 
@@ -49,6 +49,18 @@ int main(int argc, char** argv)
     Realisim::Reactor::CameraController* pCameraController = new Realisim::Reactor::CameraController(&engine.getBrokerRef(), &h);
     engine.addUserSystem(Realisim::Reactor::Hub::usiCameraController, pCameraController);
 
+    caca
+
+    // create and add all systems
+    //NetworkSystem
+    //GameSystem*
+    //PhysicsSystem*
+    //PlayerControllerSystem
+    
+
+    //QScreen* pScreen = app.primaryScreen();
+    //engine.setScreenRefreshrateInMsecs(1.0 / (double)pScreen->refreshRate());
+       
     int exitCode = -1;
     if (engine.init())
     {
@@ -56,6 +68,6 @@ int main(int argc, char** argv)
         mw.show();
         exitCode = app.exec();
     }
-
+    
     return exitCode;
 }
