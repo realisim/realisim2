@@ -28,7 +28,7 @@ namespace Reactor
         Renderer(Broker* ipBroker, Hub* ipHub);
         virtual ~Renderer();
 
-        void addAndMakeRenderable(ThreeD::SceneNode* ipNode);
+        void addAndMakeRenderableAsSoonAsPossible(ThreeD::SceneNode* ipNode);
         void addRenderPass(int iRenderPassIndex, IRenderPass *ipPass);
         void addRenderPass(RenderPassId iIndex, IRenderPass* ipPass);
 
@@ -41,6 +41,8 @@ namespace Reactor
         virtual void preUpdate() override final;
         virtual void update() override final;
 
+        void removeRenderableAsSoonAsPossible(uint32_t iNodeId);
+        void removeRenderableAsSoonAsPossible(const ThreeD::SceneNode* ipNode);
         void resizeGl(int iWidth, int iHeight);
         //removeRenderPass(int iRenderPassIndex);
         void setScene(Scene *ipScene);
@@ -48,6 +50,7 @@ namespace Reactor
         void swapBuffers();
 
     protected:
+        void addAndMakeRenderable(ThreeD::SceneNode* ipNode);
         void addDrawable(ThreeD::SceneNode* ipNode, IRenderable* ipRenderable); // renommer a addDrawable
         void addTextureRenderable(ImageNode* ipNode, TextureRenderable* ipRenderable); // renommer a addDrawable
         void connectBuiltInPasses();
@@ -56,6 +59,8 @@ namespace Reactor
         void draw();
         void handleKeyboard();
         void reloadShaders();
+        void removeFromAllPasses(IRenderable* ipToRemove);
+        void removeRenderable(int iNodeId);
 
         Rendering::Device mDevice;
         Rendering::Context mContext;
@@ -72,6 +77,9 @@ namespace Reactor
         std::vector<IRenderPass*> mRenderPasses; // defines the draw order
 
         std::map<int, std::vector<IRenderable*>> mPassIdToDrawables; // the list of drawable per pass should be IDrawable
+
+        std::vector<ThreeD::SceneNode*> mRenderablesToAddAsSoonAsPossible;
+        std::vector<uint32_t> mRenderablesToRemoveAsSoonAsPossible;
     };
 
 }

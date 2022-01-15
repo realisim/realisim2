@@ -27,7 +27,8 @@ namespace Reactor{
         const Renderer& getRenderer() const { return *mpRenderer; }
         Renderer& getRendererRef() const { return *mpRenderer; };
 
-        ISystem* getUserDefinedSystem(int iSystem);
+        const ISystem* getUserDefinedSystem(int iSystem) const;
+        ISystem* getUserDefinedSystemPtr(int iSystem);
 
     protected:
         void clear(); // only called by Engine.

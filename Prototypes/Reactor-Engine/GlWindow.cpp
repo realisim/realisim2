@@ -126,7 +126,7 @@ void GlWindow::keyReleaseEvent(QKeyEvent *e)
 //------------------------------------------------------------------------------
 void GlWindow::mouseMoveEvent(QMouseEvent *e)
 {
-    Interface::Mouse& m = mEngine.getBrokerRef().getMouse();
+    Interface::Mouse& m = mEngine.getBrokerRef().getMouseRef();
 
     //modify input to engine.
     m.setPosition(e->x(), e->y());
@@ -138,7 +138,7 @@ void GlWindow::mouseMoveEvent(QMouseEvent *e)
 void GlWindow::mousePressEvent(QMouseEvent *e)
 {
     using namespace Interface;
-    Mouse& m = mEngine.getBrokerRef().getMouse();
+    Mouse& m = mEngine.getBrokerRef().getMouseRef();
 
     //modify input to engine.
     switch(e->button())
@@ -156,7 +156,7 @@ void GlWindow::mousePressEvent(QMouseEvent *e)
 void GlWindow::mouseReleaseEvent(QMouseEvent *e)
 {
     using namespace Interface;
-    Mouse& m = mEngine.getBrokerRef().getMouse();
+    Mouse& m = mEngine.getBrokerRef().getMouseRef();
 
     //modify input to engine.
     switch (e->button())
@@ -190,7 +190,7 @@ void GlWindow::resizeEvent(QResizeEvent *e)
 void GlWindow::wheelEvent(QWheelEvent* e)
 {
     using namespace Interface;
-    Mouse& m = mEngine.getBrokerRef().getMouse();
+    Mouse& m = mEngine.getBrokerRef().getMouseRef();
 
     QPoint deltaInDegrees = e->angleDelta() / 8;
     m.setWheelDeltaInDegrees(deltaInDegrees.x(), deltaInDegrees.y());

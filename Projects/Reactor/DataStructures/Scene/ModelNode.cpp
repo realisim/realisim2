@@ -94,7 +94,7 @@ void ModelNode::update(double iTimeSinceStartupInSeconds)
         IPositionableNode* parent = findFirstParentOfType<IPositionableNode>();
         if (parent != nullptr)
         {
-            parentWorldTransform = parent->getWorldTransform();            
+            parentWorldTransform = parent->getWorldTransform();
         }
         mWorldTransform = parentWorldTransform * mParentTransform;
         setTransformDirty(false);

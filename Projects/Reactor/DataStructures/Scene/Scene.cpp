@@ -9,7 +9,8 @@ using namespace Realisim;
 Scene::Scene() :
     mpRoot(nullptr),
     mpImageLibrary(nullptr),
-    mpMaterialLibrary(nullptr)
+    mpMaterialLibrary(nullptr),
+    mAmbientFactor(0.05, 0.05, 0.05)
 {
     makeNewScene();
 }

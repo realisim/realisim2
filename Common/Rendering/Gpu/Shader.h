@@ -103,7 +103,7 @@ namespace Rendering
         const std::string& getName() const;
         int getNumberOfShaders(ShaderType) const;
         int getNumberOfUniforms() const;
-        inline int getProgramId() const;
+        int getProgramId() const;
         int getShaderId(ShaderType iSt, int iIndex) const;
         std::string getShaderSource(ShaderType iSt, int iIndex) const;
         int getUniformLocation(const std::string& iName) const;

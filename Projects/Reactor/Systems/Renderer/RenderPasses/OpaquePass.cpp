@@ -100,7 +100,8 @@ void OpaquePass::render(const Rendering::Camera& iCam, const std::vector<IRender
     mShader.setUniform("uApplyLighting", true);
     mShader.setUniform("uUseSampler", false);
     mShader.setUniform("uLightPosition", Math::Vector3(-1, 0.7, 0.3));
-    
+    mShader.setUniformAsFloat("uAmbientFactor", getScene()->getAmbientFactor());
+
     ModelRenderable* pModelRenderable = nullptr;
     for (int i = 0; i < iRenderables.size(); ++i) {
         int samplerIndex = 0;

@@ -90,7 +90,7 @@ namespace Rendering
     //      and screen space:
     //      
     //      cameraToWorld(), cameraDeltaToWorld()
-    //      screenToWorld(), screenDeltaToWorld()
+    //      pixelToWorld(), pixelDeltaToWorld()
     //      worldToCamera(), worldDeltaToCamera()
     //      worldToScreen(), worldDeltaToSreen()
     //

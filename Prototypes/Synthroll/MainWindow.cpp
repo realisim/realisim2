@@ -63,14 +63,6 @@ mTimerId(0)
 
     // create menus
     createMenus();
-
-
-    Reactor::Broker& b = mEngine.getBrokerRef();
-    b.makeBasicScene();
-    
-    Reactor::Hub& h = mEngine.getHubRef();
-    Reactor::Renderer& renderer = h.getRendererRef();
-    renderer.setScene(&b.getSceneRef());
 }
 
 //-----------------------------------------------------------------------------
@@ -129,34 +121,12 @@ void MainWindow::handleGlContextIsInitialized()
 {
     getEngine().setNativeWindowsGlContext(mpGlWindow->getOpenGlNativeDC(), mpGlWindow->getOpenGlNativeHandle());
 
-    //// Create the streaming context only when the main context is created since they
-    //// are going to be shared.
-
-    ////--- streaming gl context
-    //mpStreamingGlWindow = new GlWindow(mpGlWindow, mpGlWindow->getQOpenGlContext(), nullptr);
-    //connect(mpStreamingGlWindow, SIGNAL(glContextHasBeenInitialized()),
-    //    this, SLOT(handleGlStreamingContextIsInitialized()));
-    //mpStremaingGlWidget = QWidget::createWindowContainer(mpStreamingGlWindow, mpCentralWidget);
-    //mpStremaingGlWidget->setMinimumSize(1, 1);
-    //mpStremaingGlWidget->setMaximumSize(2, 2);
-    //mpStremaingGlWidget->setFocusPolicy(Qt::NoFocus);
-    //mpStremaingGlWidget->show();
-
     // start the timer only when GL context are initiliazed, because the 
     // timerEvent will trigger some gl commands
     // Run as fast as possible. The renderer will sync up with the screen refresh rate
     //
     mTimerId = startTimer(0);
 }
-
-////-----------------------------------------------------------------------------
-//void MainWindow::handleGlStreamingContextIsInitialized()
-//{
-//    mpStremaingGlWidget->hide();
-//
-//    getCore().setNativeWindowsGlStreamingContext(mpStreamingGlWindow->getOpenGlNativeDC(),
-//        mpStreamingGlWindow->getOpenGlNativeHandle());
-//}
 
 //-----------------------------------------------------------------------------
 void MainWindow::keyReleaseEvent(QKeyEvent *ipE)
@@ -176,44 +146,13 @@ void MainWindow::timerEvent(QTimerEvent *ipE)
 {
     if (ipE->timerId() == mTimerId)
     {      
-        getEngine().update();
-
-        /*if(mTimerHighFrequencyRefreshTimer.elapsed() >= kHighFrequencyRefreshRateInSeconds)
-        {
-            updateUiAtHighFrequency();
-            mTimerHighFrequencyRefreshTimer.start();
-        }*/
-        
+        getEngine().update();        
     }
 }
 
 //-----------------------------------------------------------------------------
 void MainWindow::updateUi()
 {
-    /*Engine::ScopedStatistics scopedStats("MainWindow::updateUi", getCore().getBroker());
-
-    for(auto it : mPalettes)
-    { 
-        IG::Palette *p = it.second;
-        if (p->getDockWidget()->isVisible())
-        {
-            p->updateUi();
-        }
-    }*/
 }
 
-//-----------------------------------------------------------------------------
-void MainWindow::updateUiAtHighFrequency()
-{
-    /*Engine::ScopedStatistics scopedStats("MainWindow::updateUiAtHighFrequency", getCore().getBroker());
-
-    for(auto it : mPalettes)
-    { 
-        IG::Palette *p = it.second;
-        if (p->getDockWidget()->isVisible())
-        {
-            p->updateUiAtHighFrequency();
-        }
-    }*/
-}
 

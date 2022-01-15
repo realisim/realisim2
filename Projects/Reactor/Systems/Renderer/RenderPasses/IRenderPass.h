@@ -1,6 +1,7 @@
 #pragma once
 
 
+#include "DataStructures/Scene/Scene.h"
 #include "Rendering/Camera.h"
 #include "Rendering/Gpu/DataType.h"
 #include "Rendering/Gpu/FrameBufferObject.h"
@@ -68,6 +69,7 @@ namespace Reactor
         const std::string& getName() const { return mName; }
         int getNumberOfInputs() const { return (int)mInputs.size(); }
         int getNumberOfOutputs() const { return (int)mOutputs.size(); }
+        const Scene* getScene() const { return mpScene; }
         bool isFboOwned() const { return mFboIsOwned; }
 
         static void makeFullScreenQuadAnd2dCamera(Rendering::VertexArrayObject* pVao, Rendering::Camera* pCam);
@@ -76,6 +78,7 @@ namespace Reactor
         void removeInput(int iIndex);
         void removeOutput(int iIndex);
         void setName(const std::string& iV) { mName = iV; }
+        void setScene(const Scene* ipScene) { mpScene = ipScene; }
 
     protected:
         void bindConnections();
@@ -103,6 +106,8 @@ namespace Reactor
         Rendering::Shader mShader;
         Rendering::FrameBufferObject* mpFbo; // each pass decides if it owns of share an Fbo
         bool mFboIsOwned;
+
+        const Scene* mpScene; // not owned, should never be null
     };
 
 }

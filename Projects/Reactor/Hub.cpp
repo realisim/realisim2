@@ -14,7 +14,13 @@ void Hub::clear() {
 }
 
 //---------------------------------------------------------------------------------------------------------------------
-ISystem* Hub::getUserDefinedSystem(int iSystem)
+const ISystem* Hub::getUserDefinedSystem (int iSystem) const
+{
+    return const_cast<const ISystem*>(const_cast<Hub*>(this)->getUserDefinedSystemPtr(iSystem));
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+ISystem* Hub::getUserDefinedSystemPtr(int iSystem)
 {
     ISystem* r = nullptr;
 

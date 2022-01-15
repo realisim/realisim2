@@ -104,6 +104,13 @@ void Renderer::addAndMakeRenderable(SceneNode* ipNode)
     } break;
     default: break;
     }
+
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+void Renderer::addAndMakeRenderableAsSoonAsPossible(SceneNode* ipNode)
+{
+    mRenderablesToAddAsSoonAsPossible.push_back(ipNode);
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -267,11 +274,13 @@ bool Renderer::initializeGl()
 //---------------------------------------------------------------------------------------------------------------------
 void Renderer::initializePasses() {
     LOG_TRACE(Logger::llNormal, "Initializing render passes...");
+    const Broker& b = getBroker();
 
     // init all passes
     for (auto pPass : mRenderPasses) {
+        pPass->setScene(&b.getScene());
         pPass->initializeFbo();
-        pPass->loadShader(getBroker().getAssetPath());
+        pPass->loadShader(b.getAssetPath());
     }
 
     // share fbos between pass and terminate initialization    
@@ -284,6 +293,7 @@ void Renderer::initializePasses() {
 }
 
 //---------------------------------------------------------------------------------------------------------------------
+//Should be removed from renderer
 void Renderer::initializeSceneNode(SceneNode* ipNode)
 {
     const Broker& b = getBroker();
@@ -308,6 +318,10 @@ void Renderer::handleKeyboard()
 }
 
 //---------------------------------------------------------------------------------------------------------------------
+void Renderer::preUpdate() {
+}
+
+//---------------------------------------------------------------------------------------------------------------------
 void Renderer::reloadShaders()
 {
     LOG_TRACE(Logger::llNormal, "Reloading render pass shaders...");
@@ -320,18 +334,53 @@ void Renderer::reloadShaders()
 }
 
 //---------------------------------------------------------------------------------------------------------------------
-void Renderer::preUpdate() {
+void Renderer::removeFromAllPasses(IRenderable* ipToRemove)
+{
+    for (auto& itPassIdToDrawables : mPassIdToDrawables) {
+        std::vector<IRenderable*>& drawables = itPassIdToDrawables.second;
+        auto foundIt = std::find(drawables.begin(), drawables.end(), ipToRemove);
+        if (foundIt != drawables.end())
+        {
+            drawables.erase(foundIt);
+        }
+    }
 }
 
 //---------------------------------------------------------------------------------------------------------------------
-void Renderer::update(){
-    mContext.makeCurrent();
-    
-    // draw
-    draw();
+void Renderer::removeRenderableAsSoonAsPossible(uint32_t iNodeId)
+{
+    mRenderablesToRemoveAsSoonAsPossible.push_back(iNodeId);
+}
 
-    handleKeyboard();
-    mContext.doneCurrent();
+//---------------------------------------------------------------------------------------------------------------------
+void Renderer::removeRenderableAsSoonAsPossible(const ThreeD::SceneNode* ipNode)
+{
+    removeRenderableAsSoonAsPossible(ipNode->getId());
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+void Renderer::removeRenderable(int iNodeId)
+{
+    auto itSceneNode = mIdToSceneNode.find(iNodeId);
+    if (itSceneNode != mIdToSceneNode.end())
+        mIdToSceneNode.erase(itSceneNode);
+
+    auto itRenderable = mIdToRenderable.find(iNodeId);
+    if (itRenderable != mIdToRenderable.end())
+    {
+        IRenderable* pRenderableToDelete = itRenderable->second;
+        removeFromAllPasses(pRenderableToDelete);
+        delete pRenderableToDelete;
+        mIdToRenderable.erase(itRenderable);
+    }
+        
+    auto itDrawable = mIdToDrawable.find(iNodeId);
+    if (itDrawable != mIdToDrawable.end())
+        mIdToDrawable.erase(itDrawable);
+
+    auto itTexture = mIdToTexture.find(iNodeId);
+    if (itTexture != mIdToTexture.end())
+        mIdToTexture.erase(itTexture);
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -357,6 +406,7 @@ void Renderer::resizeGl(int iWidth, int iHeight)
 
 
 //---------------------------------------------------------------------------------------------------------------------
+// THIS SHOULD BE REMOVED
 void Renderer::setScene(Scene* ipScene)
 {
     // flush all previous renderables
@@ -386,5 +436,24 @@ void Renderer::swapBuffers() {
     SwapBuffers(mContext.getDC());
     //glFinish();
 
+    mContext.doneCurrent();
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+void Renderer::update() {
+    mContext.makeCurrent();
+
+    for (auto nodeId : mRenderablesToRemoveAsSoonAsPossible) {
+        removeRenderable(nodeId); }
+    mRenderablesToRemoveAsSoonAsPossible.clear();
+
+    for (auto sceneNode : mRenderablesToAddAsSoonAsPossible){
+        addAndMakeRenderable(sceneNode); }
+    mRenderablesToAddAsSoonAsPossible.clear();
+
+    // draw
+    draw();
+
+    handleKeyboard();
     mContext.doneCurrent();
 }

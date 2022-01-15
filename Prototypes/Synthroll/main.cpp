@@ -10,6 +10,10 @@
 #include <QScreen>
 #include "Reactor/Engine.h"
 #include "Reactor/Systems/CameraController.h"
+#include "Systems/GameSystem.h"
+#include "Systems/PhysicsSystem.h"
+#include "Systems/SystemIds.h"
+#include "Systems/TerrainEditionSystem.h"
 
 using namespace Realisim;
 using namespace Reactor;
@@ -45,18 +49,23 @@ int main(int argc, char** argv)
     Reactor::Engine engine;
 
     // temporary camera controller
-    Realisim::Reactor::Hub& h = engine.getHubRef();
-    Realisim::Reactor::CameraController* pCameraController = new Realisim::Reactor::CameraController(&engine.getBrokerRef(), &h);
-    engine.addUserSystem(Realisim::Reactor::Hub::usiCameraController, pCameraController);
-
-    caca
+    Reactor::Broker& b = engine.getBrokerRef();
+    Reactor::Hub& h = engine.getHubRef();
+    Reactor::CameraController* pCameraController = new Reactor::CameraController(&b, &h);
+    engine.addUserSystem(Reactor::Hub::usiCameraController, pCameraController);
 
     // create and add all systems
-    //NetworkSystem
-    //GameSystem*
+    //GameSystem
+    Synthroll::GameSystem* gs = new Synthroll::GameSystem(&b, &h);
+    engine.addUserSystem(GAME_SYSTEM_ID, gs);
+
     //PhysicsSystem*
-    //PlayerControllerSystem
-    
+    Synthroll::PhysicsSystem* ps = new Synthroll::PhysicsSystem(&b, &h);
+    engine.addUserSystem(PHYSICS_SYSTEM_ID, ps);
+
+    //TerrainEdition
+    Synthroll::TerrainEditionSystem* tes = new Synthroll::TerrainEditionSystem(&b, &h);
+    engine.addUserSystem(TERRAIN_EDITION_SYSTEM_ID, tes);
 
     //QScreen* pScreen = app.primaryScreen();
     //engine.setScreenRefreshrateInMsecs(1.0 / (double)pScreen->refreshRate());

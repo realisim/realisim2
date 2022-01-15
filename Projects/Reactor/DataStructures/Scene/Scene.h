@@ -1,6 +1,8 @@
 #pragma once
 
+
 #include "3d/Scene/SceneNode.h"
+#include "Math/Vector.h"
 
 namespace Realisim
 {
@@ -17,6 +19,7 @@ namespace Reactor
         //void addImage(ImageNode* pImage);
         //void addMaterial(MaterialNode* pMat);
         void clear();
+        const Math::Vector3& getAmbientFactor() const { return mAmbientFactor; }
         const ThreeD::SceneNode& getRoot() const { return *mpRoot; }
         ThreeD::SceneNode& getRootRef() { return *mpRoot; }
 
@@ -26,6 +29,7 @@ namespace Reactor
         const ThreeD::SceneNode& getMaterialLibrary() const { return *mpMaterialLibrary; }
         ThreeD::SceneNode& getMaterialLibraryRef() { return *mpMaterialLibrary; }
 
+        void setAmbientFactor(const Math::Vector3& iV){ mAmbientFactor = iV; }
     protected:
         void makeNewScene();
 
@@ -33,6 +37,8 @@ namespace Reactor
 
         ThreeD::SceneNode* mpMaterialLibrary; //owned never null
         ThreeD::SceneNode* mpImageLibrary; //owned never null
+
+        Math::Vector3 mAmbientFactor;
     };
 
 }

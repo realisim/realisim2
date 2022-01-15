@@ -50,7 +50,7 @@ void CameraController::handleKeyboard()
 void CameraController::handleMouse()
 {
     Broker& b = getBrokerRef();
-    Mouse& m = b.getMouse();
+    Mouse& m = b.getMouseRef();
     Rendering::Camera& cam = b.getMainCameraRef();
 
     if (m.isButtonPressed(Mouse::bLeft)) {
@@ -81,6 +81,9 @@ void CameraController::handleGamepad()
 
 //---------------------------------------------------------------------------------------------------------------------
 void CameraController::update() {
+    //early out
+    if (!isActive()) return;
+
     handleKeyboard();
     handleMouse();
     handleGamepad();

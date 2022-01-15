@@ -12,7 +12,9 @@ INCLUDE( "../../CMakeModules/Tga.cmake" )
 INCLUDE( "../../CMakeModules/Half.cmake" )
 
 set( SOURCE_FILES ${SOURCE_FILES} CMakeLists.txt )
-add_component( "./" "application")
+add_component( "./" "sources")
+add_component( "./DataStructures" "sources/DataStructures")
+add_component( "./Systems" "sources/Systems")
 
 #------------------------------------------------------------------------------
 # additional include directories

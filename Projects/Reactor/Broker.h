@@ -23,7 +23,8 @@ namespace Reactor{
         Interface::Keyboard& getKeyboardRef() { return mKeyboard; }
         const Rendering::Camera& getMainCamera() const { return mMainCamera; }
         Rendering::Camera& getMainCameraRef() { return mMainCamera; }
-        Interface::Mouse& getMouse() { return mMouse; }
+        const Interface::Mouse& getMouse() const { return mMouse; }
+        Interface::Mouse& getMouseRef() { return mMouse; }
         double getTimeInSecondsOfStartOfFrame() const { return mTimeOfStartOfFrame ; }
         double getTimeInSecondsSinceStartup() const { return mTimeSinceStartup.elapsed(); }
         const Scene& getScene() const { return mScene; }

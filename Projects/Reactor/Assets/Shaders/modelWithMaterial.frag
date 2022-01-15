@@ -6,9 +6,9 @@ uniform bool uUseSampler = false;
 uniform sampler2D uDiffuseSampler;
 uniform float uAlphaFactor; //mutiplies the alpha channel of color.
 uniform vec2 uTextureScaling = vec2(1.0, 1.0);
+uniform vec3 uAmbientFactor = vec3(0.05f, 0.05f, 0.05f);
 
 const dvec3 lightColor = dvec3(1.0, 1.0, 1.0);
-const float ambientFactor = 0.05f;
 
 // Interpolated values from the vertex shaders
 in vec3 oVertex;
@@ -32,7 +32,7 @@ void main()
         vec3 normal = normalize(oNormal); 
         vec3 lightDir = normalize(vec3(uLightPosition));
 
-        vec3 ambientC = ambientFactor * vec3(lightColor);
+        vec3 ambientC = uAmbientFactor * vec3(lightColor);
 
         float diff = max(dot(normal, lightDir), 0.0f);
         vec3 diffuseC = diff * vec3(lightColor);

@@ -10,7 +10,8 @@ namespace Realisim
             sneModelNode = (int)ThreeD::SceneNode::NodeType::ntUserDefined,
             sneImageNode,
             sneMaterialNode,
-            sneLightNode
+            sneLightNode,
+            sneUserDefined = sneModelNode + 10000
         };
 
     }
