@@ -26,7 +26,9 @@ namespace
 //---------------------------------------------------------------------------------------------------------------------
 PhysicsSystem::PhysicsSystem(Reactor::Broker* ipBroker, Reactor::Hub* ipHub) : ISystem(ipBroker, ipHub),
 mState(sUndefined),
-mpWorld(nullptr)
+mpWorld(nullptr),
+mCurrentRecordIndex(0),
+mLastRecordIndex(0)
 {}
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -39,12 +41,33 @@ PhysicsSystem::~PhysicsSystem()
 }
 
 //---------------------------------------------------------------------------------------------------------------------
+void PhysicsSystem::forward(int iIncrement)
+{
+    if (getState() != sPaused) return;
+
+    const int index = std::min(mCurrentRecordIndex + iIncrement, (int)mLastRecordIndex - 1);
+    if (index <= mLastRecordIndex) {
+        mCurrentRecordIndex = index;
+
+        const ReplayRecord& rr = mPlayerReplayRecords[mCurrentRecordIndex];
+        mpPlayerBody->SetTransform(rr.mPosition, rr.mAngle);
+        mpPlayerBody->SetLinearVelocity(rr.mLinearVelocity);
+        mpPlayerBody->SetAngularVelocity(rr.mAngularVelocity);
+    }
+}
+
+//---------------------------------------------------------------------------------------------------------------------
 bool PhysicsSystem::init()
 {
     LOG_TRACE(Core::Logger::llNormal, "Initializing PhysicsSystem...");
 
     b2Vec2 gravity(0.0f, -9.8f);
     mpWorld = new b2World(gravity);
+
+    // 1 minute buffer
+    mPlayerReplayRecords.resize(60 * 60);
+    mCurrentRecordIndex = 0;
+    mLastRecordIndex = 0;
 
     setState(sRunning);
     LOG_TRACE(Core::Logger::llNormal, "\t done.");
@@ -76,6 +99,33 @@ void PhysicsSystem::reset()
     mpPlayerBody->SetTransform(b2Vec2((float)startPosition.x(), (float)startPosition.y()), 0.f);
     mpPlayerBody->SetLinearVelocity(b2Vec2(0.f, 0.f));
     mpPlayerBody->SetAngularVelocity(0.0f);
+
+    // clear the replay
+    mCurrentRecordIndex = 0;
+    mLastRecordIndex = 0;
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+void PhysicsSystem::resume() 
+{ 
+    mLastRecordIndex = mCurrentRecordIndex;
+    setState(sRunning);
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+void PhysicsSystem::rewind(int iIncrement)
+{
+    if (getState() != sPaused) return;
+
+    const int index = std::max(mCurrentRecordIndex - iIncrement, 0);
+    if (index <= mLastRecordIndex) {
+        mCurrentRecordIndex = index;
+
+        const ReplayRecord& rr = mPlayerReplayRecords[mCurrentRecordIndex];
+        mpPlayerBody->SetTransform(rr.mPosition, rr.mAngle);
+        mpPlayerBody->SetLinearVelocity(rr.mLinearVelocity);
+        mpPlayerBody->SetAngularVelocity(rr.mAngularVelocity);
+    }
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -129,19 +179,29 @@ void PhysicsSystem::setTerrain(const Terrain* ipTerrain)
 //---------------------------------------------------------------------------------------------------------------------
 void PhysicsSystem::update()
 {
-    if(getState() == sRunning)
-        mpWorld->Step(kTimeStep, kVelocityIterations, kPositionIterations);
-    
-    //--- update player
     GameSystem* gs = (GameSystem*)getHubRef().getUserDefinedSystem(GAME_SYSTEM_ID);
     Player& p = gs->getPlayerRef();
+   
+    ReplayRecord rr;
+    rr.mPosition = mpPlayerBody->GetPosition();
+    rr.mAngularVelocity = mpPlayerBody->GetAngularVelocity();
+    rr.mLinearVelocity = mpPlayerBody->GetLinearVelocity();
+    rr.mAngle = mpPlayerBody->GetAngle();
 
-    b2Vec2 position = mpPlayerBody->GetPosition();
-    //float angle = mpDynamicBody->GetAngle();
+    if (getState() == sRunning) {
+        mpWorld->Step(kTimeStep, kVelocityIterations, kPositionIterations);
+
+        mPlayerReplayRecords[mLastRecordIndex] = rr;
+        mLastRecordIndex++;
+        mCurrentRecordIndex++;
+        if (mLastRecordIndex >= mPlayerReplayRecords.size())
+            mPlayerReplayRecords.resize(size_t(mPlayerReplayRecords.size() * 1.2));
+    }
+    
 
     ModelNode& mn = p.getModelNodeRef();
     Matrix4 t;
-    t.setAsTranslation(Vector3(position.x, position.y, 0));
+    t.setAsTranslation(Vector3(rr.mPosition.x, rr.mPosition.y, 0));
     mn.setParentTransform(t);
 
     updateTerrain();

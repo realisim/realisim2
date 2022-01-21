@@ -102,6 +102,13 @@ void TerrainEditionSystem::handleKeyboard() {
             removeSegment(lastSegmentId);
         k.setKeyReleased(Key_Backspace);
     }
+
+    if (k.isKeyPressed(Key::Key_Left)) {
+        ps->rewind(1);
+    }
+    if (k.isKeyPressed(Key::Key_Right)) {
+        ps->forward(1);
+    }
 }
 
 //---------------------------------------------------------------------------------------------------------------------

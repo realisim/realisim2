@@ -20,14 +20,23 @@ namespace Synthroll {
         State getState() const { return mState; }
         virtual bool init() override final;
         //void initializeTerrain(const Terrain& iTerrain);
+        void forward(int iIncrement);
         void pause() { setState(sPaused); }
-        void resume() { setState(sRunning); }
+        void resume();
+        void rewind(int iIncrement);
         void setTerrain(const Terrain* ipTerrain);
         virtual void update() override final;
         void removeSegment(int iIndex);
         void reset();
 
     protected:
+        struct ReplayRecord {
+            b2Vec2 mPosition;
+            b2Vec2 mLinearVelocity;
+            float mAngularVelocity;
+            float mAngle;
+        };
+
         void setState(State iV);
         void updateTerrain();
 
@@ -38,6 +47,10 @@ namespace Synthroll {
         b2Body* mpPlayerBody;
 
         std::map<int, b2Body*> mLineSegmentToBody; // owned, but no need to delete on destructor
+
+        std::vector<ReplayRecord> mPlayerReplayRecords;
+        int mCurrentRecordIndex;
+        int mLastRecordIndex;
     };
 
 }
