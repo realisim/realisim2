@@ -26,7 +26,7 @@ namespace Synthroll {
         void rewind(int iIncrement);
         void setTerrain(const Terrain* ipTerrain);
         virtual void update() override final;
-        void removeSegment(int iIndex);
+        void removeSpline(int iIndex);
         void reset();
 
     protected:
@@ -46,7 +46,7 @@ namespace Synthroll {
         b2World* mpWorld; //owned
         b2Body* mpPlayerBody;
 
-        std::map<int, b2Body*> mLineSegmentToBody; // owned, but no need to delete on destructor
+        std::map<int, std::vector<b2Body*>> mSplineToBody; // owned, but no need to delete on destructor
 
         std::vector<ReplayRecord> mPlayerReplayRecords;
         int mCurrentRecordIndex;

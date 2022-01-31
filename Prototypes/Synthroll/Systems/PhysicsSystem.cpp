@@ -76,15 +76,16 @@ bool PhysicsSystem::init()
 }
 
 //---------------------------------------------------------------------------------------------------------------------
-void PhysicsSystem::removeSegment(int iIndex)
+void PhysicsSystem::removeSpline(int iIndex)
 {
-    auto it = mLineSegmentToBody.find(iIndex);
-    if (it != mLineSegmentToBody.end())
+    auto it = mSplineToBody.find(iIndex);
+    if (it != mSplineToBody.end())
     {
-        b2Body* pBody = it->second;
-        mpWorld->DestroyBody(pBody);
+        for (auto pBody : it->second) {
+            mpWorld->DestroyBody(pBody);
+        }
 
-        mLineSegmentToBody.erase(it);
+        mSplineToBody.erase(it);
     }
 }
 
@@ -169,9 +170,9 @@ void PhysicsSystem::setTerrain(const Terrain* ipTerrain)
 
     b2FixtureDef fixtureDef;
     fixtureDef.shape = &dynamicCircle;
-    fixtureDef.density = 1.0f;
-    fixtureDef.friction = 0.3f;
-    fixtureDef.restitution = 0.8f;
+    fixtureDef.density = 3.0f;
+    fixtureDef.friction = 0.8f;
+    fixtureDef.restitution = 0.5f;
 
     mpPlayerBody->CreateFixture(&fixtureDef);
 }
@@ -200,9 +201,11 @@ void PhysicsSystem::update()
     
 
     ModelNode& mn = p.getModelNodeRef();
-    Matrix4 t;
+    Matrix4 t, rTextureAlignment, rAngle;
     t.setAsTranslation(Vector3(rr.mPosition.x, rr.mPosition.y, 0));
-    mn.setParentTransform(t);
+    rTextureAlignment.setAsRotation(M_PI, Vector3(0, 1, 0));
+    rAngle.setAsRotation(rr.mAngle, Vector3(0, 0, 1));
+    mn.setParentTransform(t * rAngle * rTextureAlignment);
 
     updateTerrain();
 }
@@ -214,28 +217,36 @@ void PhysicsSystem::updateTerrain()
 
     if (mpTerrain->isDirty())
     {
-        // update all dirty terrain segments
-        const int numSegments = mpTerrain->getNumberOfSegments();
-        for (int i = 0; i < numSegments; ++i)
+        // update all dirty terrain splines
+        const int numSplines = mpTerrain->getNumberOfSplines();
+        for (int i = 0; i < numSplines; ++i)
         {
-            const Geometry::LineSegment& l = mpTerrain->getSegment(i);
-            if (mpTerrain->isSegmentDirty(i))
-            {
-                removeSegment(i);
-                
-                // add segment
-                b2BodyDef lineDef;
-                lineDef.position.Set(0, 0);
-                lineDef.angle = 0.0f;
-                b2Body* pLineBody = mpWorld->CreateBody(&lineDef);
-                
-                b2EdgeShape lineShape;
-                b2Vec2 a((float)l.mP0.x(), (float)l.mP0.y());
-                b2Vec2 b((float)l.mP1.x(), (float)l.mP1.y());
-                lineShape.SetTwoSided(a, b);
-                pLineBody->CreateFixture(&lineShape, 0.0f);
+            if (mpTerrain->isSplineDirty(i)) {
+                removeSpline(i);
 
-                mLineSegmentToBody[i] = pLineBody;
+                const int numPolygons = mpTerrain->getNumberOf2dPolygons(i);
+                for (int j = 0; j < numPolygons; ++j)
+                {
+                    const Polygon2d& p2d = mpTerrain->get2dPolygon(i, j);
+
+                    b2BodyDef polygonDef;
+                    polygonDef.position.Set(0, 0);
+                    polygonDef.angle = 0.0f;
+                    b2Body* pPolygonBody = mpWorld->CreateBody(&polygonDef);
+
+                    const std::vector<Math::Vector2>& vertices = p2d.getVertices();
+                    b2Vec2 *b2Vertices = new b2Vec2[p2d.getNumberOfVertices()];
+                    for (int k = 0; k < p2d.getNumberOfVertices(); ++k) {
+                        b2Vertices[k] = b2Vec2((float)vertices[k].x(), (float)vertices[k].y());
+                    }
+
+                    b2PolygonShape polyShape;
+                    polyShape.Set(b2Vertices, p2d.getNumberOfVertices());
+
+                    pPolygonBody->CreateFixture(&polyShape, 0.0f);
+
+                    mSplineToBody[i].push_back(pPolygonBody);
+                }
             }
         }
     }

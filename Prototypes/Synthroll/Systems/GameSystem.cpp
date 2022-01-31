@@ -1,6 +1,7 @@
 
 #include <cassert>
 #include "Core/Logger.h"
+#include "Core/Path.h"
 #include "DataStructures/Player.h"
 #include "Geometry/GeometricGrid.h"
 #include "Reactor/DataStructures/Scene/ModelNode.h"
@@ -10,6 +11,7 @@
 #include "Systems/PhysicsSystem.h"
 #include "Systems/SystemIds.h"
 #include "Systems/TerrainEditionSystem.h"
+#include "3d/Material.h"
 
 using namespace Realisim;
 using namespace Math;
@@ -41,16 +43,31 @@ bool GameSystem::init() {
     scene.setAmbientFactor( Vector3(0.3) );
 
     Rendering::Camera& cam = b.getMainCameraRef();
-    cam.set(Vector3(0, 0, 30), Vector3(0.0), Vector3(0.0, 1.0, 0.0));
+    cam.set(Vector3(0, 0, 50), Vector3(0.0), Vector3(0.0, 1.0, 0.0));
 
     using namespace Geometry;
     float radius = 0.5;
     GeometricGrid geoGrid; geoGrid.set(Vector3(radius), 32, 64);
 
-    ModelNode *playerModelNode = new ModelNode();
+    ImageNode* playerImageNode = new ImageNode();
+    playerImageNode->setName("playerImageNode");
+    playerImageNode->setFilenamePath(Core::Path::join(b.getAssetPath(), "Textures/ballTexture.png"));
+
+    ImageNode* playerImageGlowNode = new ImageNode();
+    playerImageGlowNode->setName("playerImageGlowNode");
+    playerImageGlowNode->setFilenamePath(Core::Path::join(b.getAssetPath(), "Textures/ballTexture_glow.png"));
+
+    MaterialNode* playerMatNode = new MaterialNode();
+    playerMatNode->setName("playerMatNode");
+    playerMatNode->addImageNode(playerImageNode, ThreeD::Material::ilDiffuse);
+    playerMatNode->addImageNode(playerImageGlowNode, ThreeD::Material::ilAdditional0);
+    
+    ModelNode* playerModelNode = new ModelNode();
     playerModelNode->setName("sphere");
     Mesh m = geoGrid.getMesh();
     playerModelNode->addMesh(m);
+    playerModelNode->setMaterialNode(playerMatNode);
+    playerModelNode->setRegisteredRenderPasses({ rpiOpaque, rpiGlow });
 
     mpPlayer0 = new Player();
     mpPlayer0->setRadius(radius);
@@ -66,38 +83,63 @@ bool GameSystem::init() {
     LineSegment ls1(Vector3(-5, 0, 0), Vector3(5, 0.5, 0));
     LineSegment ls2(Vector3(5, 0.5, 0), Vector3(10, 5, 0));
 
-    mTerrain.addSegment(ls0);
-    mTerrain.addSegment(ls1);
-    mTerrain.addSegment(ls2);
+    int iCurrentSpline = mTerrain.addSpline();
+    mTerrain.addSegment(iCurrentSpline, ls0);
+    mTerrain.addSegment(iCurrentSpline, ls1);
+    mTerrain.addSegment(iCurrentSpline, ls2);
 
     ThreeD::SceneNode& root = scene.getRootRef();
     root.addChild(playerModelNode);
+    scene.getImageLibraryRef().addChild(playerImageNode);
+    scene.getImageLibraryRef().addChild(playerImageGlowNode);
+    scene.getMaterialLibraryRef().addChild(playerMatNode);
 
     return true;
 }
 
 //---------------------------------------------------------------------------------------------------------------------
-Geometry::Mesh GameSystem::makeMeshFromTerrainSegment(const Geometry::LineSegment& iLineSegment)
+Geometry::Mesh GameSystem::makeMeshFromTerrainSpline(const TerrainSpline& iTs)
 {
     using namespace Geometry;
     Mesh m;
     m.setNumberOfVerticesPerFace(4);
     std::vector<Mesh::VertexData>& verticesRef = m.getVerticesRef();
-    Mesh::VertexData vd0, vd1, vd2, vd3;
 
-    Vector3 perpendicularDir = (iLineSegment.mP1 - iLineSegment.mP0).cross(Vector3(0.0, 0.0, 1.0));
-    perpendicularDir.normalize();
+    const uint32_t numPolygons = (uint32_t)iTs.m2dPolygons.size();
+    uint32_t vertexIndex = 0;
+    for (uint32_t i = 0; i < numPolygons; ++i)
+    {
+        Mesh::VertexData vd0, vd1, vd2, vd3, vd4, vd5, vd6, vd7;
+        const Polygon2d& p2d = iTs.m2dPolygons[i];
+        vd0.mVertex = Vector3(p2d.getVertices()[0], 1.0);
+        vd1.mVertex = Vector3(p2d.getVertices()[1], 1.0);
+        vd2.mVertex = Vector3(p2d.getVertices()[2], 1.0);
+        vd3.mVertex = Vector3(p2d.getVertices()[3], 1.0);
 
-    vd0.mVertex = iLineSegment.mP0;
-    vd1.mVertex = iLineSegment.mP0 + (perpendicularDir * 1);
-    vd2.mVertex = iLineSegment.mP1 + (perpendicularDir * 1);
-    vd3.mVertex = iLineSegment.mP1;
+        vd4.mVertex = Vector3(p2d.getVertices()[0], -1.0);
+        vd5.mVertex = Vector3(p2d.getVertices()[1], -1.0);
+        vd6.mVertex = Vector3(p2d.getVertices()[2], -1.0);
+        vd7.mVertex = Vector3(p2d.getVertices()[3], -1.0);
 
-    verticesRef.push_back(vd0);
-    verticesRef.push_back(vd1);
-    verticesRef.push_back(vd2);
-    verticesRef.push_back(vd3);
-    m.makeFace( { 0, 1, 2, 3 } );
+        verticesRef.push_back(vd0);
+        verticesRef.push_back(vd1);
+        verticesRef.push_back(vd2);
+        verticesRef.push_back(vd3);
+
+        verticesRef.push_back(vd4);
+        verticesRef.push_back(vd5);
+        verticesRef.push_back(vd6);
+        verticesRef.push_back(vd7);
+
+        m.makeFace({ vertexIndex + 0, vertexIndex + 1, vertexIndex + 2, vertexIndex + 3 }); //  z
+        m.makeFace({ vertexIndex + 4, vertexIndex + 7, vertexIndex + 6, vertexIndex + 5 }); // -z
+        m.makeFace({ vertexIndex + 0, vertexIndex + 3, vertexIndex + 7, vertexIndex + 4 }); //  y
+        m.makeFace({ vertexIndex + 1, vertexIndex + 5, vertexIndex + 6, vertexIndex + 2 }); // -y
+        m.makeFace({ vertexIndex + 0, vertexIndex + 4, vertexIndex + 5, vertexIndex + 1 }); //  x
+        m.makeFace({ vertexIndex + 2, vertexIndex + 6, vertexIndex + 7, vertexIndex + 3 }); //  -x
+
+        vertexIndex += 8;
+    }
 
     m.triangulate();
     m.generateFlatNormals();
@@ -182,17 +224,20 @@ void GameSystem::updateCamera() {
     Vector2 playerPosInPixel = cam.worldToPixel(playerPos);
     Vector2 playerPosInPixelNormalized(playerPosInPixel.x() / (double)vp.getWidth(), playerPosInPixel.y() / (double)vp.getHeight());
 
+
+    const double minThreshold = 0.15;
+    const double maxThreshold = 0.85;
     double deltaInXNormalized = 0.0;
     double deltaInYNormalized = 0.0;
-    if (playerPosInPixelNormalized.x() >= 0.7) {
-        deltaInXNormalized = playerPosInPixelNormalized.x() - 0.7; }
-    if (playerPosInPixelNormalized.x() <= 0.3) {
-        deltaInXNormalized = playerPosInPixelNormalized.x() - 0.3; }
-    if (playerPosInPixelNormalized.y() >= 0.7) {
-        deltaInYNormalized = playerPosInPixelNormalized.y() - 0.7;
+    if (playerPosInPixelNormalized.x() >= maxThreshold) {
+        deltaInXNormalized = playerPosInPixelNormalized.x() - maxThreshold; }
+    if (playerPosInPixelNormalized.x() <= minThreshold) {
+        deltaInXNormalized = playerPosInPixelNormalized.x() - minThreshold; }
+    if (playerPosInPixelNormalized.y() >= maxThreshold) {
+        deltaInYNormalized = playerPosInPixelNormalized.y() - maxThreshold;
     }
-    if (playerPosInPixelNormalized.y() <= 0.3) {
-        deltaInYNormalized = playerPosInPixelNormalized.y() - 0.3;
+    if (playerPosInPixelNormalized.y() <= minThreshold) {
+        deltaInYNormalized = playerPosInPixelNormalized.y() - minThreshold;
     }
     
     Vector2 deltaInPixel(deltaInXNormalized * vp.getWidth(), deltaInYNormalized * vp.getHeight());
@@ -209,30 +254,30 @@ void GameSystem::updateTerrain()
     ThreeD::SceneNode& root = scene.getRootRef();
     Renderer& r = getHubRef().getRendererRef();
 
-    // update all dirty terrain segments
-    const int numSegments = mTerrain.getNumberOfSegments();
-    for (int i = 0; i < numSegments; ++i)
+    // update all dirty terrain splines
+    const int numSplines = mTerrain.getNumberOfSplines();
+    for (int j = 0; j < numSplines; ++j)
     {
-        const Geometry::LineSegment& l = mTerrain.getSegment(i);
-        if (mTerrain.isSegmentDirty(i))
+        if (mTerrain.isSplineDirty(j))
         {
-            Reactor::ModelNode* modelNode = mTerrain.getModelNodePtr(i);
-            if(modelNode != nullptr)
+            Reactor::ModelNode* modelNode = mTerrain.getSplineModelNodePtr(j);
+            if (modelNode != nullptr)
                 r.removeRenderableAsSoonAsPossible(modelNode);
             else {
                 modelNode = new Reactor::ModelNode();
-                modelNode->setName("LineSegment_" + std::to_string(i));
+                modelNode->setName("Spline_" + std::to_string(j));
                 root.addChild(modelNode);
-                mTerrain.setModelNode(i, modelNode);
+                mTerrain.setSplineModelNode(j, modelNode);
             }
-
             modelNode->clear(); // removes all mesh
-            Geometry::Mesh mesh = makeMeshFromTerrainSegment(l);
-            modelNode->addMesh(mesh);
+            Geometry::Mesh mesh = makeMeshFromTerrainSpline(mTerrain.getSpline(j));
+            if(mesh.getNumberOfFaces() > 0)
+                modelNode->addMesh(mesh);
 
             r.addAndMakeRenderableAsSoonAsPossible(modelNode);
         }
     }
+    
 }
 
 //---------------------------------------------------------------------------------------------------------------------

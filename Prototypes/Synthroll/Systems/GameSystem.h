@@ -31,7 +31,7 @@ namespace Synthroll {
         void updateCamera();
 
     protected:
-        Geometry::Mesh makeMeshFromTerrainSegment(const Geometry::LineSegment&);
+        Geometry::Mesh makeMeshFromTerrainSpline(const TerrainSpline&);
         void updateSceneGraph(ThreeD::SceneNode* ipNode);
         void updateTerrain();
 
@@ -39,8 +39,6 @@ namespace Synthroll {
         
         Player* mpPlayer0; // owned, never null
         Terrain mTerrain;
-
-
     };
 
 }

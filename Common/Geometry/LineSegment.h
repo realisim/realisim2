@@ -39,6 +39,14 @@ namespace Geometry
             return r;
         }
 
+        double length() const {
+            return (mP1 - mP0).norm();
+        }
+
+        double lengthSquared() const {
+            return (mP1 - mP0).normSquared();
+        }
+
         //--- data
         Math::Vector3 mP0, mP1;
     };

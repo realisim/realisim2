@@ -18,8 +18,8 @@ namespace Synthroll {
     protected:
         enum State {sIdle, sAddPoints};
 
-        void addNewSegment();
-        void addPointToSegments();
+        void addNewSpline();
+        void addSegmentToSlice();
         void endSegment();
 
         void handleKeyboard();
@@ -27,10 +27,11 @@ namespace Synthroll {
         //void handleGamepad();
 
         Math::Vector3 mousePosToWorld(int iX, int iY);
-        void removeSegment(int iSegmentId);
+        void removeSegment(int iSplineIndex, int iSegmentId);
         void setState(State iS);
 
         State mState;
+        int mCurrentSplineIndex;
         int mCurrentSegmentIndex;
     };
 
