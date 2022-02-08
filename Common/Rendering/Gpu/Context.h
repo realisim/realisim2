@@ -21,12 +21,15 @@ namespace Rendering
         HDC getDC();
         HGLRC getGLRC();
         std::string getOpenGLVersion() const;
+        bool isInitialized() const { return mIsInitialized; }
         bool isValid() const;
         void makeCurrent();
+        void setAsInitialized(bool iV) { mIsInitialized = iV; }
         void wrapWGLContext(HDC iHDC, HGLRC iHGLRC);
 
     protected:        
 
+        bool mIsInitialized;
         bool mIsValid;
         HDC mDC; //not owned
         HGLRC mGLRC; //not owned

@@ -232,6 +232,16 @@ Texture2d*  FrameBufferObject::createAttachementTexture(TextureInternalFormat iI
     return texture;
 }
 
+// select the framebuffer attachment to read from
+// This should always be called after push() since pop() will take care of
+// resetting the read buffer to the default read buffer.
+//
+void FrameBufferObject::readFrom(FrameBufferAttachementType iAttachment)
+{
+    auto t = toGlFrameBufferAttachement(iAttachment);
+    glReadBuffer(t);
+}
+
 // This function assumes the opengl context is active.
 // It will activate drawing on the attachment specified by iAttachment
 //
@@ -284,7 +294,7 @@ void    FrameBufferObject::bind(int   viewportOriginX,int   viewportOriginY, int
     if(isValid())
     {
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER,this->m_openglId);
-        glBindFramebuffer(GL_READ_FRAMEBUFFER,0);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, this->m_openglId);
 
         // update attachments, mostly applying openGL states that
         // could have been invalidated outside the OpenGL context...
@@ -338,6 +348,7 @@ void FrameBufferObject::push(int viewportOriginX, int viewportOriginY, int viewp
     bind(m_viewportOrigin.x(), m_viewportOrigin.y(), m_viewportSize.x(), m_viewportSize.y());
 }
 
+//---------------------------------------------------------------------------------------------------------------------
 void FrameBufferObject::pop()
 {
     // an invalid fbo was not bound anyway... so we wont unbind it

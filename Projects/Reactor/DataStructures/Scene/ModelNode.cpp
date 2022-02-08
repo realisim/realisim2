@@ -49,6 +49,12 @@ void ModelNode::addMeshes(const std::vector<Mesh*> ipMeshes)
 }
 
 //---------------------------------------------------------------------------------------------------------------------
+void ModelNode::addRegisteredRenderPass(int iRenderPassId)
+{
+    mRegisteredRenderPasses.insert(iRenderPassId);
+}
+
+//---------------------------------------------------------------------------------------------------------------------
 void ModelNode::clear()
 {
     for (auto pMesh : mMeshPtrs)
@@ -73,6 +79,12 @@ void ModelNode::initializeModelSpaceAABB()
 }
 
 //---------------------------------------------------------------------------------------------------------------------
+void ModelNode::removeRegisteredRenderPass(int iRenderPassId)
+{
+    mRegisteredRenderPasses.erase(iRenderPassId);
+}
+
+//---------------------------------------------------------------------------------------------------------------------
 // sets which passes will render this model Node.
 // It is to note, that once the model has been added to the renderer, it is not possible to change the render passes
 // via this function.
@@ -81,7 +93,8 @@ void ModelNode::initializeModelSpaceAABB()
 // renderer to do so. If the renderer modifies the registeredRenderPasses, the modification will also affect the ModelNode.
 //
 void ModelNode::setRegisteredRenderPasses(const std::vector<int>& iV) {
-    mRegisteredRenderPasses = iV;
+    for (const auto iId : iV)
+        addRegisteredRenderPass(iId);
 }
 
 //---------------------------------------------------------------------------------------------------------------------

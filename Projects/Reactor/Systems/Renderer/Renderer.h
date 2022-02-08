@@ -31,6 +31,7 @@ namespace Reactor
         void addAndMakeRenderableAsSoonAsPossible(ThreeD::SceneNode* ipNode);
         void addRenderPass(int iRenderPassIndex, IRenderPass *ipPass);
         void addRenderPass(RenderPassId iIndex, IRenderPass* ipPass);
+        void addToRenderPass(uint32_t iSceneNodeId, int iRenderPassId);
 
         void clear();
         // clearRenderPasses();
@@ -38,9 +39,13 @@ namespace Reactor
         virtual bool init() override final;
         void initializePasses();
 
+        uint32_t pick(int iPixelX, int iPixelY);
         virtual void preUpdate() override final;
         virtual void update() override final;
 
+        const ThreeD::SceneNode* findNode(uint32_t iNodeId) const;
+        ThreeD::SceneNode* findNodePtr(uint32_t iNodeId);
+        void removeFromRenderPass(uint32_t iSceneNodeId, int iRenderPassId);
         void removeRenderableAsSoonAsPossible(uint32_t iNodeId);
         void removeRenderableAsSoonAsPossible(const ThreeD::SceneNode* ipNode);
         void resizeGl(int iWidth, int iHeight);

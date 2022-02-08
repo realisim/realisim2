@@ -1,5 +1,8 @@
 --- ToDo list
-
+Minimiser le nombre de FBO
+	Renderer::initializePasses()
+	pPass->initializeFbo();
+		On pourrait passer un liste de Fbo les passes ajoutent simplement leur color attachments...
 
 --- DONE list
 

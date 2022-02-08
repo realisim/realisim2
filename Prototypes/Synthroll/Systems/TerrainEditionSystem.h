@@ -2,6 +2,7 @@
 
 #include "Reactor/Systems/ISystem.h"
 
+class Realisim::Reactor::ModelNode;
 
 namespace Realisim {
 namespace Synthroll {
@@ -16,7 +17,7 @@ namespace Synthroll {
         virtual void update() override final;
 
     protected:
-        enum State {sIdle, sAddPoints};
+        enum State {sIdle, sPicking, sAddPoints};
 
         void addNewSpline();
         void addSegmentToSlice();
@@ -26,6 +27,7 @@ namespace Synthroll {
         void handleMouse();
         //void handleGamepad();
 
+        void pick();
         Math::Vector3 mousePosToWorld(int iX, int iY);
         void removeSegment(int iSplineIndex, int iSegmentId);
         void setState(State iS);
@@ -33,6 +35,8 @@ namespace Synthroll {
         State mState;
         int mCurrentSplineIndex;
         int mCurrentSegmentIndex;
+
+        uint32_t mSelectedModelId;
     };
 
 }

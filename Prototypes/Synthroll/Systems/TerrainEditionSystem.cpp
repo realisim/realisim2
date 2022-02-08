@@ -1,6 +1,7 @@
 
 #include <cassert>
 #include "Core/Logger.h"
+#include "Reactor/DataStructures/Scene/SceneNodeEnum.h"
 #include "Reactor/Systems/Renderer/Renderer.h"
 #include "Math/Vector.h"
 #include "Systems/GameSystem.h"
@@ -18,7 +19,8 @@ using namespace Synthroll;
 TerrainEditionSystem::TerrainEditionSystem(Reactor::Broker* ipBroker, Reactor::Hub* ipHub) : ISystem(ipBroker, ipHub),
 mState(sIdle),
 mCurrentSplineIndex(-1),
-mCurrentSegmentIndex(-1)
+mCurrentSegmentIndex(-1),
+mSelectedModelId(ThreeD::SceneNode::mInvalidId)
 {}
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -90,6 +92,18 @@ void TerrainEditionSystem::handleKeyboard() {
         k.setKeyReleased(Key_Space);
     }
 
+    if (k.isKeyPressed(Key_1))
+    {
+        setState(sPicking);
+        k.setKeyReleased(Key_1);
+    }
+
+    if (k.isKeyPressed(Key_2))
+    {
+        setState(sAddPoints);
+        k.setKeyReleased(Key_2);
+    }
+
     if (k.isKeyPressed(Key_R))
     {
         ps->reset();
@@ -119,7 +133,12 @@ void TerrainEditionSystem::handleMouse() {
 
     if (m.isButtonPressed(Mouse::bLeft))
     {
-        setState(sAddPoints);
+        switch (mState)
+        {
+        case sAddPoints: addSegmentToSlice(); break;
+        case sPicking: pick(); break;
+        default: break;
+        }
         m.setButtonReleased(m.getPosition().x(), m.getPosition().y(), Mouse::bLeft);
     }
     else if (m.isButtonPressed(Mouse::bRight)) {
@@ -157,6 +176,26 @@ Vector3 TerrainEditionSystem::mousePosToWorld(int iX, int iY) {
 
     const Vector3 p = cam.pixelToWorld(Vector2((double)iX, (double)y), referencePoint);
     return p;
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+void TerrainEditionSystem::pick()
+{
+    Renderer& r = getHubRef().getRendererRef();
+    const Mouse& m = getBroker().getMouse();
+    const Rendering::Camera& cam = getBroker().getMainCamera();
+    int y = cam.getViewport().getHeight() - m.getPosition().y(); //qt and opengl have inverted y.
+
+    Reactor::Renderer& renderer = getHubRef().getRendererRef();
+    renderer.removeFromRenderPass(mSelectedModelId, rpiContourHighlight);
+    mSelectedModelId = ThreeD::SceneNode::mInvalidId;
+
+    uint32_t modelId = r.pick(m.getPosition().x(), y);
+    if (modelId != ThreeD::SceneNode::mInvalidId)
+    {
+        mSelectedModelId = modelId;
+        renderer.addToRenderPass(mSelectedModelId, rpiContourHighlight);
+    }
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -207,7 +246,8 @@ void TerrainEditionSystem::setState(State iS)
         switch (iS)
         {
         case TerrainEditionSystem::sIdle: endSegment(); break;
-        case TerrainEditionSystem::sAddPoints: addSegmentToSlice(); break;
+        //case TerrainEditionSystem::sAddPoints: addSegmentToSlice(); break;
+        case TerrainEditionSystem::sPicking: endSegment(); break;
         default: break;
         }
         break;

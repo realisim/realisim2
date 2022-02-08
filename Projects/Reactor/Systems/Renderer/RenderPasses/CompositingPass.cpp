@@ -37,11 +37,13 @@ void CompositingPass::applyGlState()
 void CompositingPass::defineInputOutputs()
 {
     Input samplerBaseInput("samplerBase", &mShader, "uSamplerBase");
-    Input samplerToAdd("samplerToAdd", &mShader, "uSamplerToAdd");
+    Input samplerToAdd0("samplerToAdd0", &mShader, "uSamplerToAdd0");
+    Input samplerToAdd1("samplerToAdd1", &mShader, "uSamplerToAdd1");
     Output composedOut("composedOut", mpFbo, mAdditionResultFba);
 
     addInput(samplerBaseInput);
-    addInput(samplerToAdd);
+    addInput(samplerToAdd0);
+    addInput(samplerToAdd1);
     addOutput(composedOut);
 }
 

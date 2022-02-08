@@ -67,6 +67,9 @@ void GlowPass::applyBlur() {
 //---------------------------------------------------------------------------------------------------------------------
 void GlowPass::applyGlState()
 {
+    // enable writing with glDepth equal, since we are drawing some opaque models to a different color attachment
+    // using the same depth buffer as the one from the opaque pass
+    //
     glDepthFunc(GL_LEQUAL);
     glDepthMask(GL_FALSE);
 }

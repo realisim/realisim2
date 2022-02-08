@@ -266,6 +266,7 @@ void GameSystem::updateTerrain()
             else {
                 modelNode = new Reactor::ModelNode();
                 modelNode->setName("Spline_" + std::to_string(j));
+                modelNode->setRegisteredRenderPasses({ rpiOpaque, rpiPicking });
                 root.addChild(modelNode);
                 mTerrain.setSplineModelNode(j, modelNode);
             }

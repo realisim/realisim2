@@ -42,6 +42,8 @@ class SceneNode
         static std::string toString(NodeType);
         virtual void update(double iTimeSinceStartupInSeconds);
 
+        static uint32_t mInvalidId;
+
     protected:
         //--- data
         static uint32_t mIdCounter;

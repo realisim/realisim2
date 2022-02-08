@@ -10,6 +10,7 @@ using namespace std;
 
 //--- init static
 uint32_t SceneNode::mIdCounter = 0;
+uint32_t SceneNode::mInvalidId = std::numeric_limits<uint32_t>::max();
 
 //---------------------------------------------------------------------------------------------------------------------
 SceneNode::SceneNode() :

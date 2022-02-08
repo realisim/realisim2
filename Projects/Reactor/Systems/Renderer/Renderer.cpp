@@ -14,8 +14,10 @@
 #include "Systems/Renderer/ModelRenderable.h"
 #include "Systems/Renderer/TextureRenderable.h"
 #include "Systems/Renderer/RenderPasses/CompositingPass.h"
+#include "Systems/Renderer/RenderPasses/ContourHighlightPass.h"
 #include "Systems/Renderer/RenderPasses/OpaquePass.h"
 #include "Systems/Renderer/RenderPasses/GlowPass.h"
+#include "Systems/Renderer/RenderPasses/PickingPass.h"
 #include "Systems/Renderer/RenderPasses/ScreenBlitPass.h"
 
 
@@ -40,9 +42,17 @@ Renderer::Renderer(Broker* ipBroker, Hub* ipHub) : ISystem(ipBroker, ipHub),
     pOpaquePass->setName("OpaquePass");
     addRenderPass(rpiOpaque, pOpaquePass);
 
+    PickingPass* pPickingPass = new PickingPass();
+    pPickingPass->setName("PicksingPass");
+    addRenderPass(rpiPicking, pPickingPass);
+
     GlowPass* pGlowPass = new GlowPass();
     pGlowPass->setName("GlowPass");
     addRenderPass(rpiGlow, pGlowPass);
+
+    ContourHighlightPass* pContourHighlightPass = new ContourHighlightPass();
+    pContourHighlightPass->setName("ContourHighlightPass");
+    addRenderPass(rpiContourHighlight, pContourHighlightPass);
 
     CompositingPass* pCompositingPass = new CompositingPass();
     pCompositingPass->setName("CompositingPass");
@@ -142,6 +152,32 @@ void Renderer::addTextureRenderable(ImageNode* ipNode, TextureRenderable* ipText
 }
 
 //---------------------------------------------------------------------------------------------------------------------
+void Renderer::addToRenderPass(uint32_t iSceneNodeId, int iRenderPassId)
+{
+    auto itDrawable = mIdToDrawable.find(iSceneNodeId);
+    auto itSceneNode = mIdToSceneNode.find(iSceneNodeId);
+
+    if (itDrawable != mIdToDrawable.end())
+    {
+        vector<IRenderable*>& passDrawables = mPassIdToDrawables[iRenderPassId];
+
+        auto itDrawableInRenderPass = std::find(passDrawables.begin(), passDrawables.end(), itDrawable->second);
+        if (itDrawableInRenderPass == passDrawables.end())
+            passDrawables.push_back(itDrawable->second);
+    }
+
+    if (itSceneNode != mIdToSceneNode.end())
+    {
+        SceneNode* sceneNode = itSceneNode->second;
+        if ((int)sceneNode->getNodeType() == (int)SceneNodeEnum::sneModelNode) {
+            ModelNode* mn = (ModelNode*)sceneNode;
+            mn->addRegisteredRenderPass(iRenderPassId);
+        }
+
+    }
+}
+
+//---------------------------------------------------------------------------------------------------------------------
 void Renderer::addRenderPass(int iRenderPassIndex, IRenderPass* ipPass)
 {
     bool passAlreadyPresent = mRenderPassIdToRenderPassPtr.find(iRenderPassIndex) != mRenderPassIdToRenderPassPtr.end();
@@ -170,14 +206,24 @@ void Renderer::addRenderPass(RenderPassId iId, IRenderPass* ipPass)
 void Renderer::connectBuiltInPasses()
 {
     OpaquePass* pOpaquePass = (OpaquePass*)mRenderPassIdToRenderPassPtr[rpiOpaque];
+    //PickingPass* pPickingPass = (PickingPass*)mRenderPassIdToRenderPassPtr[rpiPicking];
     GlowPass* pGlowPass = (GlowPass*)mRenderPassIdToRenderPassPtr[rpiGlow];
+    ContourHighlightPass* pContourHighlightPass = (ContourHighlightPass*)mRenderPassIdToRenderPassPtr[rpiContourHighlight];
     CompositingPass* pCompositingPass = (CompositingPass*)mRenderPassIdToRenderPassPtr[rpiCompositing];
     ScreenBlitPass* pScreenBlitPass = (ScreenBlitPass*)mRenderPassIdToRenderPassPtr[rpiScreenBlit];
 
     pCompositingPass->connect(pOpaquePass, "colorOut", "samplerBase");
-    pCompositingPass->connect(pGlowPass, "glow1Out", "samplerToAdd");
+    pCompositingPass->connect(pGlowPass, "glow1Out", "samplerToAdd0");
+    pCompositingPass->connect(pContourHighlightPass, "countourHighlightOut", "samplerToAdd1");
 
+    // connect final screenBlit input-output
+    //
     pScreenBlitPass->connect(pCompositingPass, "composedOut", "screenBlitInput");
+    //pScreenBlitPass->connect(pPickingPass, "PickingPassTextureOut", "screenBlitInput");
+    //pScreenBlitPass->connect(pGlowPass, "opaqueGlowTexturedOut", "screenBlitInput");
+    //pScreenBlitPass->connect(pContourHighlightPass, "drawSelectedModelsOut", "screenBlitInput");
+    //pScreenBlitPass->connect(pContourHighlightPass, "countourHighlightOut", "screenBlitInput");
+    
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -214,6 +260,22 @@ void Renderer::draw()
         pPass->render(cam, mPassIdToDrawables[pPass->getId()]);
         pPass->revertGlState();
     }
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+const SceneNode* Renderer::findNode(uint32_t iNodeId) const
+{
+    SceneNode* r = nullptr;
+    auto it = mIdToSceneNode.find(iNodeId);
+    if (it != mIdToSceneNode.end())
+        r = it->second;
+    return r;
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+SceneNode* Renderer::findNodePtr(uint32_t iNodeId)
+{
+    return const_cast<SceneNode*>(const_cast<const Renderer*>(this)->findNode(iNodeId));
 }
 
 //---------------------------------------------------------------------------------------------------------------------
@@ -268,6 +330,7 @@ bool Renderer::initializeGl()
 
     mContext.doneCurrent();
 
+    mContext.setAsInitialized(r);
     return r;
 }
 
@@ -318,6 +381,27 @@ void Renderer::handleKeyboard()
 }
 
 //---------------------------------------------------------------------------------------------------------------------
+uint32_t Renderer::pick(int iPixelX, int iPixelY)
+{
+    uint32_t pickedId = SceneNode::mInvalidId;
+
+    if (!mContext.isInitialized())
+        return pickedId;
+
+    mContext.makeCurrent();
+    
+    PickingPass* pPickingPass = (PickingPass*)mRenderPassIdToRenderPassPtr[rpiPicking];
+    if(pPickingPass)
+    {
+        pickedId = pPickingPass->pick(iPixelX, iPixelY);
+    }
+
+    mContext.doneCurrent();
+
+    return pickedId;
+}
+
+//---------------------------------------------------------------------------------------------------------------------
 void Renderer::preUpdate() {
 }
 
@@ -343,6 +427,32 @@ void Renderer::removeFromAllPasses(IRenderable* ipToRemove)
         {
             drawables.erase(foundIt);
         }
+    }
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+void Renderer::removeFromRenderPass(uint32_t iSceneNodeId, int iRenderPassId)
+{
+    auto itDrawable = mIdToDrawable.find(iSceneNodeId);
+    auto itSceneNode = mIdToSceneNode.find(iSceneNodeId);
+
+    if (itDrawable != mIdToDrawable.end())
+    {
+        vector<IRenderable*>& passDrawables = mPassIdToDrawables[iRenderPassId];
+
+        auto itDrawableInRenderPass = std::find(passDrawables.begin(), passDrawables.end(), itDrawable->second);
+        if (itDrawableInRenderPass != passDrawables.end())
+            passDrawables.erase(itDrawableInRenderPass);
+    }
+
+    if (itSceneNode != mIdToSceneNode.end())
+    {
+        SceneNode* sceneNode = itSceneNode->second;
+        if ((int)sceneNode->getNodeType() == (int)SceneNodeEnum::sneModelNode) {
+            ModelNode* mn = (ModelNode*)sceneNode;
+            mn->removeRegisteredRenderPass(iRenderPassId);
+        }
+
     }
 }
 

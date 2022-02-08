@@ -137,6 +137,7 @@ namespace Realisim
             void push();
             void push(int viewportOriginX, int viewportOriginY, int viewportW, int viewportH);
             void pop();
+            void readFrom(FrameBufferAttachementType iAttachment);
             void resolveMultisample(FrameBufferObject* targetFBO, FrameBufferAttachementType targetAttachement, FrameBufferAttachementType sourceAttachement, bool manualStateManagement = false);
             void resize(unsigned int width, unsigned int height);
             static void setDefaultFrameBufferId(int iDefaultId);

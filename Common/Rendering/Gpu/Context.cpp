@@ -6,7 +6,8 @@ using namespace Realisim;
 using namespace Rendering;
 
 //-----------------------------------------------------------------------------
-Context::Context() : 
+Context::Context() :
+    mIsInitialized(false),
     mIsValid(false),
     mDC(0),
     mGLRC(0),
@@ -29,6 +30,7 @@ void Context::clear()
 
     mOpengGLVersion = "unknown";
 
+    mIsInitialized = false;
     mIsValid = false;
     // To verify, the context was created by Qt (QWindow with GL surface enabled)
     // and properly parented, I believe the DC and GLRC will be properly deleted
